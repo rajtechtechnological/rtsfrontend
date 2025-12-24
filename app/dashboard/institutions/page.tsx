@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,54 +39,21 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { institutionsApi } from '@/lib/api/endpoints';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Mock data for institutions
-const mockInstitutions = [
-    {
-        id: '1',
-        name: 'TechEdu Institute - Mumbai',
-        address: '123 Learning Street, Andheri West, Mumbai 400053',
-        contact_email: 'mumbai@techedu.in',
-        contact_phone: '+91 22 1234 5678',
-        director_name: 'Dr. Arun Verma',
-        staff_count: 12,
-        student_count: 156,
-        status: 'active',
-    },
-    {
-        id: '2',
-        name: 'TechEdu Institute - Delhi',
-        address: '456 Knowledge Avenue, Connaught Place, New Delhi 110001',
-        contact_email: 'delhi@techedu.in',
-        contact_phone: '+91 11 2345 6789',
-        director_name: 'Dr. Priya Sharma',
-        staff_count: 8,
-        student_count: 98,
-        status: 'active',
-    },
-    {
-        id: '3',
-        name: 'TechEdu Institute - Bangalore',
-        address: '789 Tech Park, Koramangala, Bangalore 560034',
-        contact_email: 'bangalore@techedu.in',
-        contact_phone: '+91 80 3456 7890',
-        director_name: 'Dr. Rahul Reddy',
-        staff_count: 15,
-        student_count: 210,
-        status: 'active',
-    },
-    {
-        id: '4',
-        name: 'TechEdu Institute - Chennai',
-        address: '321 Education Hub, T. Nagar, Chennai 600017',
-        contact_email: 'chennai@techedu.in',
-        contact_phone: '+91 44 4567 8901',
-        director_name: 'Dr. Lakshmi Iyer',
-        staff_count: 6,
-        student_count: 72,
-        status: 'pending',
-    },
-];
+interface Institution {
+    id: string;
+    name: string;
+    address: string | null;
+    contact_email: string | null;
+    contact_phone: string | null;
+    director_name: string | null;
+    staff_count: number;
+    student_count: number;
+    status: string;
+    created_at: string | null;
+}
 
 const institutionSchema = z.object({
     name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -97,7 +64,7 @@ const institutionSchema = z.object({
 
 type InstitutionFormData = z.infer<typeof institutionSchema>;
 
-function AddInstitutionDialog() {
+function AddInstitutionDialog({ onSuccess }: { onSuccess: () => void }) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -113,13 +80,19 @@ function AddInstitutionDialog() {
     const onSubmit = async (data: InstitutionFormData) => {
         setIsLoading(true);
         try {
-            console.log('Creating institution:', data);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await institutionsApi.create({
+                name: data.name,
+                address: data.address,
+                contact_email: data.contact_email,
+                contact_phone: data.contact_phone,
+            });
             toast.success('Institution created successfully!');
             reset();
             setOpen(false);
-        } catch {
-            toast.error('Failed to create institution');
+            onSuccess();
+        } catch (error: any) {
+            console.error('Failed to create institution:', error);
+            toast.error(error.response?.data?.detail || 'Failed to create institution');
         } finally {
             setIsLoading(false);
         }
@@ -214,98 +187,176 @@ function AddInstitutionDialog() {
     );
 }
 
-function InstitutionCard({ institution }: { institution: typeof mockInstitutions[0] }) {
+function InstitutionCard({ institution, onDelete }: { institution: Institution; onDelete: () => void }) {
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (!confirm('Are you sure you want to delete this institution?')) return;
+
+        setIsDeleting(true);
+        try {
+            await institutionsApi.delete(institution.id);
+            toast.success('Institution deleted successfully');
+            onDelete();
+        } catch (error: any) {
+            console.error('Failed to delete institution:', error);
+            toast.error(error.response?.data?.detail || 'Failed to delete institution');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     return (
         <Link href={`/dashboard/institutions/${institution.id}`}>
             <Card className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 hover:shadow-lg group cursor-pointer">
                 <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 group-hover:from-blue-500/20 group-hover:to-cyan-500/20 transition-colors">
-                            <Building2 className="h-6 w-6 text-blue-400" />
+                        <div className="flex items-center gap-3">
+                            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 group-hover:from-blue-500/20 group-hover:to-cyan-500/20 transition-colors">
+                                <Building2 className="h-6 w-6 text-blue-400" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-lg text-white group-hover:text-blue-400 transition-colors">
+                                    {institution.name}
+                                </CardTitle>
+                                <p className="text-sm text-slate-400">{institution.director_name || 'No director assigned'}</p>
+                            </div>
                         </div>
-                        <div>
-                            <CardTitle className="text-lg text-white group-hover:text-blue-400 transition-colors">
-                                {institution.name}
-                            </CardTitle>
-                            <p className="text-sm text-slate-400">{institution.director_name}</p>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
+                                <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white h-8 w-8">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
+                                <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
+                                    <Eye className="h-4 w-4 mr-2" /> View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
+                                    <Edit className="h-4 w-4 mr-2" /> Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                    onClick={handleDelete}
+                                    disabled={isDeleting}
+                                >
+                                    {isDeleting ? (
+                                        <>
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Deleting...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                        </>
+                                    )}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-slate-400">
+                            <MapPin className="h-4 w-4 flex-shrink-0" />
+                            <span className="line-clamp-1">{institution.address || 'No address provided'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-400">
+                            <Mail className="h-4 w-4 flex-shrink-0" />
+                            <span>{institution.contact_email || 'No email provided'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-400">
+                            <Phone className="h-4 w-4 flex-shrink-0" />
+                            <span>{institution.contact_phone || 'No phone provided'}</span>
                         </div>
                     </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
-                            <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
-                                <Eye className="h-4 w-4 mr-2" /> View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
-                                <Edit className="h-4 w-4 mr-2" /> Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-slate-400">
-                        <MapPin className="h-4 w-4 flex-shrink-0" />
-                        <span className="line-clamp-1">{institution.address}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-slate-400">
-                        <Mail className="h-4 w-4 flex-shrink-0" />
-                        <span>{institution.contact_email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-slate-400">
-                        <Phone className="h-4 w-4 flex-shrink-0" />
-                        <span>{institution.contact_phone}</span>
-                    </div>
-                </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-800">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1 text-sm">
-                            <Users className="h-4 w-4 text-purple-400" />
-                            <span className="text-white font-medium">{institution.staff_count}</span>
-                            <span className="text-slate-500">staff</span>
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1 text-sm">
+                                <Users className="h-4 w-4 text-purple-400" />
+                                <span className="text-white font-medium">{institution.staff_count}</span>
+                                <span className="text-slate-500">staff</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-sm">
+                                <GraduationCap className="h-4 w-4 text-blue-400" />
+                                <span className="text-white font-medium">{institution.student_count}</span>
+                                <span className="text-slate-500">students</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-1 text-sm">
-                            <GraduationCap className="h-4 w-4 text-blue-400" />
-                            <span className="text-white font-medium">{institution.student_count}</span>
-                            <span className="text-slate-500">students</span>
-                        </div>
+                        <Badge
+                            className={
+                                institution.status === 'active'
+                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                    : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            }
+                        >
+                            {institution.status}
+                        </Badge>
                     </div>
-                    <Badge
-                        className={
-                            institution.status === 'active'
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                        }
-                    >
-                        {institution.status}
-                    </Badge>
-                </div>
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
         </Link>
+    );
+}
+
+function LoadingSkeleton() {
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-8 w-48 bg-slate-800" />
+                <Skeleton className="h-10 w-40 bg-slate-800" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-24 bg-slate-800 rounded-xl" />
+                ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                    <Skeleton key={i} className="h-64 bg-slate-800 rounded-xl" />
+                ))}
+            </div>
+        </div>
     );
 }
 
 export default function InstitutionsPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const [institutions, setInstitutions] = useState<Institution[]>([]);
+    const [totalFranchises, setTotalFranchises] = useState(0);
+    const [totalStaff, setTotalStaff] = useState(0);
+    const [totalStudents, setTotalStudents] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredInstitutions = mockInstitutions.filter((inst) =>
+    const fetchInstitutions = async () => {
+        try {
+            setIsLoading(true);
+            const response = await institutionsApi.getSummary();
+            setInstitutions(response.data.institutions);
+            setTotalFranchises(response.data.total_franchises);
+            setTotalStaff(response.data.total_staff);
+            setTotalStudents(response.data.total_students);
+        } catch (error: any) {
+            console.error('Failed to fetch institutions:', error);
+            toast.error('Failed to load institutions');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchInstitutions();
+    }, []);
+
+    const filteredInstitutions = institutions.filter((inst) =>
         inst.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        inst.address.toLowerCase().includes(searchQuery.toLowerCase())
+        (inst.address && inst.address.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    const totalStaff = mockInstitutions.reduce((acc, i) => acc + i.staff_count, 0);
-    const totalStudents = mockInstitutions.reduce((acc, i) => acc + i.student_count, 0);
+    if (isLoading) {
+        return <LoadingSkeleton />;
+    }
 
     return (
         <div className="space-y-6">
@@ -318,7 +369,7 @@ export default function InstitutionsPage() {
                     </h1>
                     <p className="text-slate-400 mt-1">Manage all franchise locations</p>
                 </div>
-                <AddInstitutionDialog />
+                <AddInstitutionDialog onSuccess={fetchInstitutions} />
             </div>
 
             {/* Summary */}
@@ -329,7 +380,7 @@ export default function InstitutionsPage() {
                             <Building2 className="h-6 w-6 text-red-400" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{mockInstitutions.length}</p>
+                            <p className="text-2xl font-bold text-white">{totalFranchises}</p>
                             <p className="text-sm text-slate-400">Franchises</p>
                         </div>
                     </CardContent>
@@ -374,11 +425,28 @@ export default function InstitutionsPage() {
             </Card>
 
             {/* Institution Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {filteredInstitutions.map((institution) => (
-                    <InstitutionCard key={institution.id} institution={institution} />
-                ))}
-            </div>
+            {filteredInstitutions.length === 0 ? (
+                <Card className="bg-slate-900/50 border-slate-800">
+                    <CardContent className="p-8 text-center">
+                        <Building2 className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+                        <p className="text-slate-400">
+                            {searchQuery ? 'No institutions found matching your search' : 'No institutions yet. Create your first franchise!'}
+                        </p>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {filteredInstitutions.map((institution) => (
+                        <InstitutionCard 
+                            key={institution.id} 
+                            institution={institution}
+                            onDelete={fetchInstitutions}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
+
+

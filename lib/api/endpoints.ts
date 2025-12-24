@@ -61,6 +61,25 @@ export const institutionsApi = {
 
     getStats: (id: string) =>
         apiClient.get<DashboardStats>(`/api/institutions/${id}/stats`),
+    
+    getSummary: () =>
+        apiClient.get<{
+            institutions: Array<{
+                id: string;
+                name: string;
+                address: string | null;
+                contact_email: string | null;
+                contact_phone: string | null;
+                director_name: string | null;
+                staff_count: number;
+                student_count: number;
+                status: string;
+                created_at: string | null;
+            }>;
+            total_franchises: number;
+            total_staff: number;
+            total_students: number;
+        }>('/api/institutions/stats/summary'),
 };
 
 // ============ Student Endpoints ============
