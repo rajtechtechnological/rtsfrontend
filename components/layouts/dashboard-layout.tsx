@@ -85,7 +85,7 @@ const navItems: NavItem[] = [
         title: 'Attendance',
         href: '/dashboard/attendance',
         icon: CalendarCheck,
-        roles: ['institution_director', 'staff_manager', 'staff'],
+        roles: ['staff_manager', 'staff'],
     },
     {
         title: 'Payroll',

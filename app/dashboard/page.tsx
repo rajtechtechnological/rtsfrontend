@@ -12,6 +12,7 @@ import {
     Calendar,
     IndianRupee,
     ArrowUpRight,
+    Wallet,
 } from 'lucide-react';
 
 interface StatCardProps {
@@ -109,11 +110,13 @@ export default function DashboardPage() {
     }
 
     const isDirector = user?.role === 'super_admin';
+    const isStaff = user?.role === 'staff';
 
     // DEBUG LOGS
     console.log('🔍 DEBUG - User from useAuth:', user);
     console.log('🔍 DEBUG - User role:', user?.role);
     console.log('🔍 DEBUG - Is Director?:', isDirector);
+    console.log('🔍 DEBUG - Is Staff?:', isStaff);
     console.log('🔍 DEBUG - Expected role:', 'super_admin');
 
     // Director sees stats across ALL franchises - focus on high-level metrics
@@ -214,6 +217,21 @@ export default function DashboardPage() {
             href: '/dashboard/analytics',
             gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
         },
+    ] : isStaff ? [
+        {
+            title: 'Mark Attendance',
+            description: 'Mark today\'s attendance',
+            icon: Calendar,
+            href: '/dashboard/attendance',
+            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+        },
+        {
+            title: 'View Payroll',
+            description: 'Check payment history',
+            icon: Wallet,
+            href: '/dashboard/payroll',
+            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
+        },
     ] : [
         {
             title: 'Add New Student',
@@ -221,13 +239,6 @@ export default function DashboardPage() {
             icon: GraduationCap,
             href: '/dashboard/students?action=new',
             gradient: 'bg-gradient-to-br from-blue-500 to-blue-600',
-        },
-        {
-            title: 'Mark Attendance',
-            description: 'Record daily attendance',
-            icon: Calendar,
-            href: '/dashboard/attendance',
-            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
         },
         {
             title: 'View Staff',
