@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -127,16 +128,16 @@ function AddInstitutionDialog() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-lg shadow-blue-500/25">
+                <Button className="bg-gradient-to-r from-red-600 to-sky-600 hover:from-red-500 hover:to-sky-500 text-white shadow-lg shadow-red-500/25">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Institution
+                    Add Franchise
                 </Button>
             </DialogTrigger>
             <DialogContent className="bg-slate-900 border-slate-800 sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle className="text-white flex items-center gap-2">
-                        <Building2 className="h-5 w-5 text-blue-400" />
-                        Add New Institution
+                        <Building2 className="h-5 w-5 text-red-400" />
+                        Add New Franchise
                     </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -195,7 +196,7 @@ function AddInstitutionDialog() {
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
+                            className="bg-gradient-to-r from-red-600 to-sky-600 text-white"
                         >
                             {isLoading ? (
                                 <>
@@ -203,7 +204,7 @@ function AddInstitutionDialog() {
                                     Creating...
                                 </>
                             ) : (
-                                'Create Institution'
+                                'Create Franchise'
                             )}
                         </Button>
                     </div>
@@ -215,9 +216,10 @@ function AddInstitutionDialog() {
 
 function InstitutionCard({ institution }: { institution: typeof mockInstitutions[0] }) {
     return (
-        <Card className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 hover:shadow-lg group">
-            <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
+        <Link href={`/dashboard/institutions/${institution.id}`}>
+            <Card className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 hover:shadow-lg group cursor-pointer">
+                <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                         <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 group-hover:from-blue-500/20 group-hover:to-cyan-500/20 transition-colors">
                             <Building2 className="h-6 w-6 text-blue-400" />
@@ -290,6 +292,7 @@ function InstitutionCard({ institution }: { institution: typeof mockInstitutions
                 </div>
             </CardContent>
         </Card>
+        </Link>
     );
 }
 
@@ -310,10 +313,10 @@ export default function InstitutionsPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <Building2 className="h-7 w-7 text-blue-400" />
-                        Institutions
+                        <Building2 className="h-7 w-7 text-red-400" />
+                        Franchises
                     </h1>
-                    <p className="text-slate-400 mt-1">Manage franchise institutions</p>
+                    <p className="text-slate-400 mt-1">Manage all franchise locations</p>
                 </div>
                 <AddInstitutionDialog />
             </div>
@@ -322,19 +325,19 @@ export default function InstitutionsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Card className="bg-slate-900/50 border-slate-800">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-blue-500/10">
-                            <Building2 className="h-6 w-6 text-blue-400" />
+                        <div className="p-3 rounded-xl bg-red-500/10">
+                            <Building2 className="h-6 w-6 text-red-400" />
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-white">{mockInstitutions.length}</p>
-                            <p className="text-sm text-slate-400">Institutions</p>
+                            <p className="text-sm text-slate-400">Franchises</p>
                         </div>
                     </CardContent>
                 </Card>
                 <Card className="bg-slate-900/50 border-slate-800">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-purple-500/10">
-                            <Users className="h-6 w-6 text-purple-400" />
+                        <div className="p-3 rounded-xl bg-sky-500/10">
+                            <Users className="h-6 w-6 text-sky-400" />
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-white">{totalStaff}</p>
@@ -344,8 +347,8 @@ export default function InstitutionsPage() {
                 </Card>
                 <Card className="bg-slate-900/50 border-slate-800">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-emerald-500/10">
-                            <GraduationCap className="h-6 w-6 text-emerald-400" />
+                        <div className="p-3 rounded-xl bg-sky-500/10">
+                            <GraduationCap className="h-6 w-6 text-sky-400" />
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-white">{totalStudents}</p>

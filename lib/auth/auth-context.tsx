@@ -31,17 +31,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                 if (token && storedUser) {
                     setUser(JSON.parse(storedUser));
+                    // TODO: Re-enable when backend is connected
                     // Verify token is still valid by fetching user
-                    try {
-                        const response = await authApi.me();
-                        setUser(response.data);
-                        localStorage.setItem('user', JSON.stringify(response.data));
-                    } catch {
-                        // Token invalid, clear storage
-                        localStorage.removeItem('access_token');
-                        localStorage.removeItem('user');
-                        setUser(null);
-                    }
+                    // try {
+                    //     const response = await authApi.me();
+                    //     setUser(response.data);
+                    //     localStorage.setItem('user', JSON.stringify(response.data));
+                    // } catch {
+                    //     // Token invalid, clear storage
+                    //     localStorage.removeItem('access_token');
+                    //     localStorage.removeItem('user');
+                    //     setUser(null);
+                    // }
                 }
             } catch (error) {
                 console.error('Auth initialization error:', error);

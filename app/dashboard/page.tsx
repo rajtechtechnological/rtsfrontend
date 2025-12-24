@@ -108,10 +108,53 @@ export default function DashboardPage() {
         return <LoadingSkeleton />;
     }
 
-    const stats = [
+    const isDirector = user?.role === 'super_admin';
+
+    // DEBUG LOGS
+    console.log('🔍 DEBUG - User from useAuth:', user);
+    console.log('🔍 DEBUG - User role:', user?.role);
+    console.log('🔍 DEBUG - Is Director?:', isDirector);
+    console.log('🔍 DEBUG - Expected role:', 'super_admin');
+
+    // Director sees stats across ALL franchises - focus on high-level metrics
+    // Franchise admin sees stats for their institution only
+    const stats = isDirector ? [
+        {
+            title: 'Total Franchises',
+            value: '4',
+            description: 'Active locations',
+            icon: Building2,
+            trend: { value: 2, isPositive: true },
+            gradient: 'bg-gradient-to-br from-red-500 to-red-600',
+        },
+        {
+            title: 'Total Revenue',
+            value: '₹12.8L',
+            description: 'This month',
+            icon: IndianRupee,
+            trend: { value: 15, isPositive: true },
+            gradient: 'bg-gradient-to-br from-sky-500 to-sky-600',
+        },
+        {
+            title: 'Active Courses',
+            value: '18',
+            description: 'Across all franchises',
+            icon: BookOpen,
+            trend: { value: 3, isPositive: true },
+            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+        },
+        {
+            title: 'Total Enrollments',
+            value: '536',
+            description: 'Students enrolled',
+            icon: GraduationCap,
+            trend: { value: 22, isPositive: true },
+            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
+        },
+    ] : [
         {
             title: 'Total Students',
-            value: '256',
+            value: '156',
             description: 'Active enrollments',
             icon: GraduationCap,
             trend: { value: 12, isPositive: true },
@@ -119,7 +162,7 @@ export default function DashboardPage() {
         },
         {
             title: 'Total Staff',
-            value: '24',
+            value: '12',
             description: 'Active members',
             icon: Users,
             trend: { value: 4, isPositive: true },
@@ -127,14 +170,14 @@ export default function DashboardPage() {
         },
         {
             title: 'Active Courses',
-            value: '12',
+            value: '8',
             description: 'Available courses',
             icon: BookOpen,
             gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
         },
         {
             title: 'Revenue',
-            value: '₹4.5L',
+            value: '₹3.2L',
             description: 'This month',
             icon: IndianRupee,
             trend: { value: 8, isPositive: true },
@@ -142,7 +185,36 @@ export default function DashboardPage() {
         },
     ];
 
-    const quickActions = [
+    const quickActions = isDirector ? [
+        {
+            title: 'Manage Franchises',
+            description: 'Add & oversee locations',
+            icon: Building2,
+            href: '/dashboard/institutions',
+            gradient: 'bg-gradient-to-br from-red-500 to-red-600',
+        },
+        {
+            title: 'Manage Courses',
+            description: 'Add & edit courses',
+            icon: BookOpen,
+            href: '/dashboard/courses',
+            gradient: 'bg-gradient-to-br from-sky-500 to-sky-600',
+        },
+        {
+            title: 'Revenue Reports',
+            description: 'Financial overview',
+            icon: IndianRupee,
+            href: '/dashboard/revenue',
+            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+        },
+        {
+            title: 'Analytics Dashboard',
+            description: 'Trends & insights',
+            icon: TrendingUp,
+            href: '/dashboard/analytics',
+            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
+        },
+    ] : [
         {
             title: 'Add New Student',
             description: 'Register a new student',
@@ -181,7 +253,10 @@ export default function DashboardPage() {
                     Welcome back, {user?.full_name?.split(' ')[0] || 'User'}! 👋
                 </h1>
                 <p className="text-slate-400 mt-2">
-                    Here&apos;s what&apos;s happening with your institution today.
+                    {isDirector
+                        ? "Here's an overview of all your institutions."
+                        : "Here's what's happening with your institution today."
+                    }
                 </p>
             </div>
 
@@ -202,18 +277,47 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Recent Activity Placeholder */}
+            {/* Recent Activity & Insights */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="bg-slate-900/50 border-slate-800">
                     <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2">
-                            <TrendingUp className="h-5 w-5 text-blue-400" />
-                            Recent Enrollments
+                            {isDirector ? (
+                                <>
+                                    <BookOpen className="h-5 w-5 text-sky-400" />
+                                    Most Popular Courses
+                                </>
+                            ) : (
+                                <>
+                                    <TrendingUp className="h-5 w-5 text-blue-400" />
+                                    Recent Enrollments
+                                </>
+                            )}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {[1, 2, 3].map((i) => (
+                            {isDirector ? [
+                                { course: 'Web Development', enrollments: 145, franchise: 'Mumbai', color: 'from-red-500 to-red-600' },
+                                { course: 'Python Programming', enrollments: 98, franchise: 'Bangalore', color: 'from-sky-500 to-sky-600' },
+                                { course: 'Data Science', enrollments: 76, franchise: 'Delhi', color: 'from-emerald-500 to-emerald-600' },
+                            ].map((item, i) => (
+                                <div
+                                    key={i}
+                                    className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 hover:bg-slate-800/50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center text-white font-semibold text-sm`}>
+                                            {item.enrollments}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-white">{item.course}</p>
+                                            <p className="text-xs text-slate-400">{item.franchise} Franchise</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-xs text-emerald-400 font-medium">+{Math.floor(Math.random() * 15 + 5)}%</span>
+                                </div>
+                            )) : [1, 2, 3].map((i) => (
                                 <div
                                     key={i}
                                     className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors"
@@ -237,13 +341,43 @@ export default function DashboardPage() {
                 <Card className="bg-slate-900/50 border-slate-800">
                     <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2">
-                            <Calendar className="h-5 w-5 text-emerald-400" />
-                            Today&apos;s Schedule
+                            {isDirector ? (
+                                <>
+                                    <IndianRupee className="h-5 w-5 text-red-400" />
+                                    Revenue by Franchise
+                                </>
+                            ) : (
+                                <>
+                                    <Calendar className="h-5 w-5 text-emerald-400" />
+                                    Today's Schedule
+                                </>
+                            )}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {[
+                            {isDirector ? [
+                                { name: 'Mumbai Franchise', revenue: '₹4.2L', percentage: 33, color: 'from-red-500 to-red-600' },
+                                { name: 'Bangalore Franchise', revenue: '₹3.8L', percentage: 30, color: 'from-sky-500 to-sky-600' },
+                                { name: 'Delhi Franchise', revenue: '₹2.9L', percentage: 23, color: 'from-emerald-500 to-emerald-600' },
+                                { name: 'Chennai Franchise', revenue: '₹1.9L', percentage: 14, color: 'from-amber-500 to-amber-600' },
+                            ].map((item, i) => (
+                                <div
+                                    key={i}
+                                    className="space-y-2"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm font-medium text-white">{item.name}</p>
+                                        <span className="text-sm font-semibold text-white">{item.revenue}</span>
+                                    </div>
+                                    <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
+                                        <div
+                                            className={`absolute inset-y-0 left-0 bg-gradient-to-r ${item.color} rounded-full`}
+                                            style={{ width: `${item.percentage}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )) : [
                                 { time: '10:00 AM', event: 'Python Basics - Batch A', type: 'class' },
                                 { time: '12:00 PM', event: 'Staff Meeting', type: 'meeting' },
                                 { time: '02:00 PM', event: 'Web Development - Batch B', type: 'class' },

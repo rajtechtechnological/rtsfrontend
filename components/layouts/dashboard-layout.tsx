@@ -46,16 +46,10 @@ const navItems: NavItem[] = [
         icon: LayoutDashboard,
     },
     {
-        title: 'Institutions',
+        title: 'Franchises',
         href: '/dashboard/institutions',
         icon: Building2,
         roles: ['super_admin'],
-    },
-    {
-        title: 'Students',
-        href: '/dashboard/students',
-        icon: GraduationCap,
-        roles: ['super_admin', 'institution_director', 'staff_manager'],
     },
     {
         title: 'Courses',
@@ -64,33 +58,46 @@ const navItems: NavItem[] = [
         roles: ['super_admin', 'institution_director', 'staff_manager'],
     },
     {
+        title: 'Revenue',
+        href: '/dashboard/revenue',
+        icon: Wallet,
+        roles: ['super_admin'],
+    },
+    {
+        title: 'Analytics',
+        href: '/dashboard/analytics',
+        icon: LayoutDashboard,
+        roles: ['super_admin'],
+    },
+    {
+        title: 'Students',
+        href: '/dashboard/students',
+        icon: GraduationCap,
+        roles: ['institution_director', 'staff_manager'],
+    },
+    {
         title: 'Staff',
         href: '/dashboard/staff',
         icon: Users,
-        roles: ['super_admin', 'institution_director'],
+        roles: ['institution_director', 'staff_manager'],
     },
     {
         title: 'Attendance',
         href: '/dashboard/attendance',
         icon: CalendarCheck,
-        roles: ['super_admin', 'institution_director', 'staff_manager', 'staff'],
+        roles: ['institution_director', 'staff_manager', 'staff'],
     },
     {
         title: 'Payroll',
         href: '/dashboard/payroll',
         icon: Wallet,
-        roles: ['super_admin', 'institution_director'],
+        roles: ['institution_director'],
     },
     {
         title: 'Certificates',
         href: '/dashboard/certificates',
         icon: Award,
-        roles: ['super_admin', 'institution_director', 'staff_manager'],
-    },
-    {
-        title: 'AI Assistant',
-        href: '/dashboard/chatbot',
-        icon: MessageSquare,
+        roles: ['institution_director', 'staff_manager'],
     },
 ];
 
@@ -107,7 +114,7 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                 'hover:bg-slate-800/50 hover:text-white',
                 isActive
-                    ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-white border-l-2 border-blue-500'
+                    ? 'bg-gradient-to-r from-red-600/20 to-sky-600/20 text-white border-l-2 border-red-500'
                     : 'text-slate-400'
             )}
         >
@@ -128,11 +135,11 @@ function Sidebar({ onNavClick }: { onNavClick?: () => void }) {
         <div className="flex h-full flex-col bg-slate-900/95 backdrop-blur-xl border-r border-slate-800">
             {/* Logo */}
             <div className="flex h-16 items-center gap-2 border-b border-slate-800 px-6">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-sky-500">
                     <GraduationCap className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                    EduManage
+                <span className="text-lg font-bold bg-gradient-to-r from-red-400 to-sky-400 bg-clip-text text-transparent">
+                    Rajtech
                 </span>
             </div>
 
@@ -146,8 +153,8 @@ function Sidebar({ onNavClick }: { onNavClick?: () => void }) {
             {/* User Info */}
             <div className="border-t border-slate-800 p-4">
                 <div className="flex items-center gap-3 rounded-lg bg-slate-800/50 p-3">
-                    <Avatar className="h-9 w-9 ring-2 ring-blue-500/20">
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm">
+                    <Avatar className="h-9 w-9 ring-2 ring-red-500/20">
+                        <AvatarFallback className="bg-gradient-to-br from-red-500 to-sky-500 text-white text-sm">
                             {user?.full_name?.charAt(0).toUpperCase() || 'U'}
                         </AvatarFallback>
                     </Avatar>
@@ -188,7 +195,7 @@ function Header() {
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
                             <Avatar className="h-8 w-8">
-                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm">
+                                <AvatarFallback className="bg-gradient-to-br from-red-500 to-sky-500 text-white text-sm">
                                     {user?.full_name?.charAt(0).toUpperCase() || 'U'}
                                 </AvatarFallback>
                             </Avatar>

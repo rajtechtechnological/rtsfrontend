@@ -38,8 +38,8 @@ const loginTypes = [
     },
     {
         id: 'director',
-        label: 'Institution Director',
-        description: 'Oversee multiple centers',
+        label: 'Director',
+        description: 'Oversee all franchises',
         icon: Briefcase,
         color: 'from-red-600 to-red-700',
         bgColor: 'bg-red-600/10',
@@ -207,13 +207,6 @@ function LoginContent() {
                             );
                         })}
                     </div>
-
-                    <div className="text-center mt-8 text-slate-400">
-                        New student?{' '}
-                        <Link href="/signup" className="text-green-400 hover:text-green-300 font-medium">
-                            Register here
-                        </Link>
-                    </div>
                 </div>
             </div>
         );
@@ -322,15 +315,6 @@ function LoginContent() {
                             )}
                         </Button>
                     </form>
-
-                    {selectedType === 'student' && (
-                        <div className="mt-6 text-center text-slate-400 border-t border-slate-800 pt-6">
-                            New student?{' '}
-                            <Link href="/signup" className="text-green-400 hover:text-green-300 font-medium">
-                                Register here
-                            </Link>
-                        </div>
-                    )}
                 </CardContent>
             </Card>
         </div>

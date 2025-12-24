@@ -31,119 +31,162 @@ import {
   Linkedin,
   Menu,
   X,
+  LogIn,
 } from 'lucide-react';
 
-// Company Data
+// Company Data - Real data from rtseducation.in
 const stats = [
-  { value: '50+', label: 'Franchise Centers', icon: Building2 },
-  { value: '10,000+', label: 'Students Trained', icon: GraduationCap },
-  { value: '200+', label: 'Expert Faculty', icon: Users },
-  { value: '15+', label: 'Years Experience', icon: Trophy },
+  { value: '8415+', label: 'Total Students', icon: GraduationCap },
+  { value: '23+', label: 'Running Courses', icon: BookOpen },
+  { value: '25+', label: 'Expert Faculty', icon: Users },
+  { value: '10+', label: 'Years Experience', icon: Trophy },
+];
+
+// Course Categories
+const courseCategories = [
+  { name: 'Diploma Courses', count: '11+ Courses', color: 'from-green-600 to-emerald-600' },
+  { name: 'Certificate Courses', count: '5+ Courses', color: 'from-blue-600 to-blue-700' },
+  { name: 'University Courses', count: 'Recognized', color: 'from-red-600 to-red-700' },
+  { name: 'Kushal Yuva Program', count: 'Govt. Scheme', color: 'from-orange-600 to-orange-700' },
+  { name: 'Competition Zone', count: 'Exam Prep', color: 'from-purple-600 to-purple-700' },
+  { name: 'Internship', count: 'Job Ready', color: 'from-green-700 to-green-800' },
 ];
 
 const courses = [
   {
     id: 1,
-    name: 'Web Development Bootcamp',
-    description: 'Master HTML, CSS, JavaScript, React & Node.js. Build real-world projects.',
-    duration: '6 months',
-    fee: '₹45,000',
-    level: 'Beginner to Advanced',
+    name: 'Diploma in Computer Application (DCA)',
+    description: 'Fundamentals of Computer, MS Windows, MS Office (Word, Excel, Access, PowerPoint). Complete office automation training.',
+    duration: '6 Months',
+    fee: '₹3,600',
+    level: 'Beginner',
     popular: true,
+    code: 'RC002',
   },
   {
     id: 2,
-    name: 'Python & Data Science',
-    description: 'Learn Python, Machine Learning, AI, and Data Analytics from scratch.',
-    duration: '6 months',
-    fee: '₹55,000',
-    level: 'Beginner to Advanced',
+    name: 'Advanced Diploma in Computer Application (ADCA)',
+    description: 'DCA + DTP + Tally. Complete package for computer proficiency with accounting skills.',
+    duration: '1 Year',
+    fee: '₹10,000',
+    level: 'Intermediate',
     popular: true,
+    code: 'RC007',
   },
   {
     id: 3,
-    name: 'Mobile App Development',
-    description: 'Build iOS & Android apps with React Native and Flutter.',
-    duration: '4 months',
-    fee: '₹40,000',
-    level: 'Intermediate',
-    popular: false,
+    name: 'Tally Prime with GST',
+    description: 'Financial Accounting with Tally latest version including Inventory, VAT, TDS, TCS, GST, and Payroll management.',
+    duration: '3 Months',
+    fee: '₹3,000',
+    level: 'Beginner',
+    popular: true,
+    code: 'RC003',
   },
   {
     id: 4,
-    name: 'UI/UX Design Mastery',
-    description: 'Design beautiful interfaces with Figma, Adobe XD, and design thinking.',
-    duration: '3 months',
-    fee: '₹30,000',
-    level: 'Beginner',
+    name: 'Diploma in Financial Accounting (DFA)',
+    description: 'DCA + CFA combination. Complete computerized accounting course with practical training.',
+    duration: '9 Months',
+    fee: '₹5,500',
+    level: 'Intermediate',
     popular: false,
+    code: 'RC004',
   },
   {
     id: 5,
-    name: 'Digital Marketing Pro',
-    description: 'SEO, Social Media, Google Ads, Email Marketing & Analytics.',
-    duration: '3 months',
-    fee: '₹25,000',
-    level: 'Beginner',
+    name: 'PGDCA',
+    description: 'Post Graduate Diploma in Computer Application - Fundamentals, MS-Office, DBMS, Visual Basic, C++, SQL with Project.',
+    duration: '18 Months',
+    fee: 'Contact Us',
+    level: 'Advanced',
     popular: false,
+    code: 'RC018',
   },
   {
     id: 6,
-    name: 'Cloud & DevOps',
-    description: 'AWS, Azure, Docker, Kubernetes, CI/CD pipelines and more.',
-    duration: '4 months',
-    fee: '₹50,000',
-    level: 'Advanced',
-    popular: true,
+    name: 'Computer Typing (Hindi & English)',
+    description: 'Professional typing course covering basic typing, lessons, letters, words, and paragraph typing practice.',
+    duration: '3 Months',
+    fee: '₹2,200',
+    level: 'Beginner',
+    popular: false,
+    code: 'RC016',
   },
 ];
 
 const directors = [
   {
-    name: 'Dr. Rajesh Kumar',
-    role: 'Founder & CEO',
-    description: '20+ years in IT education. Former professor at IIT Delhi.',
+    name: 'RTS Leadership',
+    role: 'Founder & Director',
+    description: 'Dedicated to providing quality education to all deserving students across Bihar.',
     image: '👨‍💼',
   },
   {
-    name: 'Priya Sharma',
-    role: 'Director of Operations',
-    description: 'MBA from IIM Ahmedabad. Expert in franchise management.',
-    image: '👩‍💼',
+    name: 'Academic Team',
+    role: 'Faculty Head',
+    description: 'Expert faculty providing enriched theory and practical lab classes.',
+    image: '👩‍🏫',
   },
   {
-    name: 'Amit Patel',
-    role: 'Chief Technology Officer',
-    description: 'Ex-Google engineer. 15 years in software development.',
+    name: 'Training Team',
+    role: 'Placement Coordinator',
+    description: 'Job guarantee programs and placement assistance for students.',
     image: '👨‍💻',
   },
 ];
 
 const milestones = [
-  { year: '2009', title: 'Founded', subtitle: 'Started with 1 center in Mumbai' },
-  { year: '2012', title: '10 Centers', subtitle: 'Expanded across Maharashtra' },
-  { year: '2015', title: '1000 Students', subtitle: 'Milestone celebration' },
-  { year: '2018', title: 'Pan India', subtitle: 'Centers in 10 states' },
-  { year: '2021', title: '5000 Students', subtitle: 'Digital transformation' },
-  { year: '2024', title: '50+ Centers', subtitle: 'Continuing to grow' },
+  { year: '2015', title: 'Founded', subtitle: 'Started in Hilsa, Bihar' },
+  { year: '2017', title: 'Expansion', subtitle: 'Multiple centers opened' },
+  { year: '2019', title: '5000+ Students', subtitle: 'Major milestone' },
+  { year: '2021', title: 'Digital Growth', subtitle: 'Online exam system' },
+  { year: '2023', title: '8000+ Students', subtitle: 'Continued expansion' },
+  { year: '2025', title: 'New Platform', subtitle: 'Modern LMS launch' },
 ];
 
 const events = [
-  { title: 'Annual Tech Fest 2024', subtitle: '500+ participants', color: 'from-green-600 to-emerald-600' },
-  { title: 'Placement Drive', subtitle: '200+ companies', color: 'from-red-600 to-rose-600' },
-  { title: 'Hackathon Championship', subtitle: 'National Level', color: 'from-green-700 to-green-600' },
+  { title: 'New Batch - DCA/ADCA', subtitle: 'Morning 8AM & 9AM', color: 'from-green-600 to-emerald-600' },
+  { title: 'Tally Prime Batch', subtitle: '8AM, 9AM, 4PM', color: 'from-blue-600 to-blue-700' },
+  { title: 'KYP Admissions Open', subtitle: 'Govt. Scheme', color: 'from-orange-600 to-orange-700' },
 ];
 
-// Navigation
+const whyJoinUs = [
+  { title: 'Lab Classes', description: 'We provide enriched theory and lab classes for students.' },
+  { title: 'Best Learning', description: 'We provide the better qualitative learning inputs for students.' },
+  { title: 'Globally Certified', description: 'Certificates of global recognition and best results.' },
+  { title: 'Job Guarantee', description: 'Job guarantee in certain programmes for students.' },
+];
+
+
+
+// Navigation with Login Dropdown
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const loginOptions = [
+    { id: 'student', label: 'Student Portal', icon: GraduationCap, href: '/login?type=student', color: 'text-green-400' },
+    { id: 'staff', label: 'Staff Portal', icon: Users, href: '/login?type=staff', color: 'text-blue-400' },
+    { id: 'director', label: 'Director Portal', icon: Briefcase, href: '/login?type=director', color: 'text-red-400' },
+    { id: 'franchise', label: 'Franchise Admin', icon: Building2, href: '/login?type=franchise', color: 'text-green-500' },
+  ];
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setLoginDropdownOpen(false);
+    if (loginDropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [loginDropdownOpen]);
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-slate-900/95 backdrop-blur-xl shadow-lg' : 'bg-transparent'
@@ -183,14 +226,48 @@ function Navbar() {
             <a href="#contact" className="text-slate-300 hover:text-white transition-colors">Contact</a>
           </div>
 
-          {/* Login Button */}
-          <div className="hidden lg:flex items-center gap-4">
-            <Link href="/login">
-              <Button className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white shadow-lg shadow-green-600/30">
-                Login / Register
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </Link>
+          {/* Login Dropdown - Desktop */}
+          <div className="hidden lg:flex items-center gap-4 relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setLoginDropdownOpen(!loginDropdownOpen);
+              }}
+              className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white px-4 py-2 rounded-lg shadow-lg shadow-green-600/30 transition-all"
+            >
+              <LogIn className="h-4 w-4" />
+              Login
+              <ChevronDown className={`h-4 w-4 transition-transform ${loginDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {loginDropdownOpen && (
+              <div className="absolute top-full right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50">
+                <div className="p-2">
+                  <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Select Portal
+                  </div>
+                  {loginOptions.map((option) => {
+                    const Icon = option.icon;
+                    return (
+                      <Link
+                        key={option.id}
+                        href={option.href}
+                        className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-800 transition-colors group"
+                      >
+                        <Icon className={`h-5 w-5 ${option.color}`} />
+                        <span className="text-white group-hover:text-green-400 transition-colors">{option.label}</span>
+                      </Link>
+                    );
+                  })}
+                  <div className="border-t border-slate-700 mt-2 pt-2 px-3 pb-2">
+                    <Link href="/signup" className="text-sm text-slate-400 hover:text-green-400">
+                      New student? <span className="font-medium">Register here</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -211,11 +288,33 @@ function Navbar() {
               <a href="#directors" className="text-slate-300 hover:text-white py-2">Leadership</a>
               <a href="#milestones" className="text-slate-300 hover:text-white py-2">Journey</a>
               <a href="#contact" className="text-slate-300 hover:text-white py-2">Contact</a>
-              <Link href="/login">
-                <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white">
-                  Login / Register
-                </Button>
-              </Link>
+
+              {/* Mobile Login Options */}
+              <div className="border-t border-slate-700 pt-4 mt-2">
+                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  Login Portals
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {loginOptions.map((option) => {
+                    const Icon = option.icon;
+                    return (
+                      <Link
+                        key={option.id}
+                        href={option.href}
+                        className="flex items-center gap-2 bg-slate-800 p-3 rounded-lg hover:bg-slate-700 transition-colors"
+                      >
+                        <Icon className={`h-4 w-4 ${option.color}`} />
+                        <span className="text-white text-sm">{option.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+                <div className="mt-3 text-center">
+                  <Link href="/signup" className="text-sm text-slate-400 hover:text-green-400">
+                    New student? <span className="font-medium">Register here</span>
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -282,6 +381,111 @@ function HeroSection() {
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer animate-bounce">
         <span className="text-xs font-medium text-slate-400 tracking-widest uppercase">Scroll Down</span>
         <ChevronDown className="h-6 w-6 text-green-400" />
+      </div>
+    </section>
+  );
+}
+
+// Quick Access Login Section
+function QuickAccessSection() {
+  const portals = [
+    {
+      id: 'student',
+      label: 'Student Portal',
+      description: 'Access courses, certificates & learning materials',
+      icon: GraduationCap,
+      color: 'from-green-600 to-emerald-600',
+      bgColor: 'bg-green-600/10',
+      borderColor: 'border-green-600/30',
+      href: '/login?type=student',
+    },
+    {
+      id: 'staff',
+      label: 'Staff Portal',
+      description: 'View attendance, payroll & work schedules',
+      icon: Users,
+      color: 'from-blue-600 to-blue-700',
+      bgColor: 'bg-blue-600/10',
+      borderColor: 'border-blue-600/30',
+      href: '/login?type=staff',
+    },
+    {
+      id: 'director',
+      label: 'Director Portal',
+      description: 'Oversee multiple centers & analytics',
+      icon: Briefcase,
+      color: 'from-red-600 to-red-700',
+      bgColor: 'bg-red-600/10',
+      borderColor: 'border-red-600/30',
+      href: '/login?type=director',
+    },
+    {
+      id: 'franchise',
+      label: 'Franchise Admin',
+      description: 'Manage your franchise center operations',
+      icon: Building2,
+      color: 'from-green-700 to-green-800',
+      bgColor: 'bg-green-700/10',
+      borderColor: 'border-green-700/30',
+      href: '/login?type=franchise',
+    },
+  ];
+
+  return (
+    <section className="py-16 bg-slate-900/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <LogIn className="h-6 w-6 text-green-400" />
+            <span className="text-green-400 font-semibold text-lg">Quick Access</span>
+          </div>
+          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+            Login to Your Portal
+          </h2>
+          <p className="text-slate-400 max-w-2xl mx-auto">
+            Select your role to access your dedicated portal with all the tools you need
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {portals.map((portal) => {
+            const Icon = portal.icon;
+            return (
+              <Link
+                key={portal.id}
+                href={portal.href}
+                className={`group relative p-6 rounded-2xl bg-slate-900/50 border ${portal.borderColor} hover:border-opacity-60 transition-all duration-300 hover:shadow-xl text-center overflow-hidden`}
+              >
+                {/* Gradient hover effect */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${portal.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+
+                <div className="relative z-10">
+                  <div className={`w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br ${portal.color} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    {portal.label}
+                  </h3>
+                  <p className="text-sm text-slate-400 leading-relaxed mb-4">
+                    {portal.description}
+                  </p>
+                  <div className="text-green-400 text-sm font-medium flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Login Now <ChevronRight className="h-4 w-4" />
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="text-center mt-10">
+          <p className="text-slate-500">
+            New student?{' '}
+            <Link href="/signup" className="text-green-400 hover:text-green-300 font-medium">
+              Register here
+            </Link>
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -394,47 +598,38 @@ function AboutSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <Badge className="bg-red-600/10 text-red-400 border-red-600/30 mb-4">
+            <Badge className="bg-green-600/10 text-green-400 border-green-600/30 mb-4">
               About RTS
             </Badge>
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-              Empowering Students Since 2009
+              Empowering Students Through Education
             </h2>
             <p className="text-slate-400 mb-6 leading-relaxed">
-              Rajtech Technological Systems (RTS) is India's premier computer education franchise network,
-              dedicated to bridging the gap between traditional education and industry requirements. Our mission
-              is to create skilled professionals who can thrive in the digital economy.
+              Welcome to RAJTECH TECHNOLOGICAL SYSTEM PRIVATE LIMITED (RTS). It is not just a company but a mission
+              to provide quality education to all who deserve it. We live in an extremely competitive era today,
+              and the potentiality for growth in numerous industries is unbelievable.
             </p>
-            <p className="text-slate-400 mb-8 leading-relaxed">
-              With 50+ centers across India, we have trained over 10,000 students who are now
-              working at top companies like Google, Microsoft, Amazon, and leading startups.
+            <p className="text-slate-400 mb-6 leading-relaxed">
+              RTS Education is fully devoted to providing world-class education. Here we work with passion and
+              believe to deliver the very best. We have embraced the most contemporary technologies enabling us
+              to offer world-class education programs with quality and punctuality.
+            </p>
+            <p className="text-slate-400 mb-8 leading-relaxed italic border-l-4 border-green-500 pl-4">
+              "We have no competition, We become competition"
             </p>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-600/10">
-                  <Award className="h-5 w-5 text-green-500" />
+              {whyJoinUs.map((item, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-green-600/10 mt-1">
+                    <Award className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <span className="text-white font-medium block">{item.title}</span>
+                    <span className="text-slate-500 text-sm">{item.description}</span>
+                  </div>
                 </div>
-                <span className="text-white">ISO Certified</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-red-600/10">
-                  <Briefcase className="h-5 w-5 text-red-400" />
-                </div>
-                <span className="text-white">Placement Assistance</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-600/10">
-                  <Users className="h-5 w-5 text-green-500" />
-                </div>
-                <span className="text-white">Expert Faculty</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-red-600/10">
-                  <Trophy className="h-5 w-5 text-red-400" />
-                </div>
-                <span className="text-white">Industry Recognition</span>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -455,15 +650,15 @@ function AboutSection() {
             <div className="absolute -top-6 -right-6 animate-bounce duration-[3000ms]">
               <div className="bg-slate-900/90 backdrop-blur-md border border-green-500/30 p-4 rounded-2xl shadow-xl shadow-green-900/20">
                 <Award className="h-8 w-8 text-green-400 mb-1" />
-                <div className="text-xs text-slate-400 font-medium">Certified</div>
-                <div className="text-sm font-bold text-white">Excellence</div>
+                <div className="text-xs text-slate-400 font-medium">Globally</div>
+                <div className="text-sm font-bold text-white">Certified</div>
               </div>
             </div>
 
             <div className="absolute -bottom-6 -left-6 animate-bounce duration-[4000ms]">
               <div className="bg-gradient-to-br from-green-600 to-green-700 p-4 rounded-2xl shadow-xl shadow-green-600/20">
-                <div className="text-3xl font-bold text-white">15+</div>
-                <div className="text-xs text-green-100 font-medium">Years Strong</div>
+                <div className="text-3xl font-bold text-white">8415+</div>
+                <div className="text-xs text-green-100 font-medium">Students</div>
               </div>
             </div>
           </div>
@@ -602,7 +797,7 @@ function Footer() {
               </div>
             </Link>
             <p className="text-slate-400 mb-6">
-              India's leading computer education franchise network. Transforming careers since 2009.
+              Quality computer education for all. Providing world-class training in DCA, ADCA, Tally, and more.
             </p>
             <div className="flex gap-4">
               <a href="#" className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-green-600/20">
@@ -649,22 +844,22 @@ function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-slate-400">
                 <MapPin className="h-5 w-5 text-green-500" />
-                Mumbai, Maharashtra, India
+                Hilsa, Nalanda, Bihar, India
               </li>
               <li className="flex items-center gap-2 text-slate-400">
                 <Phone className="h-5 w-5 text-green-500" />
-                +91 22 1234 5678
+                +91 9931005560
               </li>
               <li className="flex items-center gap-2 text-slate-400">
                 <Mail className="h-5 w-5 text-green-500" />
-                info@techedu.in
+                info@rtseducation.in
               </li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-slate-800 mt-12 pt-8 text-center text-slate-500">
-          <p>&copy; {new Date().getFullYear()} Rajtech Technological Systems. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} RAJTECH TECHNOLOGICAL SYSTEM PRIVATE LIMITED (RTS). All rights reserved.</p>
         </div>
       </div>
     </footer>
@@ -683,6 +878,7 @@ export default function HomePage() {
       <DirectorsSection />
       <MilestonesSection />
       <CTASection />
+      <QuickAccessSection />
       <Footer />
     </div>
   );
