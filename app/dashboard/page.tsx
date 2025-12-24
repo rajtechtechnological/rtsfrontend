@@ -14,13 +14,17 @@ import {
     ArrowUpRight,
     Wallet,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { dashboardApi } from '@/lib/api/endpoints';
+import type { DashboardStats } from '@/types';
+import { toast } from 'sonner';
 
 interface StatCardProps {
     title: string;
     value: string | number;
     description: string;
     icon: React.ElementType;
-    trend?: { value: number; isPositive: boolean };
+    trend?: { value: number; isPositive: boolean } | null;
     gradient: string;
 }
 
@@ -45,7 +49,7 @@ function StatCard({ title, value, description, icon: Icon, trend, gradient }: St
                             <ArrowUpRight
                                 className={`h-3 w-3 mr-1 ${!trend.isPositive && 'rotate-90'}`}
                             />
-                            {trend.value}%
+                            {Math.abs(trend.value)}%
                         </div>
                     )}
                 </div>
@@ -102,91 +106,74 @@ function LoadingSkeleton() {
     );
 }
 
-export default function DashboardPage() {
-    const { user, isLoading } = useAuth();
+// Icon mapping for stats
+const iconMap: Record<string, React.ElementType> = {
+    'Total Franchises': Building2,
+    'Total Revenue': IndianRupee,
+    'Active Courses': BookOpen,
+    'Total Enrollments': GraduationCap,
+    'Total Students': GraduationCap,
+    'Total Staff': Users,
+    'Revenue': IndianRupee,
+};
 
-    if (isLoading) {
+// Gradient mapping for stats
+const gradientMap: Record<string, string> = {
+    'Total Franchises': 'bg-gradient-to-br from-red-500 to-red-600',
+    'Total Revenue': 'bg-gradient-to-br from-sky-500 to-sky-600',
+    'Active Courses': 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+    'Total Enrollments': 'bg-gradient-to-br from-amber-500 to-orange-600',
+    'Total Students': 'bg-gradient-to-br from-blue-500 to-blue-600',
+    'Total Staff': 'bg-gradient-to-br from-purple-500 to-purple-600',
+    'Revenue': 'bg-gradient-to-br from-amber-500 to-orange-600',
+};
+
+// Color mapping for popular courses
+const courseColors = [
+    'from-red-500 to-red-600',
+    'from-sky-500 to-sky-600',
+    'from-emerald-500 to-emerald-600',
+    'from-amber-500 to-amber-600',
+];
+
+export default function DashboardPage() {
+    const { user, isLoading: authLoading } = useAuth();
+    const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                setIsLoading(true);
+                const response = await dashboardApi.getStats();
+                setDashboardData(response.data);
+            } catch (error: any) {
+                console.error('Failed to fetch dashboard data:', error);
+                toast.error('Failed to load dashboard data');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (!authLoading && user) {
+            fetchDashboardData();
+        }
+    }, [user, authLoading]);
+
+    if (authLoading || isLoading) {
         return <LoadingSkeleton />;
+    }
+
+    if (!dashboardData) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-slate-400">Failed to load dashboard data</p>
+            </div>
+        );
     }
 
     const isDirector = user?.role === 'super_admin';
     const isStaff = user?.role === 'staff';
-
-    // DEBUG LOGS
-    console.log('🔍 DEBUG - User from useAuth:', user);
-    console.log('🔍 DEBUG - User role:', user?.role);
-    console.log('🔍 DEBUG - Is Director?:', isDirector);
-    console.log('🔍 DEBUG - Is Staff?:', isStaff);
-    console.log('🔍 DEBUG - Expected role:', 'super_admin');
-
-    // Director sees stats across ALL franchises - focus on high-level metrics
-    // Franchise admin sees stats for their institution only
-    const stats = isDirector ? [
-        {
-            title: 'Total Franchises',
-            value: '4',
-            description: 'Active locations',
-            icon: Building2,
-            trend: { value: 2, isPositive: true },
-            gradient: 'bg-gradient-to-br from-red-500 to-red-600',
-        },
-        {
-            title: 'Total Revenue',
-            value: '₹12.8L',
-            description: 'This month',
-            icon: IndianRupee,
-            trend: { value: 15, isPositive: true },
-            gradient: 'bg-gradient-to-br from-sky-500 to-sky-600',
-        },
-        {
-            title: 'Active Courses',
-            value: '18',
-            description: 'Across all franchises',
-            icon: BookOpen,
-            trend: { value: 3, isPositive: true },
-            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
-        },
-        {
-            title: 'Total Enrollments',
-            value: '536',
-            description: 'Students enrolled',
-            icon: GraduationCap,
-            trend: { value: 22, isPositive: true },
-            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
-        },
-    ] : [
-        {
-            title: 'Total Students',
-            value: '156',
-            description: 'Active enrollments',
-            icon: GraduationCap,
-            trend: { value: 12, isPositive: true },
-            gradient: 'bg-gradient-to-br from-blue-500 to-blue-600',
-        },
-        {
-            title: 'Total Staff',
-            value: '12',
-            description: 'Active members',
-            icon: Users,
-            trend: { value: 4, isPositive: true },
-            gradient: 'bg-gradient-to-br from-purple-500 to-purple-600',
-        },
-        {
-            title: 'Active Courses',
-            value: '8',
-            description: 'Available courses',
-            icon: BookOpen,
-            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
-        },
-        {
-            title: 'Revenue',
-            value: '₹3.2L',
-            description: 'This month',
-            icon: IndianRupee,
-            trend: { value: 8, isPositive: true },
-            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
-        },
-    ];
 
     const quickActions = isDirector ? [
         {
@@ -273,8 +260,16 @@ export default function DashboardPage() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat) => (
-                    <StatCard key={stat.title} {...stat} />
+                {dashboardData.stats.map((stat) => (
+                    <StatCard
+                        key={stat.title}
+                        title={stat.title}
+                        value={stat.value}
+                        description={stat.description}
+                        icon={iconMap[stat.title] || BookOpen}
+                        trend={stat.trend}
+                        gradient={gradientMap[stat.title] || 'bg-gradient-to-br from-blue-500 to-blue-600'}
+                    />
                 ))}
             </div>
 
@@ -308,43 +303,45 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {isDirector ? [
-                                { course: 'Web Development', enrollments: 145, franchise: 'Mumbai', color: 'from-red-500 to-red-600' },
-                                { course: 'Python Programming', enrollments: 98, franchise: 'Bangalore', color: 'from-sky-500 to-sky-600' },
-                                { course: 'Data Science', enrollments: 76, franchise: 'Delhi', color: 'from-emerald-500 to-emerald-600' },
-                            ].map((item, i) => (
-                                <div
-                                    key={i}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 hover:bg-slate-800/50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center text-white font-semibold text-sm`}>
-                                            {item.enrollments}
+                            {isDirector && dashboardData.popularCourses ? (
+                                dashboardData.popularCourses.map((item, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 hover:bg-slate-800/50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${courseColors[i % courseColors.length]} flex items-center justify-center text-white font-semibold text-sm`}>
+                                                {item.enrollments}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-white">{item.course}</p>
+                                                <p className="text-xs text-slate-400">{item.franchise} Franchise</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-white">{item.course}</p>
-                                            <p className="text-xs text-slate-400">{item.franchise} Franchise</p>
-                                        </div>
+                                        <span className="text-xs text-emerald-400 font-medium">+{item.trend}%</span>
                                     </div>
-                                    <span className="text-xs text-emerald-400 font-medium">+{Math.floor(Math.random() * 15 + 5)}%</span>
-                                </div>
-                            )) : [1, 2, 3].map((i) => (
-                                <div
-                                    key={i}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium">
-                                            {String.fromCharCode(64 + i)}
+                                ))
+                            ) : dashboardData.recentEnrollments ? (
+                                dashboardData.recentEnrollments.map((item, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium">
+                                                {item.student_name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-white">{item.student_name}</p>
+                                                <p className="text-xs text-slate-400">{item.course}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-white">Student {i}</p>
-                                            <p className="text-xs text-slate-400">Web Development Course</p>
-                                        </div>
+                                        <span className="text-xs text-slate-500">{item.time_ago}</span>
                                     </div>
-                                    <span className="text-xs text-slate-500">2 hours ago</span>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <p className="text-sm text-slate-400 text-center py-4">No data available</p>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -367,43 +364,42 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {isDirector ? [
-                                { name: 'Mumbai Franchise', revenue: '₹4.2L', percentage: 33, color: 'from-red-500 to-red-600' },
-                                { name: 'Bangalore Franchise', revenue: '₹3.8L', percentage: 30, color: 'from-sky-500 to-sky-600' },
-                                { name: 'Delhi Franchise', revenue: '₹2.9L', percentage: 23, color: 'from-emerald-500 to-emerald-600' },
-                                { name: 'Chennai Franchise', revenue: '₹1.9L', percentage: 14, color: 'from-amber-500 to-amber-600' },
-                            ].map((item, i) => (
-                                <div
-                                    key={i}
-                                    className="space-y-2"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-sm font-medium text-white">{item.name}</p>
-                                        <span className="text-sm font-semibold text-white">{item.revenue}</span>
+                            {isDirector && dashboardData.revenueByFranchise ? (
+                                dashboardData.revenueByFranchise.map((item, i) => (
+                                    <div
+                                        key={i}
+                                        className="space-y-2"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-sm font-medium text-white">{item.name}</p>
+                                            <span className="text-sm font-semibold text-white">₹{(item.revenue / 100000).toFixed(1)}L</span>
+                                        </div>
+                                        <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
+                                            <div
+                                                className={`absolute inset-y-0 left-0 bg-gradient-to-r ${courseColors[i % courseColors.length]} rounded-full`}
+                                                style={{ width: `${item.percentage}%` }}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
-                                        <div
-                                            className={`absolute inset-y-0 left-0 bg-gradient-to-r ${item.color} rounded-full`}
-                                            style={{ width: `${item.percentage}%` }}
-                                        />
+                                ))
+                            ) : (
+                                [
+                                    { time: '10:00 AM', event: 'Python Basics - Batch A', type: 'class' },
+                                    { time: '12:00 PM', event: 'Staff Meeting', type: 'meeting' },
+                                    { time: '02:00 PM', event: 'Web Development - Batch B', type: 'class' },
+                                ].map((item, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-center gap-4 p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors"
+                                    >
+                                        <div className="text-sm font-medium text-blue-400 w-20">{item.time}</div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium text-white">{item.event}</p>
+                                            <p className="text-xs text-slate-400 capitalize">{item.type}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            )) : [
-                                { time: '10:00 AM', event: 'Python Basics - Batch A', type: 'class' },
-                                { time: '12:00 PM', event: 'Staff Meeting', type: 'meeting' },
-                                { time: '02:00 PM', event: 'Web Development - Batch B', type: 'class' },
-                            ].map((item, i) => (
-                                <div
-                                    key={i}
-                                    className="flex items-center gap-4 p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors"
-                                >
-                                    <div className="text-sm font-medium text-blue-400 w-20">{item.time}</div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium text-white">{item.event}</p>
-                                        <p className="text-xs text-slate-400 capitalize">{item.type}</p>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -411,3 +407,5 @@ export default function DashboardPage() {
         </div>
     );
 }
+
+// Made with Bob

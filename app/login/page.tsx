@@ -110,33 +110,29 @@ function LoginContent() {
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true);
         try {
-            // Mock login for now
-            console.log('Login attempt:', { ...data, type: selectedType });
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // For demo, simulate successful login
-            localStorage.setItem('access_token', 'demo_token');
-            localStorage.setItem('user', JSON.stringify({
-                id: '1',
-                email: data.email,
-                full_name: 'Demo User',
-                role: selectedType === 'franchise' ? 'institution_director' :
-                    selectedType === 'director' ? 'super_admin' :
-                        selectedType === 'student' ? 'student' : 'staff',
-            }));
+            // Real login via backend API
+            await login(data);
 
             toast.success('Login successful!');
 
-            // Redirect based on role
-            if (selectedType === 'student') {
-                router.push('/student');
-            } else if (selectedType === 'staff') {
-                router.push('/staff');
+            // Get user from localStorage to check role
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+
+                // Redirect based on role
+                if (user.role === 'student') {
+                    router.push('/student');
+                } else if (user.role === 'staff') {
+                    router.push('/staff');
+                } else {
+                    router.push('/dashboard');
+                }
             } else {
                 router.push('/dashboard');
             }
-        } catch {
-            toast.error('Login failed. Please check your credentials.');
+        } catch (error: any) {
+            toast.error(error.message || 'Login failed. Please check your credentials.');
         } finally {
             setIsLoading(false);
         }

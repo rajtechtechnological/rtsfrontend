@@ -217,10 +217,29 @@ export interface RecordPaymentRequest {
 
 // Dashboard stats
 export interface DashboardStats {
-    total_students: number;
-    total_staff: number;
-    total_courses: number;
-    total_revenue: number;
-    recent_enrollments: number;
-    pending_payments: number;
+    stats: Array<{
+        title: string;
+        value: string;
+        description: string;
+        trend?: {
+            value: number;
+            isPositive: boolean;
+        } | null;
+    }>;
+    popularCourses?: Array<{
+        course: string;
+        franchise: string;
+        enrollments: number;
+        trend: number;
+    }>;
+    revenueByFranchise?: Array<{
+        name: string;
+        revenue: number;
+        percentage: number;
+    }>;
+    recentEnrollments?: Array<{
+        student_name: string;
+        course: string;
+        time_ago: string;
+    }>;
 }

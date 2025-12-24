@@ -28,129 +28,129 @@ import type {
 // ============ Auth Endpoints ============
 export const authApi = {
     login: (data: LoginRequest) =>
-        apiClient.post<AuthResponse>('/auth/login', data),
+        apiClient.post<AuthResponse>('/api/auth/login', data),
 
     signup: (data: SignupRequest) =>
-        apiClient.post<AuthResponse>('/auth/signup', data),
+        apiClient.post<AuthResponse>('/api/auth/signup', data),
 
     me: () =>
-        apiClient.get<User>('/auth/me'),
+        apiClient.get<User>('/api/auth/me'),
 
     updateProfile: (data: Partial<User>) =>
-        apiClient.patch<User>('/auth/profile', data),
+        apiClient.patch<User>('/api/auth/profile', data),
 };
 
 // ============ Institution Endpoints ============
 export const institutionsApi = {
     list: (page = 1, pageSize = 10) =>
-        apiClient.get<PaginatedResponse<Institution>>('/institutions', {
+        apiClient.get<PaginatedResponse<Institution>>('/api/institutions', {
             params: { page, page_size: pageSize }
         }),
 
     get: (id: string) =>
-        apiClient.get<Institution>(`/institutions/${id}`),
+        apiClient.get<Institution>(`/api/institutions/${id}`),
 
     create: (data: CreateInstitutionRequest) =>
-        apiClient.post<Institution>('/institutions', data),
+        apiClient.post<Institution>('/api/institutions', data),
 
     update: (id: string, data: Partial<CreateInstitutionRequest>) =>
-        apiClient.patch<Institution>(`/institutions/${id}`, data),
+        apiClient.patch<Institution>(`/api/institutions/${id}`, data),
 
     delete: (id: string) =>
-        apiClient.delete(`/institutions/${id}`),
+        apiClient.delete(`/api/institutions/${id}`),
 
     getStats: (id: string) =>
-        apiClient.get<DashboardStats>(`/institutions/${id}/stats`),
+        apiClient.get<DashboardStats>(`/api/institutions/${id}/stats`),
 };
 
 // ============ Student Endpoints ============
 export const studentsApi = {
     list: (params: { page?: number; page_size?: number; search?: string; institution_id?: string }) =>
-        apiClient.get<PaginatedResponse<Student>>('/students', { params }),
+        apiClient.get<PaginatedResponse<Student>>('/api/students', { params }),
 
     get: (id: string) =>
-        apiClient.get<Student>(`/students/${id}`),
+        apiClient.get<Student>(`/api/students/${id}`),
 
     create: (data: CreateStudentRequest) =>
-        apiClient.post<Student>('/students', data),
+        apiClient.post<Student>('/api/students', data),
 
     update: (id: string, data: Partial<CreateStudentRequest>) =>
-        apiClient.patch<Student>(`/students/${id}`, data),
+        apiClient.patch<Student>(`/api/students/${id}`, data),
 
     delete: (id: string) =>
-        apiClient.delete(`/students/${id}`),
+        apiClient.delete(`/api/students/${id}`),
 
     uploadPhoto: (id: string, file: File) => {
         const formData = new FormData();
         formData.append('file', file);
-        return apiClient.post<{ photo_url: string }>(`/students/${id}/photo`, formData, {
+        return apiClient.post<{ photo_url: string }>(`/api/students/${id}/photo`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
     },
 
     getCourses: (id: string) =>
-        apiClient.get<StudentCourse[]>(`/students/${id}/courses`),
+        apiClient.get<StudentCourse[]>(`/api/students/${id}/courses`),
 
     enroll: (data: EnrollStudentRequest) =>
-        apiClient.post<StudentCourse>('/students/enroll', data),
+        apiClient.post<StudentCourse>('/api/students/enroll', data),
 
     getPayments: (id: string) =>
-        apiClient.get<FeePayment[]>(`/students/${id}/payments`),
+        apiClient.get<FeePayment[]>(`/api/students/${id}/payments`),
 
     recordPayment: (data: RecordPaymentRequest) =>
-        apiClient.post<FeePayment>('/students/payments', data),
+        apiClient.post<FeePayment>('/api/students/payments', data),
 };
 
 // ============ Course Endpoints ============
 export const coursesApi = {
     list: (params: { page?: number; page_size?: number; institution_id?: string }) =>
-        apiClient.get<PaginatedResponse<Course>>('/courses', { params }),
+        apiClient.get<PaginatedResponse<Course>>('/api/courses', { params }),
 
     get: (id: string) =>
-        apiClient.get<Course>(`/courses/${id}`),
+        apiClient.get<Course>(`/api/courses/${id}`),
 
     create: (data: CreateCourseRequest) =>
-        apiClient.post<Course>('/courses', data),
+        apiClient.post<Course>('/api/courses', data),
 
     update: (id: string, data: Partial<CreateCourseRequest>) =>
-        apiClient.patch<Course>(`/courses/${id}`, data),
+        apiClient.patch<Course>(`/api/courses/${id}`, data),
 
     delete: (id: string) =>
-        apiClient.delete(`/courses/${id}`),
+        apiClient.delete(`/api/courses/${id}`),
 };
 
 // ============ Staff Endpoints ============
 export const staffApi = {
     list: (params: { page?: number; page_size?: number; institution_id?: string }) =>
-        apiClient.get<PaginatedResponse<Staff>>('/staff', { params }),
+        apiClient.get<PaginatedResponse<Staff>>('/api/staff', { params }),
 
     get: (id: string) =>
-        apiClient.get<Staff>(`/staff/${id}`),
+        apiClient.get<Staff>(`/api/staff/${id}`),
 
     create: (data: CreateStaffRequest) =>
-        apiClient.post<Staff>('/staff', data),
+        apiClient.post<Staff>('/api/staff', data),
 
     update: (id: string, data: Partial<CreateStaffRequest>) =>
-        apiClient.patch<Staff>(`/staff/${id}`, data),
+        apiClient.patch<Staff>(`/api/staff/${id}`, data),
 
     delete: (id: string) =>
-        apiClient.delete(`/staff/${id}`),
+        apiClient.delete(`/api/staff/${id}`),
 };
 
 // ============ Attendance Endpoints ============
 export const attendanceApi = {
     list: (params: { date?: string; staff_id?: string; month?: number; year?: number }) =>
-        apiClient.get<Attendance[]>('/attendance', { params }),
+        apiClient.get<Attendance[]>('/api/attendance', { params }),
 
     mark: (data: MarkAttendanceRequest) =>
-        apiClient.post<Attendance>('/attendance', data),
+        apiClient.post<Attendance>('/api/attendance', data),
 
     markBatch: (data: MarkAttendanceRequest[]) =>
-        apiClient.post<Attendance[]>('/attendance/batch', data),
+        apiClient.post<Attendance[]>('/api/attendance/batch', data),
 
     getSummary: (params: { staff_id: string; month: number; year: number }) =>
         apiClient.get<{ days_present: number; days_half: number; days_absent: number; days_leave: number }>(
-            '/attendance/summary',
+            '/api/attendance/summary',
             { params }
         ),
 };
@@ -158,41 +158,41 @@ export const attendanceApi = {
 // ============ Payroll Endpoints ============
 export const payrollApi = {
     list: (params: { staff_id?: string; month?: number; year?: number; status?: string }) =>
-        apiClient.get<PaginatedResponse<Payroll>>('/payroll', { params }),
+        apiClient.get<PaginatedResponse<Payroll>>('/api/payroll', { params }),
 
     get: (id: string) =>
-        apiClient.get<Payroll>(`/payroll/${id}`),
+        apiClient.get<Payroll>(`/api/payroll/${id}`),
 
     generate: (data: GeneratePayrollRequest) =>
-        apiClient.post<Payroll>('/payroll/generate', data),
+        apiClient.post<Payroll>('/api/payroll/generate', data),
 
     generatePayslip: (id: string) =>
-        apiClient.post<{ payslip_url: string }>(`/payroll/${id}/generate-payslip`),
+        apiClient.post<{ payslip_url: string }>(`/api/payroll/${id}/generate-payslip`),
 
     markPaid: (id: string) =>
-        apiClient.patch<Payroll>(`/payroll/${id}/mark-paid`),
+        apiClient.patch<Payroll>(`/api/payroll/${id}/mark-paid`),
 };
 
 // ============ Certificate Endpoints ============
 export const certificatesApi = {
     list: (params: { student_id?: string; course_id?: string }) =>
-        apiClient.get<Certificate[]>('/certificates', { params }),
+        apiClient.get<Certificate[]>('/api/certificates', { params }),
 
     get: (id: string) =>
-        apiClient.get<Certificate>(`/certificates/${id}`),
+        apiClient.get<Certificate>(`/api/certificates/${id}`),
 
     generate: (studentId: string, courseId: string) =>
-        apiClient.post<Certificate>('/certificates/generate', { student_id: studentId, course_id: courseId }),
+        apiClient.post<Certificate>('/api/certificates/generate', { student_id: studentId, course_id: courseId }),
 };
 
 // ============ Chatbot Endpoints ============
 export const chatbotApi = {
     sendMessage: (message: string) =>
-        apiClient.post<{ response: string }>('/chatbot/message', { message }),
+        apiClient.post<{ response: string }>('/api/chatbot/message', { message }),
 };
 
 // ============ Dashboard Endpoints ============
 export const dashboardApi = {
     getStats: () =>
-        apiClient.get<DashboardStats>('/dashboard/stats'),
+        apiClient.get<DashboardStats>('/api/dashboard/stats'),
 };
