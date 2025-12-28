@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { payrollApi } from '@/lib/api/endpoints';
+import type { Payroll } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,65 +35,7 @@ import {
     Eye,
 } from 'lucide-react';
 
-// Mock data for payroll
-const mockPayroll = [
-    {
-        id: '1',
-        staff_name: 'Meera Iyer',
-        month: 11,
-        year: 2024,
-        days_present: 22,
-        days_half: 2,
-        daily_rate: 1200,
-        gross_amount: 27600,
-        deductions: 1000,
-        net_amount: 26600,
-        status: 'paid',
-        payslip_generated: true,
-    },
-    {
-        id: '2',
-        staff_name: 'Rajesh Kumar',
-        month: 11,
-        year: 2024,
-        days_present: 20,
-        days_half: 1,
-        daily_rate: 800,
-        gross_amount: 16400,
-        deductions: 500,
-        net_amount: 15900,
-        status: 'pending',
-        payslip_generated: false,
-    },
-    {
-        id: '3',
-        staff_name: 'Sunita Devi',
-        month: 11,
-        year: 2024,
-        days_present: 24,
-        days_half: 0,
-        daily_rate: 900,
-        gross_amount: 21600,
-        deductions: 800,
-        net_amount: 20800,
-        status: 'paid',
-        payslip_generated: true,
-    },
-    {
-        id: '4',
-        staff_name: 'Kiran Rao',
-        month: 11,
-        year: 2024,
-        days_present: 18,
-        days_half: 0,
-        daily_rate: 750,
-        gross_amount: 13500,
-        deductions: 400,
-        net_amount: 13100,
-        status: 'pending',
-        payslip_generated: false,
-    },
-];
+// Removed mock data - fetching from API
 
 const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -99,12 +43,34 @@ const months = [
 ];
 
 export default function PayrollPage() {
-    const [selectedMonth, setSelectedMonth] = useState(10); // November (0-indexed)
-    const [selectedYear, setSelectedYear] = useState(2024);
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Current month (1-indexed)
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [payrollRecords, setPayrollRecords] = useState<Payroll[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isGenerating, setIsGenerating] = useState<string | null>(null);
 
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
+
+    const fetchPayroll = async () => {
+        try {
+            setIsLoading(true);
+            const response = await payrollApi.list({
+                month: selectedMonth,
+                year: selectedYear,
+            });
+            setPayrollRecords(response.data.items || []);
+        } catch (error: any) {
+            console.error('Failed to fetch payroll:', error);
+            toast.error('Failed to load payroll records');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPayroll();
+    }, [selectedMonth, selectedYear]);
 
     const handleGeneratePayslip = async (id: string) => {
         setIsGenerating(id);
@@ -128,10 +94,10 @@ export default function PayrollPage() {
     };
 
     // Calculate summary
-    const totalGross = mockPayroll.reduce((acc, p) => acc + p.gross_amount, 0);
-    const totalNet = mockPayroll.reduce((acc, p) => acc + p.net_amount, 0);
-    const totalDeductions = mockPayroll.reduce((acc, p) => acc + p.deductions, 0);
-    const pendingCount = mockPayroll.filter((p) => p.status === 'pending').length;
+    const totalGross = payrollRecords.reduce((acc, p) => acc + (p.gross_amount || 0), 0);
+    const totalNet = payrollRecords.reduce((acc, p) => acc + (p.net_amount || 0), 0);
+    const totalDeductions = payrollRecords.reduce((acc, p) => acc + (p.deductions || 0), 0);
+    const pendingCount = payrollRecords.filter((p) => p.status === 'pending').length;
 
     return (
         <div className="space-y-6">
@@ -249,7 +215,21 @@ export default function PayrollPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {mockPayroll.map((payroll) => (
+                                {isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={9} className="text-center py-12">
+                                            <Loader2 className="h-8 w-8 animate-spin text-purple-400 mx-auto" />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : payrollRecords.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={9} className="text-center py-12">
+                                            <Wallet className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+                                            <p className="text-slate-400">No payroll records for this period</p>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    payrollRecords.map((payroll) => (
                                     <TableRow
                                         key={payroll.id}
                                         className="border-slate-800 hover:bg-slate-800/50 transition-colors"
@@ -344,7 +324,8 @@ export default function PayrollPage() {
                                             </div>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ))
+                                )}
                             </TableBody>
                         </Table>
                     </div>

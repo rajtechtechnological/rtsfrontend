@@ -33,7 +33,7 @@ export interface Course extends BaseEntity {
     description: string | null;
     duration_months: number;
     fee_amount: number;
-    institution_id: string;
+    institution_id: string | null;
 }
 
 // Student entity
@@ -181,6 +181,7 @@ export interface CreateCourseRequest {
     description?: string;
     duration_months: number;
     fee_amount: number;
+    institution_id?: string;
 }
 
 export interface CreateInstitutionRequest {

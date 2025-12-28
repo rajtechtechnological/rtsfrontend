@@ -122,8 +122,8 @@ export const studentsApi = {
 
 // ============ Course Endpoints ============
 export const coursesApi = {
-    list: (params: { page?: number; page_size?: number; institution_id?: string }) =>
-        apiClient.get<PaginatedResponse<Course>>('/api/courses', { params }),
+    list: () =>
+        apiClient.get<Course[]>('/api/courses'),
 
     get: (id: string) =>
         apiClient.get<Course>(`/api/courses/${id}`),

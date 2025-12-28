@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { studentsApi } from '@/lib/api/endpoints';
+import type { Student } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,54 +48,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-// Mock data for students
-const mockStudents = [
-    {
-        id: '1',
-        full_name: 'Rahul Sharma',
-        email: 'rahul.sharma@email.com',
-        phone: '+91 98765 43210',
-        enrollment_date: '2024-01-15',
-        courses: ['Web Development', 'Python'],
-        status: 'active',
-    },
-    {
-        id: '2',
-        full_name: 'Priya Patel',
-        email: 'priya.patel@email.com',
-        phone: '+91 87654 32109',
-        enrollment_date: '2024-02-20',
-        courses: ['Data Science'],
-        status: 'active',
-    },
-    {
-        id: '3',
-        full_name: 'Amit Kumar',
-        email: 'amit.kumar@email.com',
-        phone: '+91 76543 21098',
-        enrollment_date: '2024-03-10',
-        courses: ['Mobile App Development'],
-        status: 'active',
-    },
-    {
-        id: '4',
-        full_name: 'Sneha Reddy',
-        email: 'sneha.reddy@email.com',
-        phone: '+91 65432 10987',
-        enrollment_date: '2024-01-25',
-        courses: ['UI/UX Design', 'Web Development'],
-        status: 'completed',
-    },
-    {
-        id: '5',
-        full_name: 'Vikram Singh',
-        email: 'vikram.singh@email.com',
-        phone: '+91 54321 09876',
-        enrollment_date: '2024-04-05',
-        courses: ['Python'],
-        status: 'active',
-    },
-];
+// Removed mock data - fetching from API
 
 const studentSchema = z.object({
     full_name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -234,8 +189,27 @@ function AddStudentDialog() {
 
 export default function StudentsPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const [students, setStudents] = useState<Student[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredStudents = mockStudents.filter(
+    const fetchStudents = async () => {
+        try {
+            setIsLoading(true);
+            const response = await studentsApi.list({ page: 1, page_size: 100 });
+            setStudents(response.data.items || []);
+        } catch (error: any) {
+            console.error('Failed to fetch students:', error);
+            toast.error('Failed to load students');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchStudents();
+    }, []);
+
+    const filteredStudents = students.filter(
         (student) =>
             student.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             student.email.toLowerCase().includes(searchQuery.toLowerCase())
@@ -287,20 +261,31 @@ export default function StudentsPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="border-slate-800 hover:bg-transparent">
-                                    <TableHead className="text-slate-400">Student</TableHead>
-                                    <TableHead className="text-slate-400">Contact</TableHead>
-                                    <TableHead className="text-slate-400">Courses</TableHead>
-                                    <TableHead className="text-slate-400">Enrolled</TableHead>
-                                    <TableHead className="text-slate-400">Status</TableHead>
-                                    <TableHead className="text-slate-400 text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredStudents.map((student) => (
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+                        </div>
+                    ) : filteredStudents.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12">
+                            <GraduationCap className="h-12 w-12 text-slate-600 mb-4" />
+                            <p className="text-slate-400 text-center">
+                                {searchQuery ? 'No students found matching your search' : 'No students enrolled yet. Add your first student!'}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="border-slate-800 hover:bg-transparent">
+                                        <TableHead className="text-slate-400">Student</TableHead>
+                                        <TableHead className="text-slate-400">Contact</TableHead>
+                                        <TableHead className="text-slate-400">Enrolled Date</TableHead>
+                                        <TableHead className="text-slate-400">Status</TableHead>
+                                        <TableHead className="text-slate-400 text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredStudents.map((student) => (
                                     <TableRow
                                         key={student.id}
                                         className="border-slate-800 hover:bg-slate-800/50 transition-colors"
@@ -387,6 +372,7 @@ export default function StudentsPage() {
                             </TableBody>
                         </Table>
                     </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

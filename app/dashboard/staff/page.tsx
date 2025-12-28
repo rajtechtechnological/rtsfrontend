@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { staffApi } from '@/lib/api/endpoints';
+import type { Staff } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,59 +55,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-// Mock data for staff
-const mockStaff = [
-    {
-        id: '1',
-        full_name: 'Dr. Arun Verma',
-        email: 'arun.verma@institute.com',
-        phone: '+91 98765 11111',
-        role: 'institution_director',
-        daily_rate: 2000,
-        join_date: '2022-06-15',
-        status: 'active',
-    },
-    {
-        id: '2',
-        full_name: 'Meera Iyer',
-        email: 'meera.iyer@institute.com',
-        phone: '+91 98765 22222',
-        role: 'staff_manager',
-        daily_rate: 1200,
-        join_date: '2023-01-10',
-        status: 'active',
-    },
-    {
-        id: '3',
-        full_name: 'Rajesh Kumar',
-        email: 'rajesh.k@institute.com',
-        phone: '+91 98765 33333',
-        role: 'staff',
-        daily_rate: 800,
-        join_date: '2023-03-20',
-        status: 'active',
-    },
-    {
-        id: '4',
-        full_name: 'Sunita Devi',
-        email: 'sunita.d@institute.com',
-        phone: '+91 98765 44444',
-        role: 'staff',
-        daily_rate: 900,
-        join_date: '2023-05-15',
-        status: 'active',
-    },
-    {
-        id: '5',
-        full_name: 'Kiran Rao',
-        email: 'kiran.rao@institute.com',
-        phone: '+91 98765 55555',
-        role: 'staff',
-        daily_rate: 750,
-        join_date: '2024-01-05',
-        status: 'inactive',
-    },
-];
+// Removed mock data - fetching from API
 
 const staffSchema = z.object({
     full_name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -280,11 +230,30 @@ function getRoleBadge(role: string) {
 
 export default function StaffPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const [staff, setStaff] = useState<Staff[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredStaff = mockStaff.filter(
-        (staff) =>
-            staff.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            staff.email.toLowerCase().includes(searchQuery.toLowerCase())
+    const fetchStaff = async () => {
+        try {
+            setIsLoading(true);
+            const response = await staffApi.list({ page: 1, page_size: 100 });
+            setStaff(response.data.items || []);
+        } catch (error: any) {
+            console.error('Failed to fetch staff:', error);
+            toast.error('Failed to load staff');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchStaff();
+    }, []);
+
+    const filteredStaff = staff.filter(
+        (member) =>
+            member.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            member.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -341,7 +310,21 @@ export default function StaffPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredStaff.map((staff) => (
+                                {isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="text-center py-12">
+                                            <Loader2 className="h-8 w-8 animate-spin text-purple-400 mx-auto" />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : filteredStaff.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="text-center py-12">
+                                            <Users className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+                                            <p className="text-slate-400">No staff members found</p>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredStaff.map((staff) => (
                                     <TableRow
                                         key={staff.id}
                                         className="border-slate-800 hover:bg-slate-800/50 transition-colors"
@@ -418,7 +401,8 @@ export default function StaffPage() {
                                             </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ))
+                                )}
                             </TableBody>
                         </Table>
                     </div>

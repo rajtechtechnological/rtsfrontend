@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { certificatesApi } from '@/lib/api/endpoints';
+import type { Certificate } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,76 +28,54 @@ import {
     Loader2,
 } from 'lucide-react';
 
-// Mock data for certificates
-const mockCertificates = [
-    {
-        id: '1',
-        student_name: 'Rahul Sharma',
-        course_name: 'Web Development Bootcamp',
-        certificate_number: 'INST-WEB-2024-001',
-        issue_date: '2024-11-15',
-        status: 'issued',
-    },
-    {
-        id: '2',
-        student_name: 'Priya Patel',
-        course_name: 'Python Programming',
-        certificate_number: 'INST-PY-2024-002',
-        issue_date: '2024-11-20',
-        status: 'issued',
-    },
-    {
-        id: '3',
-        student_name: 'Sneha Reddy',
-        course_name: 'UI/UX Design',
-        certificate_number: 'INST-UX-2024-003',
-        issue_date: '2024-12-01',
-        status: 'issued',
-    },
-    {
-        id: '4',
-        student_name: 'Amit Kumar',
-        course_name: 'Mobile App Development',
-        certificate_number: null,
-        issue_date: null,
-        status: 'pending',
-    },
-    {
-        id: '5',
-        student_name: 'Vikram Singh',
-        course_name: 'Data Science Essentials',
-        certificate_number: null,
-        issue_date: null,
-        status: 'eligible',
-    },
-];
+// Removed mock data - fetching from API
 
 export default function CertificatesPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const [certificates, setCertificates] = useState<Certificate[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [generatingId, setGeneratingId] = useState<string | null>(null);
 
-    const filteredCertificates = mockCertificates.filter(
+    const fetchCertificates = async () => {
+        try {
+            setIsLoading(true);
+            const response = await certificatesApi.list({});
+            setCertificates(response.data || []);
+        } catch (error: any) {
+            console.error('Failed to fetch certificates:', error);
+            toast.error('Failed to load certificates');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCertificates();
+    }, []);
+
+    const filteredCertificates = certificates.filter(
         (cert) =>
-            cert.student_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            cert.course_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            cert.student_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            cert.course_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             cert.certificate_number?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleGenerate = async (id: string) => {
-        setGeneratingId(id);
+    const handleGenerate = async (studentId: string, courseId: string) => {
+        setGeneratingId(studentId);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await certificatesApi.generate(studentId, courseId);
             toast.success('Certificate generated successfully!');
-        } catch {
-            toast.error('Failed to generate certificate');
+            fetchCertificates(); // Refresh list
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || 'Failed to generate certificate');
         } finally {
             setGeneratingId(null);
         }
     };
 
-    const issuedCount = mockCertificates.filter((c) => c.status === 'issued').length;
-    const eligibleCount = mockCertificates.filter((c) => c.status === 'eligible').length;
-    const pendingCount = mockCertificates.filter((c) => c.status === 'pending').length;
+    const issuedCount = certificates.filter((c) => c.certificate_number).length;
+    const eligibleCount = 0; // This would need additional logic to determine eligibility
+    const pendingCount = certificates.length - issuedCount;
 
     return (
         <div className="space-y-6">
@@ -179,7 +159,23 @@ export default function CertificatesPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredCertificates.map((cert) => (
+                                {isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center py-12">
+                                            <Loader2 className="h-8 w-8 animate-spin text-amber-400 mx-auto" />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : filteredCertificates.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center py-12">
+                                            <Award className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+                                            <p className="text-slate-400">
+                                                {searchQuery ? 'No certificates found matching your search' : 'No certificates issued yet'}
+                                            </p>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredCertificates.map((cert) => (
                                     <TableRow
                                         key={cert.id}
                                         className="border-slate-800 hover:bg-slate-800/50 transition-colors"
@@ -273,7 +269,8 @@ export default function CertificatesPage() {
                                             )}
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ))
+                                )}
                             </TableBody>
                         </Table>
                     </div>

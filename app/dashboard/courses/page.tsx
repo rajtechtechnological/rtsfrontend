@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { useAuth } from '@/lib/auth/auth-context';
+import { coursesApi } from '@/lib/api/endpoints';
+import type { Course } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,63 +39,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-// Mock data for courses
-const mockCourses = [
-    {
-        id: '1',
-        name: 'Web Development Bootcamp',
-        description: 'Full-stack web development with HTML, CSS, JavaScript, React, and Node.js',
-        duration_months: 6,
-        fee_amount: 45000,
-        students_enrolled: 45,
-        status: 'active',
-    },
-    {
-        id: '2',
-        name: 'Python Programming',
-        description: 'Python fundamentals to advanced concepts including data structures and algorithms',
-        duration_months: 3,
-        fee_amount: 25000,
-        students_enrolled: 32,
-        status: 'active',
-    },
-    {
-        id: '3',
-        name: 'Data Science Essentials',
-        description: 'Data analysis, machine learning, and visualization with Python',
-        duration_months: 6,
-        fee_amount: 55000,
-        students_enrolled: 28,
-        status: 'active',
-    },
-    {
-        id: '4',
-        name: 'Mobile App Development',
-        description: 'Build iOS and Android apps with React Native',
-        duration_months: 4,
-        fee_amount: 40000,
-        students_enrolled: 18,
-        status: 'active',
-    },
-    {
-        id: '5',
-        name: 'UI/UX Design',
-        description: 'User interface and user experience design principles with Figma',
-        duration_months: 3,
-        fee_amount: 30000,
-        students_enrolled: 22,
-        status: 'active',
-    },
-    {
-        id: '6',
-        name: 'Digital Marketing',
-        description: 'SEO, Social Media Marketing, and Google Ads',
-        duration_months: 2,
-        fee_amount: 20000,
-        students_enrolled: 0,
-        status: 'draft',
-    },
-];
 
 const courseSchema = z.object({
     name: z.string().min(3, 'Course name must be at least 3 characters'),
@@ -103,9 +49,10 @@ const courseSchema = z.object({
 
 type CourseFormData = z.infer<typeof courseSchema>;
 
-function AddCourseDialog() {
+function AddCourseDialog({ onCourseAdded }: { onCourseAdded: () => void }) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const { user } = useAuth();
 
     const {
         register,
@@ -119,13 +66,23 @@ function AddCourseDialog() {
     const onSubmit = async (data: CourseFormData) => {
         setIsLoading(true);
         try {
-            console.log('Creating course:', data);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // For super_admin, institution_id is optional (creates global courses)
+            // For other roles, use their institution_id
+            const courseData: any = {
+                ...data,
+            };
+            
+            if (user?.role !== 'super_admin' && user?.institution_id) {
+                courseData.institution_id = user.institution_id;
+            }
+
+            await coursesApi.create(courseData);
             toast.success('Course created successfully!');
             reset();
             setOpen(false);
-        } catch {
-            toast.error('Failed to create course');
+            onCourseAdded();
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || 'Failed to create course');
         } finally {
             setIsLoading(false);
         }
@@ -226,7 +183,7 @@ function AddCourseDialog() {
     );
 }
 
-function CourseCard({ course }: { course: typeof mockCourses[0] }) {
+function CourseCard({ course }: { course: Course }) {
     return (
         <Card className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 hover:shadow-lg group">
             <CardHeader className="pb-3">
@@ -271,7 +228,7 @@ function CourseCard({ course }: { course: typeof mockCourses[0] }) {
                         </div>
                         <div>
                             <p className="text-xs text-slate-500">Fee</p>
-                            <p className="text-sm font-medium text-white">₹{course.fee_amount.toLocaleString()}</p>
+                            <p className="text-sm font-medium text-white">₹{course.fee_amount?.toLocaleString() ?? 'N/A'}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -280,19 +237,13 @@ function CourseCard({ course }: { course: typeof mockCourses[0] }) {
                         </div>
                         <div>
                             <p className="text-xs text-slate-500">Students</p>
-                            <p className="text-sm font-medium text-white">{course.students_enrolled}</p>
+                            <p className="text-sm font-medium text-white">0</p>
                         </div>
                     </div>
                 </div>
                 <div className="mt-4 flex items-center justify-between">
-                    <Badge
-                        className={
-                            course.status === 'active'
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                : 'bg-slate-500/10 text-slate-400 border-slate-500/30'
-                        }
-                    >
-                        {course.status}
+                    <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                        active
                     </Badge>
                     <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
                         View Details →
@@ -305,8 +256,26 @@ function CourseCard({ course }: { course: typeof mockCourses[0] }) {
 
 export default function CoursesPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredCourses = mockCourses.filter((course) =>
+    const fetchCourses = async () => {
+        try {
+            setIsLoading(true);
+            const response = await coursesApi.list();
+            setCourses(response.data);
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || 'Failed to fetch courses');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCourses();
+    }, []);
+
+    const filteredCourses = courses.filter((course) =>
         course.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -321,7 +290,7 @@ export default function CoursesPage() {
                     </h1>
                     <p className="text-slate-400 mt-1">Create and manage course offerings</p>
                 </div>
-                <AddCourseDialog />
+                <AddCourseDialog onCourseAdded={fetchCourses} />
             </div>
 
             {/* Search */}
@@ -340,11 +309,26 @@ export default function CoursesPage() {
             </Card>
 
             {/* Course Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredCourses.map((course) => (
-                    <CourseCard key={course.id} course={course} />
-                ))}
-            </div>
+            {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
+                </div>
+            ) : filteredCourses.length === 0 ? (
+                <Card className="bg-slate-900/50 border-slate-800">
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                        <BookOpen className="h-12 w-12 text-slate-600 mb-4" />
+                        <p className="text-slate-400 text-center">
+                            {searchQuery ? 'No courses found matching your search' : 'No courses available. Create your first course!'}
+                        </p>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredCourses.map((course) => (
+                        <CourseCard key={course.id} course={course} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
