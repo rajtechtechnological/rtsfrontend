@@ -141,7 +141,7 @@ export const coursesApi = {
 // ============ Staff Endpoints ============
 export const staffApi = {
     list: (params: { page?: number; page_size?: number; institution_id?: string }) =>
-        apiClient.get<PaginatedResponse<Staff>>('/api/staff', { params }),
+        apiClient.get<Staff[]>('/api/staff', { params }),
 
     get: (id: string) =>
         apiClient.get<Staff>(`/api/staff/${id}`),

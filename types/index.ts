@@ -73,7 +73,13 @@ export interface Staff extends BaseEntity {
     institution_id: string;
     daily_rate: number;
     join_date: string;
-    user?: User;
+    // User information included in response
+    full_name: string;
+    email: string;
+    phone: string; // Required
+    role: string;
+    status: string; // 'active' or 'inactive'
+    user?: User; // Optional nested user object
 }
 
 // Attendance record
@@ -168,12 +174,12 @@ export interface CreateStudentRequest {
 }
 
 export interface CreateStaffRequest {
-    email: string;
-    password: string;
     full_name: string;
-    phone?: string;
-    daily_rate: number;
+    email: string;
+    phone: string; // Required - used as default password
     role: 'staff' | 'staff_manager';
+    daily_rate: number;
+    institution_id: string;
 }
 
 export interface CreateCourseRequest {

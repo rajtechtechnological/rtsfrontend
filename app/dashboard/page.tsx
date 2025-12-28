@@ -173,6 +173,7 @@ export default function DashboardPage() {
     }
 
     const isDirector = user?.role === 'super_admin';
+    const isAccountant = user?.role === 'staff_manager';
     const isStaff = user?.role === 'staff';
 
     const quickActions = isDirector ? [
@@ -202,6 +203,35 @@ export default function DashboardPage() {
             description: 'Trends & insights',
             icon: TrendingUp,
             href: '/dashboard/analytics',
+            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
+        },
+    ] : isAccountant ? [
+        {
+            title: 'Register Student',
+            description: 'Add new student',
+            icon: GraduationCap,
+            href: '/dashboard/students?action=new',
+            gradient: 'bg-gradient-to-br from-blue-500 to-blue-600',
+        },
+        {
+            title: 'Manage Students',
+            description: 'View & edit students',
+            icon: Users,
+            href: '/dashboard/students',
+            gradient: 'bg-gradient-to-br from-purple-500 to-purple-600',
+        },
+        {
+            title: 'Record Payment',
+            description: 'Process student payments',
+            icon: IndianRupee,
+            href: '/dashboard/payments',
+            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+        },
+        {
+            title: 'My Attendance',
+            description: 'Mark your attendance',
+            icon: Calendar,
+            href: '/dashboard/attendance',
             gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
         },
     ] : isStaff ? [
@@ -253,6 +283,10 @@ export default function DashboardPage() {
                 <p className="text-slate-400 mt-2">
                     {isDirector
                         ? "Here's an overview of all your institutions."
+                        : isAccountant
+                        ? "Manage students and payments for your institution."
+                        : isStaff
+                        ? "View your attendance and payroll information."
                         : "Here's what's happening with your institution today."
                     }
                 </p>

@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { staffApi } from '@/lib/api/endpoints';
 import type { Staff } from '@/types';
+import { useAuth } from '@/lib/auth/auth-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,16 +61,17 @@ import {
 const staffSchema = z.object({
     full_name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Please enter a valid email'),
-    phone: z.string().optional(),
+    phone: z.string().min(10, 'Phone number is required (min 10 digits)'),
     role: z.enum(['staff', 'staff_manager']),
     daily_rate: z.number().min(0, 'Daily rate must be positive'),
 });
 
 type StaffFormData = z.infer<typeof staffSchema>;
 
-function AddStaffDialog() {
+function AddStaffDialog({ onStaffAdded }: { onStaffAdded: () => void }) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const { user } = useAuth();
 
     const {
         register,
@@ -88,13 +90,17 @@ function AddStaffDialog() {
     const onSubmit = async (data: StaffFormData) => {
         setIsLoading(true);
         try {
-            console.log('Creating staff:', data);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // Create staff via API
+            await staffApi.create({
+                ...data,
+                institution_id: user?.institution_id,
+            });
             toast.success('Staff member added successfully!');
             reset();
             setOpen(false);
-        } catch {
-            toast.error('Failed to add staff member');
+            onStaffAdded(); // Refresh the list
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || 'Failed to add staff member');
         } finally {
             setIsLoading(false);
         }
@@ -142,13 +148,16 @@ function AddStaffDialog() {
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-slate-300">Phone</Label>
+                        <Label htmlFor="phone" className="text-slate-300">Phone *</Label>
                         <Input
                             id="phone"
                             className="bg-slate-800/50 border-slate-700 text-white"
                             placeholder="+91 98765 43210"
                             {...register('phone')}
                         />
+                        {errors.phone && (
+                            <p className="text-sm text-red-400">{errors.phone.message}</p>
+                        )}
                     </div>
                     <div className="space-y-2">
                         <Label className="text-slate-300">Role *</Label>
@@ -158,7 +167,7 @@ function AddStaffDialog() {
                             </SelectTrigger>
                             <SelectContent className="bg-slate-900 border-slate-800">
                                 <SelectItem value="staff" className="text-white hover:bg-slate-800">Staff</SelectItem>
-                                <SelectItem value="staff_manager" className="text-white hover:bg-slate-800">Staff Manager</SelectItem>
+                                <SelectItem value="staff_manager" className="text-white hover:bg-slate-800">Accountant</SelectItem>
                             </SelectContent>
                         </Select>
                         {errors.role && (
@@ -215,7 +224,7 @@ function getRoleBadge(role: string) {
             className: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
         },
         staff_manager: {
-            label: 'Manager',
+            label: 'Accountant',
             className: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
         },
         staff: {
@@ -237,7 +246,8 @@ export default function StaffPage() {
         try {
             setIsLoading(true);
             const response = await staffApi.list({ page: 1, page_size: 100 });
-            setStaff(response.data.items || []);
+            // Backend returns array directly, not paginated response
+            setStaff(response.data || []);
         } catch (error: any) {
             console.error('Failed to fetch staff:', error);
             toast.error('Failed to load staff');
@@ -267,7 +277,7 @@ export default function StaffPage() {
                     </h1>
                     <p className="text-slate-400 mt-1">Manage staff members and their daily rates</p>
                 </div>
-                <AddStaffDialog />
+                <AddStaffDialog onStaffAdded={fetchStaff} />
             </div>
 
             {/* Search */}

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth/auth-context';
+import { staffApi, attendanceApi } from '@/lib/api/endpoints';
+import type { Staff, Attendance } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,18 +34,16 @@ import {
     AlertCircle,
     Edit,
     UserCheck,
+    Loader2,
 } from 'lucide-react';
 
-// Mock data for staff attendance records
-const mockStaffAttendance = [
-    { id: '1', full_name: 'Meera Iyer', role: 'staff_manager', status: 'present', marked_at: '09:15 AM' },
-    { id: '2', full_name: 'Rajesh Kumar', role: 'staff', status: 'present', marked_at: '09:05 AM' },
-    { id: '3', full_name: 'Sunita Devi', role: 'staff', status: 'half_day', marked_at: '09:20 AM' },
-    { id: '4', full_name: 'Kiran Rao', role: 'staff', status: null, marked_at: null }, // Not marked yet
-    { id: '5', full_name: 'Pradeep Sharma', role: 'staff', status: 'present', marked_at: '08:55 AM' },
-];
-
 type AttendanceStatus = 'present' | 'absent' | 'half_day' | 'leave';
+
+interface StaffAttendanceRecord extends Staff {
+    attendance_status: AttendanceStatus | null;
+    attendance_id?: string;
+    marked_at?: string;
+}
 
 const statusConfig: Record<AttendanceStatus, { label: string; icon: React.ElementType; className: string; color: string }> = {
     present: {
@@ -73,7 +73,17 @@ const statusConfig: Record<AttendanceStatus, { label: string; icon: React.Elemen
 };
 
 // Staff Attendance Marking Dialog
-function MarkAttendanceDialog({ open, onClose, staffName }: { open: boolean; onClose: () => void; staffName: string }) {
+function MarkAttendanceDialog({
+    open,
+    onClose,
+    staffName,
+    staffId
+}: {
+    open: boolean;
+    onClose: () => void;
+    staffName: string;
+    staffId: string;
+}) {
     const [selectedStatus, setSelectedStatus] = useState<AttendanceStatus | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -85,14 +95,19 @@ function MarkAttendanceDialog({ open, onClose, staffName }: { open: boolean; onC
 
         setIsSubmitting(true);
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const today = new Date().toISOString().split('T')[0];
+            await attendanceApi.mark({
+                staff_id: staffId,
+                date: today,
+                status: selectedStatus,
+            });
 
             const statusLabel = statusConfig[selectedStatus].label;
             toast.success(`Attendance marked as ${statusLabel}!`);
             onClose();
-        } catch (error) {
-            toast.error('Failed to mark attendance');
+        } catch (error: any) {
+            console.error('Failed to mark attendance:', error);
+            toast.error(error.response?.data?.detail || 'Failed to mark attendance');
         } finally {
             setIsSubmitting(false);
         }
@@ -183,11 +198,17 @@ function EditAttendanceDialog({
 
         setIsSubmitting(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const today = new Date().toISOString().split('T')[0];
+            await attendanceApi.mark({
+                staff_id: staff.id,
+                date: today,
+                status: selectedStatus,
+            });
             toast.success(`Attendance updated for ${staff.full_name}`);
             onClose();
-        } catch (error) {
-            toast.error('Failed to update attendance');
+        } catch (error: any) {
+            console.error('Failed to update attendance:', error);
+            toast.error(error.response?.data?.detail || 'Failed to update attendance');
         } finally {
             setIsSubmitting(false);
         }
@@ -248,31 +269,70 @@ export default function AttendancePage() {
     const [showMarkDialog, setShowMarkDialog] = useState(false);
     const [editingStaff, setEditingStaff] = useState<{ id: string; full_name: string; status: AttendanceStatus | null } | null>(null);
     const [hasMarkedToday, setHasMarkedToday] = useState(false);
+    const [staffList, setStaffList] = useState<StaffAttendanceRecord[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const isStaff = user?.role === 'staff';
     const isStaffManager = user?.role === 'staff_manager';
+    const isDirector = user?.role === 'institution_director';
+
+    // Fetch staff and attendance data
+    const fetchAttendanceData = async () => {
+        try {
+            setIsLoading(true);
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+            // Fetch staff list
+            const staffResponse = await staffApi.list({});
+            const staff = staffResponse.data || [];
+
+            // Fetch today's attendance records
+            const attendanceResponse = await attendanceApi.list({ date: today });
+            const attendanceRecords = attendanceResponse.data || [];
+
+            // Merge staff with their attendance status
+            const staffWithAttendance: StaffAttendanceRecord[] = staff.map((s) => {
+                const attendance = attendanceRecords.find((a: Attendance) => a.staff_id === s.id);
+                return {
+                    ...s,
+                    attendance_status: attendance?.status as AttendanceStatus | null,
+                    attendance_id: attendance?.id,
+                    marked_at: attendance?.created_at
+                        ? new Date(attendance.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+                        : undefined,
+                };
+            });
+
+            setStaffList(staffWithAttendance);
+        } catch (error: any) {
+            console.error('Failed to fetch attendance data:', error);
+            toast.error('Failed to load attendance data');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAttendanceData();
+    }, []);
 
     // Check if staff has marked attendance today
     useEffect(() => {
-        if (isStaff) {
-            // Check localStorage or API to see if already marked today
-            const markedDate = localStorage.getItem('attendance_marked_date');
-            const today = new Date().toDateString();
-
-            if (markedDate === today) {
+        if (isStaff && !isLoading) {
+            const myRecord = staffList.find(s => s.user_id === user?.id);
+            if (myRecord?.attendance_status) {
                 setHasMarkedToday(true);
             } else {
                 // Auto-show dialog for staff who haven't marked today
                 setShowMarkDialog(true);
             }
         }
-    }, [isStaff]);
+    }, [isStaff, isLoading, staffList, user?.id]);
 
     const handleMarkAttendanceClose = () => {
         setShowMarkDialog(false);
         setHasMarkedToday(true);
-        // Save to localStorage that attendance was marked today
-        localStorage.setItem('attendance_marked_date', new Date().toDateString());
+        fetchAttendanceData(); // Refresh data after marking
     };
 
     const todayStr = new Date().toLocaleDateString('en-IN', {
@@ -283,10 +343,10 @@ export default function AttendancePage() {
     });
 
     // Calculate summary
-    const summary = mockStaffAttendance.reduce(
+    const summary = staffList.reduce(
         (acc, staff) => {
-            if (staff.status) {
-                acc[staff.status]++;
+            if (staff.attendance_status) {
+                acc[staff.attendance_status]++;
             } else {
                 acc.not_marked++;
             }
@@ -297,13 +357,15 @@ export default function AttendancePage() {
 
     // Staff View - Simple card showing their marked status
     if (isStaff) {
-        const myAttendance = mockStaffAttendance.find(s => s.id === user?.id) || {
-            id: user?.id || '1',
-            full_name: user?.full_name || 'You',
-            role: 'staff',
-            status: hasMarkedToday ? 'present' : null,
-            marked_at: hasMarkedToday ? new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : null,
-        };
+        const myAttendance = staffList.find(s => s.user_id === user?.id);
+
+        if (isLoading) {
+            return (
+                <div className="flex items-center justify-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
+                </div>
+            );
+        }
 
         return (
             <>
@@ -311,6 +373,7 @@ export default function AttendancePage() {
                     open={showMarkDialog}
                     onClose={handleMarkAttendanceClose}
                     staffName={user?.full_name?.split(' ')[0] || 'there'}
+                    staffId={myAttendance?.id || ''}
                 />
 
                 <div className="space-y-6">
@@ -330,15 +393,15 @@ export default function AttendancePage() {
                                     <p className="text-lg font-semibold text-white mt-1">{todayStr}</p>
                                 </div>
 
-                                {myAttendance.status ? (
+                                {myAttendance?.attendance_status ? (
                                     <div className="space-y-4">
-                                        <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg ${statusConfig[myAttendance.status].className}`}>
+                                        <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg ${statusConfig[myAttendance.attendance_status].className}`}>
                                             {(() => {
-                                                const Icon = statusConfig[myAttendance.status as AttendanceStatus].icon;
+                                                const Icon = statusConfig[myAttendance.attendance_status as AttendanceStatus].icon;
                                                 return <Icon className="h-6 w-6" />;
                                             })()}
                                             <span className="text-lg font-semibold">
-                                                {statusConfig[myAttendance.status].label}
+                                                {statusConfig[myAttendance.attendance_status].label}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-center gap-2 text-emerald-400">
@@ -453,67 +516,81 @@ export default function AttendancePage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {mockStaffAttendance.map((staff) => (
-                                        <TableRow
-                                            key={staff.id}
-                                            className="border-slate-800 hover:bg-slate-800/50 transition-colors"
-                                        >
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="h-10 w-10 ring-2 ring-red-500/20">
-                                                        <AvatarFallback className="bg-gradient-to-br from-red-500 to-sky-600 text-white">
-                                                            {staff.full_name
-                                                                .split(' ')
-                                                                .map((n) => n[0])
-                                                                .join('')}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    <div>
-                                                        <p className="font-medium text-white">{staff.full_name}</p>
-                                                        <p className="text-sm text-slate-400 capitalize">
-                                                            {staff.role.replace('_', ' ')}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {staff.status ? (
-                                                    <Badge className={statusConfig[staff.status].className}>
-                                                        {(() => {
-                                                            const Icon = statusConfig[staff.status as AttendanceStatus].icon;
-                                                            return (
-                                                                <>
-                                                                    <Icon className="h-3 w-3 mr-1" />
-                                                                    {statusConfig[staff.status].label}
-                                                                </>
-                                                            );
-                                                        })()}
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge className="bg-slate-500/10 text-slate-400 border-slate-500/30">
-                                                        <AlertCircle className="h-3 w-3 mr-1" />
-                                                        Not Marked
-                                                    </Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className="text-slate-400 text-sm">
-                                                    {staff.marked_at || '-'}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => setEditingStaff({ id: staff.id, full_name: staff.full_name, status: staff.status as AttendanceStatus | null })}
-                                                    className="border-slate-700 text-slate-300 hover:bg-slate-800"
-                                                >
-                                                    <Edit className="h-3 w-3 mr-1" />
-                                                    Edit
-                                                </Button>
+                                    {isLoading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center py-12">
+                                                <Loader2 className="h-8 w-8 animate-spin text-emerald-400 mx-auto" />
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    ) : staffList.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center py-12">
+                                                <p className="text-slate-400">No staff members found</p>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        staffList.map((staff) => (
+                                            <TableRow
+                                                key={staff.id}
+                                                className="border-slate-800 hover:bg-slate-800/50 transition-colors"
+                                            >
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-10 w-10 ring-2 ring-red-500/20">
+                                                            <AvatarFallback className="bg-gradient-to-br from-red-500 to-sky-600 text-white">
+                                                                {staff.full_name
+                                                                    .split(' ')
+                                                                    .map((n) => n[0])
+                                                                    .join('')}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-medium text-white">{staff.full_name}</p>
+                                                            <p className="text-sm text-slate-400 capitalize">
+                                                                {staff.role.replace('_', ' ')}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {staff.attendance_status ? (
+                                                        <Badge className={statusConfig[staff.attendance_status].className}>
+                                                            {(() => {
+                                                                const Icon = statusConfig[staff.attendance_status as AttendanceStatus].icon;
+                                                                return (
+                                                                    <>
+                                                                        <Icon className="h-3 w-3 mr-1" />
+                                                                        {statusConfig[staff.attendance_status].label}
+                                                                    </>
+                                                                );
+                                                            })()}
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge className="bg-slate-500/10 text-slate-400 border-slate-500/30">
+                                                            <AlertCircle className="h-3 w-3 mr-1" />
+                                                            Not Marked
+                                                        </Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="text-slate-400 text-sm">
+                                                        {staff.marked_at || '-'}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => setEditingStaff({ id: staff.id, full_name: staff.full_name, status: staff.attendance_status })}
+                                                        className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                                                    >
+                                                        <Edit className="h-3 w-3 mr-1" />
+                                                        Edit
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
                                 </TableBody>
                             </Table>
                         </div>

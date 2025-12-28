@@ -73,25 +73,25 @@ const navItems: NavItem[] = [
         title: 'Students',
         href: '/dashboard/students',
         icon: GraduationCap,
-        roles: ['institution_director', 'staff_manager'],
+        roles: ['institution_director', 'staff_manager'], // Accountants can manage students
     },
     {
         title: 'Staff',
         href: '/dashboard/staff',
         icon: Users,
-        roles: ['institution_director', 'staff_manager'],
+        roles: ['institution_director'], // Only franchise admin can manage staff
     },
     {
         title: 'Attendance',
         href: '/dashboard/attendance',
         icon: CalendarCheck,
-        roles: ['staff_manager', 'staff'],
+        roles: ['institution_director', 'staff_manager', 'staff'], // All staff can mark attendance
     },
     {
         title: 'Payroll',
         href: '/dashboard/payroll',
         icon: Wallet,
-        roles: ['institution_director'],
+        roles: ['institution_director', 'staff_manager', 'staff'], // All can view their own payroll
     },
     {
         title: 'Certificates',
