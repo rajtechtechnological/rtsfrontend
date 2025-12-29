@@ -1,5 +1,5 @@
 // User roles in the system
-export type UserRole = 'super_admin' | 'institution_director' | 'staff_manager' | 'staff' | 'student';
+export type UserRole = 'super_admin' | 'institution_director' | 'staff_manager' | 'receptionist' | 'staff' | 'student';
 
 // Base entity with common fields
 export interface BaseEntity {
@@ -21,6 +21,7 @@ export interface User extends BaseEntity {
 // Institution/Franchise entity
 export interface Institution extends BaseEntity {
     name: string;
+    district_code: string | null;  // e.g., NAL for Nalanda, PAT for Patna
     address: string | null;
     contact_email: string | null;
     contact_phone: string | null;
@@ -40,6 +41,7 @@ export interface Course extends BaseEntity {
 export interface Student extends BaseEntity {
     user_id: string;
     institution_id: string;
+    student_id: string;  // Format: RTS-INST-MM-YYYY-NNNN
     enrollment_date: string;
     address: string | null;
     date_of_birth: string | null;
@@ -63,8 +65,12 @@ export interface FeePayment extends BaseEntity {
     course_id: string;
     amount: number;
     payment_date: string;
-    payment_method: string | null;
-    receipt_number: string | null;
+    payment_method: string; // online, offline, cash, upi, card, bank_transfer
+    transaction_id: string | null;
+    receipt_number: string;
+    receipt_url: string | null;
+    notes: string | null;
+    created_by: string;
 }
 
 // Staff entity
@@ -192,6 +198,7 @@ export interface CreateCourseRequest {
 
 export interface CreateInstitutionRequest {
     name: string;
+    district_code?: string;  // e.g., NAL, PAT, DEL
     address?: string;
     contact_email?: string;
     contact_phone?: string;
@@ -219,7 +226,24 @@ export interface RecordPaymentRequest {
     student_id: string;
     course_id: string;
     amount: number;
-    payment_method?: string;
+    payment_date?: string;
+    payment_method: string; // online, offline, cash, upi, card, bank_transfer
+    transaction_id?: string; // Required for online/upi/card
+    notes?: string;
+}
+
+export interface PaymentSummary {
+    student_id: string;
+    student_name: string;
+    courses: Array<{
+        course_id: string;
+        course_name: string;
+        total_fee: number;
+        total_paid: number;
+        balance: number;
+        payment_count: number;
+        status: 'paid' | 'pending';
+    }>;
 }
 
 // Dashboard stats

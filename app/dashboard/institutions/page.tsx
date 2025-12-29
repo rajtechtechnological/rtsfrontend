@@ -45,6 +45,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface Institution {
     id: string;
     name: string;
+    district_code: string | null;
     address: string | null;
     contact_email: string | null;
     contact_phone: string | null;
@@ -57,6 +58,7 @@ interface Institution {
 
 const institutionSchema = z.object({
     name: z.string().min(3, 'Name must be at least 3 characters'),
+    district_code: z.string().min(2, 'District code must be at least 2 characters').max(4, 'District code must be at most 4 characters').optional().or(z.literal('')),
     address: z.string().optional(),
     contact_email: z.string().email('Please enter a valid email').optional().or(z.literal('')),
     contact_phone: z.string().optional(),
@@ -82,6 +84,7 @@ function AddInstitutionDialog({ onSuccess }: { onSuccess: () => void }) {
         try {
             await institutionsApi.create({
                 name: data.name,
+                district_code: data.district_code,
                 address: data.address,
                 contact_email: data.contact_email,
                 contact_phone: data.contact_phone,
@@ -119,12 +122,34 @@ function AddInstitutionDialog({ onSuccess }: { onSuccess: () => void }) {
                         <Input
                             id="name"
                             className="bg-slate-800/50 border-slate-700 text-white"
-                            placeholder="e.g., TechEdu Institute - Pune"
+                            placeholder="e.g., Rajtech Computer Center"
                             {...register('name')}
                         />
                         {errors.name && (
                             <p className="text-sm text-red-400">{errors.name.message}</p>
                         )}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="district_code" className="text-slate-300">
+                            District Code
+                            <span className="text-xs text-slate-500 ml-2">(e.g., NAL, PAT, GAY)</span>
+                        </Label>
+                        <Input
+                            id="district_code"
+                            className="bg-slate-800/50 border-slate-700 text-white uppercase"
+                            placeholder="NAL"
+                            maxLength={4}
+                            {...register('district_code')}
+                            onChange={(e) => {
+                                e.target.value = e.target.value.toUpperCase();
+                            }}
+                        />
+                        {errors.district_code && (
+                            <p className="text-sm text-red-400">{errors.district_code.message}</p>
+                        )}
+                        <p className="text-xs text-slate-500">
+                            Used for generating student IDs: RTS-{'{DISTRICT}'}-{'{INST}'}-MM-YYYY-NNNN
+                        </p>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="address" className="text-slate-300">Address</Label>

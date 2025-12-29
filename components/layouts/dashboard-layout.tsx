@@ -73,7 +73,13 @@ const navItems: NavItem[] = [
         title: 'Students',
         href: '/dashboard/students',
         icon: GraduationCap,
-        roles: ['institution_director', 'staff_manager'], // Accountants can manage students
+        roles: ['institution_director', 'staff_manager', 'receptionist'], // Accountants and receptionists can manage students
+    },
+    {
+        title: 'Payments',
+        href: '/dashboard/payments',
+        icon: Wallet,
+        roles: ['institution_director', 'staff_manager', 'receptionist'], // Receptionists, accountants, and directors can record payments
     },
     {
         title: 'Staff',

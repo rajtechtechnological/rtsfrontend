@@ -19,6 +19,7 @@ import type {
     GeneratePayrollRequest,
     EnrollStudentRequest,
     RecordPaymentRequest,
+    PaymentSummary,
     DashboardStats,
     PaginatedResponse,
     StudentCourse,
@@ -89,6 +90,9 @@ export const studentsApi = {
 
     get: (id: string) =>
         apiClient.get<Student>(`/api/students/${id}`),
+
+    search: (studentId: string) =>
+        apiClient.get<Student>('/api/students/search', { params: { student_id: studentId } }),
 
     create: (data: CreateStudentRequest) =>
         apiClient.post<Student>('/api/students', data),
@@ -208,6 +212,24 @@ export const certificatesApi = {
 export const chatbotApi = {
     sendMessage: (message: string) =>
         apiClient.post<{ response: string }>('/api/chatbot/message', { message }),
+};
+
+// ============ Payment Endpoints ============
+export const paymentsApi = {
+    list: (params?: { student_id?: string; course_id?: string; payment_method?: string }) =>
+        apiClient.get<FeePayment[]>('/api/payments', { params }),
+
+    get: (id: string) =>
+        apiClient.get<FeePayment>(`/api/payments/${id}`),
+
+    create: (data: RecordPaymentRequest) =>
+        apiClient.post<FeePayment>('/api/payments', data),
+
+    getStudentSummary: (studentId: string) =>
+        apiClient.get<PaymentSummary>(`/api/payments/student/${studentId}/summary`),
+
+    downloadReceipt: (paymentId: string) =>
+        apiClient.get(`/api/payments/${paymentId}/receipt`, { responseType: 'blob' }),
 };
 
 // ============ Dashboard Endpoints ============

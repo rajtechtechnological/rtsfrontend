@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import { staffApi } from '@/lib/api/endpoints';
 import type { Staff } from '@/types';
 import { useAuth } from '@/lib/auth/auth-context';
@@ -238,6 +239,7 @@ function getRoleBadge(role: string) {
 }
 
 export default function StaffPage() {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [staff, setStaff] = useState<Staff[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -398,13 +400,16 @@ export default function StaffPage() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
-                                                    <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
+                                                    <DropdownMenuItem
+                                                        onClick={() => router.push(`/dashboard/staff/${staff.id}`)}
+                                                        className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
+                                                    >
                                                         <Eye className="h-4 w-4 mr-2" /> View Profile
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
+                                                    <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer">
                                                         <Edit className="h-4 w-4 mr-2" /> Edit
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                                                    <DropdownMenuItem className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer">
                                                         <Trash2 className="h-4 w-4 mr-2" /> Remove
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
