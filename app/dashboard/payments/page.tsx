@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { paymentsApi, studentsApi, coursesApi } from '@/lib/api/endpoints';
-import type { FeePayment, Student, Course, RecordPaymentRequest } from '@/types';
+import type { FeePayment, Student, Course, StudentCourse, RecordPaymentRequest } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,7 +55,7 @@ export default function PaymentsPage() {
     const [studentIdInput, setStudentIdInput] = useState('');
     const [studentNameInput, setStudentNameInput] = useState('');
     const [foundStudent, setFoundStudent] = useState<Student | null>(null);
-    const [studentCourses, setStudentCourses] = useState<Course[]>([]);
+    const [studentCourses, setStudentCourses] = useState<StudentCourse[]>([]);
     const [searchError, setSearchError] = useState('');
 
     useEffect(() => {
@@ -344,7 +344,7 @@ export default function PaymentsPage() {
                                                     // Auto-fill amount from course fee
                                                     const course = studentCourses.find(c => c.course_id === value);
                                                     if (course?.course) {
-                                                        setFormData(prev => ({ ...prev, course_id: value, amount: course.course.fee_amount }));
+                                                        setFormData(prev => ({ ...prev, course_id: value, amount: course.course!.fee_amount }));
                                                     }
                                                 }}
                                             >

@@ -174,6 +174,7 @@ export default function DashboardPage() {
 
     const isDirector = user?.role === 'super_admin';
     const isAccountant = user?.role === 'staff_manager';
+    const isReceptionist = user?.role === 'receptionist';
     const isStaff = user?.role === 'staff';
 
     const quickActions = isDirector ? [
@@ -234,6 +235,28 @@ export default function DashboardPage() {
             href: '/dashboard/attendance',
             gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
         },
+    ] : isReceptionist ? [
+        {
+            title: 'Record Payment',
+            description: 'Process student payments',
+            icon: Wallet,
+            href: '/dashboard/payments',
+            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+        },
+        {
+            title: 'View Students',
+            description: 'Search students',
+            icon: Users,
+            href: '/dashboard/students',
+            gradient: 'bg-gradient-to-br from-purple-500 to-purple-600',
+        },
+        {
+            title: 'My Attendance',
+            description: 'Mark your attendance',
+            icon: Calendar,
+            href: '/dashboard/attendance',
+            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
+        },
     ] : isStaff ? [
         {
             title: 'Mark Attendance',
@@ -285,6 +308,8 @@ export default function DashboardPage() {
                         ? "Here's an overview of all your institutions."
                         : isAccountant
                         ? "Manage students and payments for your institution."
+                        : isReceptionist
+                        ? "Process student payments and manage enrollments."
                         : isStaff
                         ? "View your attendance and payroll information."
                         : "Here's what's happening with your institution today."
@@ -292,20 +317,22 @@ export default function DashboardPage() {
                 </p>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {dashboardData.stats.map((stat) => (
-                    <StatCard
-                        key={stat.title}
-                        title={stat.title}
-                        value={stat.value}
-                        description={stat.description}
-                        icon={iconMap[stat.title] || BookOpen}
-                        trend={stat.trend}
-                        gradient={gradientMap[stat.title] || 'bg-gradient-to-br from-blue-500 to-blue-600'}
-                    />
-                ))}
-            </div>
+            {/* Stats Grid - Hidden for Receptionists */}
+            {!isReceptionist && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {dashboardData.stats.map((stat) => (
+                        <StatCard
+                            key={stat.title}
+                            title={stat.title}
+                            value={stat.value}
+                            description={stat.description}
+                            icon={iconMap[stat.title] || BookOpen}
+                            trend={stat.trend}
+                            gradient={gradientMap[stat.title] || 'bg-gradient-to-br from-blue-500 to-blue-600'}
+                        />
+                    ))}
+                </div>
+            )}
 
             {/* Quick Actions */}
             <div>

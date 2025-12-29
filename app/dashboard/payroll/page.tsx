@@ -59,7 +59,7 @@ export default function PayrollPage() {
                 month: selectedMonth,
                 year: selectedYear,
             });
-            setPayrollRecords(response.data.items || []);
+            setPayrollRecords(response.data.data || []);
         } catch (error: any) {
             console.error('Failed to fetch payroll:', error);
             toast.error('Failed to load payroll records');
@@ -238,13 +238,13 @@ export default function PayrollPage() {
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="h-10 w-10 ring-2 ring-amber-500/20">
                                                     <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-                                                        {payroll.staff_name
+                                                        {(payroll.staff?.user?.full_name || 'Unknown')
                                                             .split(' ')
                                                             .map((n) => n[0])
                                                             .join('')}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <p className="font-medium text-white">{payroll.staff_name}</p>
+                                                <p className="font-medium text-white">{payroll.staff?.user?.full_name || 'Unknown'}</p>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -280,11 +280,16 @@ export default function PayrollPage() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                {payroll.payslip_generated ? (
+                                                {payroll.payslip_url ? (
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
                                                         className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                                                        onClick={() => {
+                                                            if (payroll.payslip_url) {
+                                                                window.open(payroll.payslip_url, '_blank');
+                                                            }
+                                                        }}
                                                     >
                                                         <Download className="h-4 w-4 mr-1" />
                                                         Download

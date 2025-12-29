@@ -68,6 +68,7 @@ export const institutionsApi = {
             institutions: Array<{
                 id: string;
                 name: string;
+                district_code: string | null;
                 address: string | null;
                 contact_email: string | null;
                 contact_phone: string | null;

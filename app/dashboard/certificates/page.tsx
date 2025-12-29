@@ -55,8 +55,8 @@ export default function CertificatesPage() {
 
     const filteredCertificates = certificates.filter(
         (cert) =>
-            cert.student_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            cert.course_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            cert.student?.user?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            cert.course?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             cert.certificate_number?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -184,16 +184,16 @@ export default function CertificatesPage() {
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="h-10 w-10 ring-2 ring-amber-500/20">
                                                     <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-                                                        {cert.student_name
+                                                        {(cert.student?.user?.full_name || 'Unknown')
                                                             .split(' ')
                                                             .map((n) => n[0])
                                                             .join('')}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <p className="font-medium text-white">{cert.student_name}</p>
+                                                <p className="font-medium text-white">{cert.student?.user?.full_name || 'Unknown'}</p>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-slate-300">{cert.course_name}</TableCell>
+                                        <TableCell className="text-slate-300">{cert.course?.name || 'Unknown'}</TableCell>
                                         <TableCell className="text-slate-300 font-mono text-sm">
                                             {cert.certificate_number || '-'}
                                         </TableCell>
@@ -214,23 +214,26 @@ export default function CertificatesPage() {
                                         <TableCell>
                                             <Badge
                                                 className={
-                                                    cert.status === 'issued'
+                                                    cert.certificate_url
                                                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                                        : cert.status === 'eligible'
-                                                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-                                                            : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                                                 }
                                             >
-                                                {cert.status}
+                                                {cert.certificate_url ? 'Issued' : 'Pending'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            {cert.status === 'issued' ? (
+                                            {cert.certificate_url ? (
                                                 <div className="flex items-center justify-end gap-2">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
                                                         className="text-slate-400 hover:text-white"
+                                                        onClick={() => {
+                                                            if (cert.certificate_url) {
+                                                                window.open(cert.certificate_url, '_blank');
+                                                            }
+                                                        }}
                                                     >
                                                         <Eye className="h-4 w-4 mr-1" />
                                                         View
@@ -239,20 +242,25 @@ export default function CertificatesPage() {
                                                         variant="ghost"
                                                         size="sm"
                                                         className="text-blue-400 hover:text-blue-300"
+                                                        onClick={() => {
+                                                            if (cert.certificate_url) {
+                                                                window.open(cert.certificate_url, '_blank');
+                                                            }
+                                                        }}
                                                     >
                                                         <Download className="h-4 w-4 mr-1" />
                                                         Download
                                                     </Button>
                                                 </div>
-                                            ) : cert.status === 'eligible' ? (
+                                            ) : (
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => handleGenerate(cert.id)}
-                                                    disabled={generatingId === cert.id}
+                                                    onClick={() => handleGenerate(cert.student_id, cert.course_id)}
+                                                    disabled={generatingId === cert.student_id}
                                                     className="text-emerald-400 hover:text-emerald-300"
                                                 >
-                                                    {generatingId === cert.id ? (
+                                                    {generatingId === cert.student_id ? (
                                                         <>
                                                             <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                                                             Generating...
@@ -264,8 +272,6 @@ export default function CertificatesPage() {
                                                         </>
                                                     )}
                                                 </Button>
-                                            ) : (
-                                                <span className="text-sm text-slate-500">Course in progress</span>
                                             )}
                                         </TableCell>
                                     </TableRow>

@@ -63,7 +63,7 @@ const staffSchema = z.object({
     full_name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Please enter a valid email'),
     phone: z.string().min(10, 'Phone number is required (min 10 digits)'),
-    role: z.enum(['staff', 'staff_manager']),
+    role: z.enum(['staff', 'staff_manager', 'receptionist']),
     daily_rate: z.number().min(0, 'Daily rate must be positive'),
 });
 
@@ -162,13 +162,14 @@ function AddStaffDialog({ onStaffAdded }: { onStaffAdded: () => void }) {
                     </div>
                     <div className="space-y-2">
                         <Label className="text-slate-300">Role *</Label>
-                        <Select onValueChange={(value) => setValue('role', value as 'staff' | 'staff_manager')}>
+                        <Select onValueChange={(value) => setValue('role', value as 'staff' | 'staff_manager' | 'receptionist')}>
                             <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
                                 <SelectValue placeholder="Select role" />
                             </SelectTrigger>
                             <SelectContent className="bg-slate-900 border-slate-800">
                                 <SelectItem value="staff" className="text-white hover:bg-slate-800">Staff</SelectItem>
                                 <SelectItem value="staff_manager" className="text-white hover:bg-slate-800">Accountant</SelectItem>
+                                <SelectItem value="receptionist" className="text-white hover:bg-slate-800">Receptionist</SelectItem>
                             </SelectContent>
                         </Select>
                         {errors.role && (
@@ -227,6 +228,10 @@ function getRoleBadge(role: string) {
         staff_manager: {
             label: 'Accountant',
             className: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+        },
+        receptionist: {
+            label: 'Receptionist',
+            className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
         },
         staff: {
             label: 'Staff',
