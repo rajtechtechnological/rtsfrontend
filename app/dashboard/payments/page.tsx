@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { paymentsApi, studentsApi, coursesApi } from '@/lib/api/endpoints';
+import { useAuth } from '@/lib/auth/auth-context';
 import type { FeePayment, Student, Course, StudentCourse, RecordPaymentRequest } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,15 +33,21 @@ import {
     Loader2,
     Search,
     Receipt,
+    CreditCard,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function PaymentsPage() {
+    const { user } = useAuth();
+    const isStudent = user?.role === 'student';
+    const canRecordPayments = ['super_admin', 'institution_director', 'staff_manager', 'receptionist', 'accountant'].includes(user?.role || '');
+
     const [payments, setPayments] = useState<FeePayment[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [currentStudentRecord, setCurrentStudentRecord] = useState<Student | null>(null);
     const [formData, setFormData] = useState<RecordPaymentRequest>({
         student_id: '',
         course_id: '',
@@ -60,19 +67,40 @@ export default function PaymentsPage() {
 
     useEffect(() => {
         loadData();
-    }, [filterStudentId]);
+    }, [filterStudentId, user?.id]);
 
     const loadData = async () => {
         try {
             setLoading(true);
-            const [paymentsRes, studentsRes, coursesRes] = await Promise.all([
-                paymentsApi.list({ student_id: filterStudentId || undefined }),
-                studentsApi.list({}),
-                coursesApi.list(),
-            ]);
-            setPayments(paymentsRes.data);
-            setStudents(studentsRes.data.data || []);
-            setCourses(coursesRes.data);
+
+            // For students, first find their student record, then load their payments
+            if (isStudent && user?.id) {
+                const studentsRes = await studentsApi.list({});
+                const allStudents = studentsRes.data || [];
+                const studentRecord = allStudents.find((s: Student) => s.user_id === user.id);
+
+                if (studentRecord) {
+                    setCurrentStudentRecord(studentRecord);
+                    const [paymentsRes, coursesRes] = await Promise.all([
+                        paymentsApi.list({ student_id: studentRecord.id }),
+                        coursesApi.list(),
+                    ]);
+                    setPayments(paymentsRes.data);
+                    setCourses(coursesRes.data);
+                } else {
+                    setPayments([]);
+                }
+            } else {
+                // Staff/Admin view - load all data
+                const [paymentsRes, studentsRes, coursesRes] = await Promise.all([
+                    paymentsApi.list({ student_id: filterStudentId || undefined }),
+                    studentsApi.list({}),
+                    coursesApi.list(),
+                ]);
+                setPayments(paymentsRes.data);
+                setStudents(studentsRes.data || []);
+                setCourses(coursesRes.data);
+            }
         } catch (error) {
             console.error('Error loading data:', error);
             toast.error('Failed to load payment data');
@@ -211,35 +239,51 @@ export default function PaymentsPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <Wallet className="h-7 w-7 text-blue-400" />
-                        Payment Management
+                        {isStudent ? (
+                            <CreditCard className="h-7 w-7 text-blue-400" />
+                        ) : (
+                            <Wallet className="h-7 w-7 text-blue-400" />
+                        )}
+                        {isStudent ? 'My Payment History' : 'Payment Management'}
                     </h1>
-                    <p className="text-slate-400 mt-1">Record and manage student fee payments</p>
-                </div>
-                <Button
-                    onClick={() => {
-                        if (showForm) {
-                            resetForm();
+                    <p className="text-slate-400 mt-1">
+                        {isStudent
+                            ? 'View your fee payment history and download receipts'
+                            : 'Record and manage student fee payments'
                         }
-                        setShowForm(!showForm);
-                    }}
-                    className={showForm
-                        ? "bg-slate-700 hover:bg-slate-600 text-white"
-                        : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
-                    }
-                >
-                    {showForm ? (
-                        <>
-                            <X className="h-4 w-4 mr-2" />
-                            Cancel
-                        </>
-                    ) : (
-                        <>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Record Payment
-                        </>
+                    </p>
+                    {isStudent && currentStudentRecord && (
+                        <p className="text-sm text-slate-500 mt-1">
+                            Student ID: <span className="text-blue-400 font-mono">{currentStudentRecord.student_id}</span>
+                        </p>
                     )}
-                </Button>
+                </div>
+                {canRecordPayments && (
+                    <Button
+                        onClick={() => {
+                            if (showForm) {
+                                resetForm();
+                            }
+                            setShowForm(!showForm);
+                        }}
+                        className={showForm
+                            ? "bg-slate-700 hover:bg-slate-600 text-white"
+                            : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
+                        }
+                    >
+                        {showForm ? (
+                            <>
+                                <X className="h-4 w-4 mr-2" />
+                                Cancel
+                            </>
+                        ) : (
+                            <>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Record Payment
+                            </>
+                        )}
+                    </Button>
+                )}
             </div>
 
             {/* Payment Recording Form */}
@@ -473,35 +517,37 @@ export default function PaymentsPage() {
                 </Card>
             )}
 
-            {/* Filter */}
-            <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                        <Label className="text-slate-300">Filter by Student:</Label>
-                        <Select
-                            value={filterStudentId || undefined}
-                            onValueChange={(value) => setFilterStudentId(value || '')}
-                        >
-                            <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white max-w-xs">
-                                <SelectValue placeholder="All Students" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {students.map(student => (
-                                    <SelectItem key={student.id} value={student.id}>
-                                        {student.user?.full_name || student.id}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </CardContent>
-            </Card>
+            {/* Filter - Only for staff/admin */}
+            {!isStudent && (
+                <Card className="bg-slate-900/50 border-slate-800">
+                    <CardContent className="p-4">
+                        <div className="flex items-center gap-4">
+                            <Label className="text-slate-300">Filter by Student:</Label>
+                            <Select
+                                value={filterStudentId || undefined}
+                                onValueChange={(value) => setFilterStudentId(value || '')}
+                            >
+                                <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white max-w-xs">
+                                    <SelectValue placeholder="All Students" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {students.map(student => (
+                                        <SelectItem key={student.id} value={student.id}>
+                                            {student.user?.full_name || student.id}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Payment History Table */}
             <Card className="bg-slate-900/50 border-slate-800">
                 <CardHeader>
                     <CardTitle className="text-white">
-                        Payment History
+                        {isStudent ? 'My Payments' : 'Payment History'}
                         <Badge variant="secondary" className="ml-2 bg-slate-800 text-slate-300">
                             {payments.length}
                         </Badge>
@@ -514,7 +560,7 @@ export default function PaymentsPage() {
                                 <TableRow className="border-slate-800 hover:bg-transparent">
                                     <TableHead className="text-slate-400">Receipt No.</TableHead>
                                     <TableHead className="text-slate-400">Date</TableHead>
-                                    <TableHead className="text-slate-400">Student</TableHead>
+                                    {!isStudent && <TableHead className="text-slate-400">Student</TableHead>}
                                     <TableHead className="text-slate-400">Course</TableHead>
                                     <TableHead className="text-slate-400">Amount</TableHead>
                                     <TableHead className="text-slate-400">Method</TableHead>
@@ -525,9 +571,11 @@ export default function PaymentsPage() {
                             <TableBody>
                                 {payments.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="text-center py-12">
+                                        <TableCell colSpan={isStudent ? 7 : 8} className="text-center py-12">
                                             <Receipt className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                                            <p className="text-slate-400">No payments found</p>
+                                            <p className="text-slate-400">
+                                                {isStudent ? 'No payment records found' : 'No payments found'}
+                                            </p>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -546,9 +594,11 @@ export default function PaymentsPage() {
                                                     year: 'numeric',
                                                 })}
                                             </TableCell>
-                                            <TableCell className="text-white">
-                                                {getStudentName(payment.student_id)}
-                                            </TableCell>
+                                            {!isStudent && (
+                                                <TableCell className="text-white">
+                                                    {getStudentName(payment.student_id)}
+                                                </TableCell>
+                                            )}
                                             <TableCell className="text-slate-300">
                                                 {getCourseName(payment.course_id)}
                                             </TableCell>

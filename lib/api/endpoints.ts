@@ -86,8 +86,8 @@ export const institutionsApi = {
 
 // ============ Student Endpoints ============
 export const studentsApi = {
-    list: (params: { page?: number; page_size?: number; search?: string; institution_id?: string }) =>
-        apiClient.get<PaginatedResponse<Student>>('/api/students', { params }),
+    list: (params?: { page?: number; page_size?: number; search?: string; institution_id?: string }) =>
+        apiClient.get<Student[]>('/api/students', { params }),
 
     get: (id: string) =>
         apiClient.get<Student>(`/api/students/${id}`),
@@ -123,6 +123,12 @@ export const studentsApi = {
 
     recordPayment: (data: RecordPaymentRequest) =>
         apiClient.post<FeePayment>('/api/students/payments', data),
+
+    getById: (id: string) =>
+        apiClient.get<Student>(`/api/students/${id}`),
+
+    getCourseProgress: (studentId: string, courseId: string) =>
+        apiClient.get<any>(`/api/students/${studentId}/courses/${courseId}/progress`),
 };
 
 // ============ Course Endpoints ============

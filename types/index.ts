@@ -46,7 +46,16 @@ export interface Student extends BaseEntity {
     address: string | null;
     date_of_birth: string | null;
     photo_url: string | null;
+    aadhar_number: string | null;
+    apaar_id: string | null;
+    last_qualification: string | null;
+    // Batch information
+    batch_time: string | null;  // e.g., "9AM-10AM"
+    batch_month: string | null;  // MM format
+    batch_year: string | null;  // YYYY format
+    batch_identifier: string | null;  // "A" or "B"
     user?: User;
+    course_enrollments?: StudentCourse[];
 }
 
 // Student Course Enrollment

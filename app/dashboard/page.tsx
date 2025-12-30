@@ -3,6 +3,8 @@
 import { useAuth } from '@/lib/auth/auth-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import {
     GraduationCap,
     Users,
@@ -13,11 +15,16 @@ import {
     IndianRupee,
     ArrowUpRight,
     Wallet,
+    Clock,
+    CheckCircle,
+    Award,
+    CreditCard,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { dashboardApi } from '@/lib/api/endpoints';
+import { dashboardApi, studentsApi } from '@/lib/api/endpoints';
 import type { DashboardStats } from '@/types';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 interface StatCardProps {
     title: string;
@@ -106,6 +113,213 @@ function LoadingSkeleton() {
     );
 }
 
+// Student Dashboard Component
+function StudentDashboard({ user }: { user: any }) {
+    const [studentData, setStudentData] = useState<any>(null);
+    const [courses, setCourses] = useState<any[]>([]);
+    const [courseProgress, setCourseProgress] = useState<Record<string, any>>({});
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStudentData = async () => {
+            try {
+                setIsLoading(true);
+                // First get student record by searching with user info
+                const studentsResponse = await studentsApi.list();
+                const students = studentsResponse.data || [];
+                const currentStudent = students.find((s: any) => s.user_id === user.id);
+
+                if (currentStudent) {
+                    setStudentData(currentStudent);
+
+                    // Get enrolled courses
+                    const coursesResponse = await studentsApi.getCourses(currentStudent.id);
+                    const coursesData = coursesResponse.data || [];
+                    setCourses(coursesData);
+
+                    // Get progress for each course
+                    const progressData: Record<string, any> = {};
+                    for (const enrollment of coursesData) {
+                        try {
+                            const progressResponse = await studentsApi.getCourseProgress(
+                                currentStudent.id,
+                                enrollment.course.id
+                            );
+                            progressData[enrollment.course.id] = progressResponse.data;
+                        } catch (error) {
+                            console.error(`Failed to fetch progress for course ${enrollment.course.id}:`, error);
+                        }
+                    }
+                    setCourseProgress(progressData);
+                }
+            } catch (error) {
+                console.error('Failed to fetch student data:', error);
+                toast.error('Failed to load your data');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStudentData();
+    }, [user.id]);
+
+    if (isLoading) {
+        return <LoadingSkeleton />;
+    }
+
+    return (
+        <div className="space-y-8">
+            {/* Welcome Section */}
+            <div>
+                <h1 className="text-3xl font-bold text-white">
+                    Welcome, {user?.full_name?.split(' ')[0] || 'Student'}! 👋
+                </h1>
+                <p className="text-slate-400 mt-2">
+                    Track your courses, progress, and achievements.
+                </p>
+                {studentData && (
+                    <p className="text-sm text-slate-500 mt-1">
+                        Student ID: <span className="text-blue-400 font-mono">{studentData.student_id}</span>
+                        {studentData.batch_time && (
+                            <span className="ml-4">
+                                Batch: <span className="text-purple-400">{studentData.batch_time}</span>
+                            </span>
+                        )}
+                    </p>
+                )}
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                    title="Enrolled Courses"
+                    value={courses.length}
+                    description="Active courses"
+                    icon={BookOpen}
+                    gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+                />
+                <StatCard
+                    title="Completed Modules"
+                    value={Object.values(courseProgress).reduce((acc: number, p: any) => acc + (p?.completed_modules || 0), 0)}
+                    description="Across all courses"
+                    icon={CheckCircle}
+                    gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
+                />
+                <StatCard
+                    title="In Progress"
+                    value={Object.values(courseProgress).reduce((acc: number, p: any) => acc + (p?.in_progress_modules || 0), 0)}
+                    description="Modules in progress"
+                    icon={Clock}
+                    gradient="bg-gradient-to-br from-amber-500 to-orange-600"
+                />
+                <StatCard
+                    title="Overall Progress"
+                    value={`${Math.round(Object.values(courseProgress).reduce((acc: number, p: any) => acc + (p?.overall_percentage || 0), 0) / Math.max(courses.length, 1))}%`}
+                    description="Average completion"
+                    icon={TrendingUp}
+                    gradient="bg-gradient-to-br from-purple-500 to-purple-600"
+                />
+            </div>
+
+            {/* Enrolled Courses */}
+            <div>
+                <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5 text-blue-400" />
+                    My Courses
+                </h2>
+                {courses.length === 0 ? (
+                    <Card className="bg-slate-900/50 border-slate-800">
+                        <CardContent className="p-8 text-center">
+                            <BookOpen className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+                            <p className="text-slate-400">You are not enrolled in any courses yet.</p>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {courses.map((enrollment: any) => {
+                            const progress = courseProgress[enrollment.course.id];
+                            return (
+                                <Card key={enrollment.id} className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all">
+                                    <CardHeader className="pb-2">
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <CardTitle className="text-white text-lg">{enrollment.course.name}</CardTitle>
+                                                <p className="text-sm text-slate-400 mt-1">
+                                                    Duration: {enrollment.course.duration_months} months
+                                                </p>
+                                            </div>
+                                            <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/30">
+                                                {enrollment.status || 'Active'}
+                                            </Badge>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {progress ? (
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-sm text-slate-400">Progress</span>
+                                                        <span className="text-sm font-medium text-white">{progress.overall_percentage}%</span>
+                                                    </div>
+                                                    <Progress value={progress.overall_percentage} className="h-2" />
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-2 text-center">
+                                                    <div className="bg-slate-800/50 rounded-lg p-2">
+                                                        <p className="text-lg font-bold text-emerald-400">{progress.completed_modules}</p>
+                                                        <p className="text-xs text-slate-400">Completed</p>
+                                                    </div>
+                                                    <div className="bg-slate-800/50 rounded-lg p-2">
+                                                        <p className="text-lg font-bold text-blue-400">{progress.in_progress_modules}</p>
+                                                        <p className="text-xs text-slate-400">In Progress</p>
+                                                    </div>
+                                                    <div className="bg-slate-800/50 rounded-lg p-2">
+                                                        <p className="text-lg font-bold text-slate-400">{progress.not_started_modules}</p>
+                                                        <p className="text-xs text-slate-400">Pending</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-slate-400">Loading progress...</p>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Quick Actions for Students */}
+            <div>
+                <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <QuickActionCard
+                        title="View Progress"
+                        description="Detailed course progress"
+                        icon={TrendingUp}
+                        href={studentData ? `/dashboard/students/${studentData.id}` : '#'}
+                        gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+                    />
+                    <QuickActionCard
+                        title="My Certificates"
+                        description="View earned certificates"
+                        icon={Award}
+                        href="/dashboard/certificates"
+                        gradient="bg-gradient-to-br from-amber-500 to-orange-600"
+                    />
+                    <QuickActionCard
+                        title="Payment History"
+                        description="View fee payments"
+                        icon={CreditCard}
+                        href="/dashboard/payments"
+                        gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // Icon mapping for stats
 const iconMap: Record<string, React.ElementType> = {
     'Total Franchises': Building2,
@@ -176,6 +390,12 @@ export default function DashboardPage() {
     const isAccountant = user?.role === 'staff_manager';
     const isReceptionist = user?.role === 'receptionist';
     const isStaff = user?.role === 'staff';
+    const isStudent = user?.role === 'student';
+
+    // Render student dashboard for students
+    if (isStudent) {
+        return <StudentDashboard user={user} />;
+    }
 
     const quickActions = isDirector ? [
         {
