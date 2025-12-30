@@ -212,32 +212,32 @@ function CourseCard({ course }: { course: Course }) {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                     <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-blue-500/10">
-                            <Clock className="h-4 w-4 text-blue-400" />
+                        <div className="p-1.5 sm:p-2 rounded-lg bg-blue-500/10">
+                            <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-400" />
                         </div>
                         <div>
                             <p className="text-xs text-slate-500">Duration</p>
-                            <p className="text-sm font-medium text-white">{course.duration_months} months</p>
+                            <p className="text-xs sm:text-sm font-medium text-white">{course.duration_months} mo</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-emerald-500/10">
-                            <IndianRupee className="h-4 w-4 text-emerald-400" />
+                        <div className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/10">
+                            <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-400" />
                         </div>
                         <div>
                             <p className="text-xs text-slate-500">Fee</p>
-                            <p className="text-sm font-medium text-white">₹{course.fee_amount?.toLocaleString() ?? 'N/A'}</p>
+                            <p className="text-xs sm:text-sm font-medium text-white">₹{course.fee_amount?.toLocaleString() ?? 'N/A'}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-purple-500/10">
-                            <Users className="h-4 w-4 text-purple-400" />
+                    <div className="flex items-center gap-2 col-span-2 sm:col-span-1">
+                        <div className="p-1.5 sm:p-2 rounded-lg bg-purple-500/10">
+                            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-400" />
                         </div>
                         <div>
                             <p className="text-xs text-slate-500">Students</p>
-                            <p className="text-sm font-medium text-white">0</p>
+                            <p className="text-xs sm:text-sm font-medium text-white">0</p>
                         </div>
                     </div>
                 </div>

@@ -218,39 +218,39 @@ export default function StudentDetailPage() {
 
             {/* Student Info Card */}
             <Card className="bg-slate-900 border-slate-800">
-                <CardContent className="p-6">
-                    <div className="flex items-start gap-6">
-                        <Avatar className="h-24 w-24 border-2 border-slate-700">
-                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl">
+                <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                        <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-2 border-slate-700">
+                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl sm:text-2xl">
                                 {student.user.full_name.split(' ').map((n) => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
                         </Avatar>
 
-                        <div className="flex-1 space-y-4">
+                        <div className="flex-1 space-y-4 text-center sm:text-left w-full">
                             <div>
-                                <h2 className="text-2xl font-bold text-white">{student.user.full_name}</h2>
-                                <p className="text-slate-400">ID: {student.student_id}</p>
+                                <h2 className="text-xl sm:text-2xl font-bold text-white">{student.user.full_name}</h2>
+                                <p className="text-slate-400 text-sm sm:text-base">ID: {student.student_id}</p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="flex items-center gap-2 text-sm">
-                                    <Mail className="h-4 w-4 text-slate-500" />
-                                    <span className="text-slate-300">{student.user.email}</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                                <div className="flex items-center justify-center sm:justify-start gap-2 text-sm">
+                                    <Mail className="h-4 w-4 text-slate-500 shrink-0" />
+                                    <span className="text-slate-300 truncate">{student.user.email}</span>
                                 </div>
                                 {student.user.phone && (
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Phone className="h-4 w-4 text-slate-500" />
+                                    <div className="flex items-center justify-center sm:justify-start gap-2 text-sm">
+                                        <Phone className="h-4 w-4 text-slate-500 shrink-0" />
                                         <span className="text-slate-300">{student.user.phone}</span>
                                     </div>
                                 )}
                                 {student.address && (
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <MapPin className="h-4 w-4 text-slate-500" />
-                                        <span className="text-slate-300">{student.address}</span>
+                                    <div className="flex items-center justify-center sm:justify-start gap-2 text-sm">
+                                        <MapPin className="h-4 w-4 text-slate-500 shrink-0" />
+                                        <span className="text-slate-300 truncate">{student.address}</span>
                                     </div>
                                 )}
-                                <div className="flex items-center gap-2 text-sm">
-                                    <Calendar className="h-4 w-4 text-slate-500" />
+                                <div className="flex items-center justify-center sm:justify-start gap-2 text-sm">
+                                    <Calendar className="h-4 w-4 text-slate-500 shrink-0" />
                                     <span className="text-slate-300">
                                         Enrolled: {new Date(student.enrollment_date).toLocaleDateString()}
                                     </span>
@@ -278,7 +278,7 @@ export default function StudentDetailPage() {
                     ) : (
                         <>
                             {/* Course Selection Tabs */}
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 w-full">
                                 {courses.map((enrollment) => {
                                     const progress = courseProgress[enrollment.course.id];
                                     return (
@@ -286,14 +286,14 @@ export default function StudentDetailPage() {
                                             key={enrollment.course.id}
                                             variant={selectedCourse === enrollment.course.id ? 'default' : 'outline'}
                                             onClick={() => setSelectedCourse(enrollment.course.id)}
-                                            className={
+                                            className={`w-full sm:w-auto max-w-full ${
                                                 selectedCourse === enrollment.course.id
                                                     ? 'bg-gradient-to-r from-blue-600 to-purple-600'
                                                     : 'border-slate-700 hover:border-slate-600'
-                                            }
+                                            }`}
                                         >
-                                            <div className="flex flex-col items-start">
-                                                <span className="font-medium">{enrollment.course.name}</span>
+                                            <div className="flex flex-col items-start min-w-0 w-full">
+                                                <span className="font-medium text-sm truncate w-full text-left">{enrollment.course.name}</span>
                                                 {progress && (
                                                     <span className="text-xs opacity-75">
                                                         {progress.completed_modules}/{progress.total_modules} completed
@@ -351,37 +351,37 @@ export default function StudentDetailPage() {
                                         <h3 className="text-lg font-semibold text-white">Modules</h3>
                                         {selectedCourseProgress.module_progress.map((progress) => (
                                             <Card key={progress.id} className="bg-slate-800/50 border-slate-700">
-                                                <CardContent className="p-4">
-                                                    <div className="flex items-start justify-between gap-4">
+                                                <CardContent className="p-3 sm:p-4">
+                                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                                                         <div className="flex-1 space-y-2">
-                                                            <div className="flex items-start gap-3">
-                                                                <Badge className="bg-slate-700 text-slate-300 shrink-0">
+                                                            <div className="flex flex-wrap items-start gap-2 sm:gap-3">
+                                                                <Badge className="bg-slate-700 text-slate-300 shrink-0 text-xs">
                                                                     Module {progress.module.module_number}
                                                                 </Badge>
-                                                                <div className="flex-1">
-                                                                    <h4 className="font-semibold text-white">
+                                                                <div className="flex-1 min-w-0">
+                                                                    <h4 className="font-semibold text-white text-sm sm:text-base">
                                                                         {progress.module.module_name}
                                                                     </h4>
-                                                                    <p className="text-sm text-slate-400 mt-1">
+                                                                    <p className="text-xs sm:text-sm text-slate-400 mt-1">
                                                                         {progress.module.lesson_count} lessons • {progress.module.total_marks} marks
                                                                     </p>
                                                                 </div>
                                                             </div>
 
                                                             {progress.notes && (
-                                                                <p className="text-sm text-slate-400 italic pl-16">
+                                                                <p className="text-xs sm:text-sm text-slate-400 italic">
                                                                     Note: {progress.notes}
                                                                 </p>
                                                             )}
                                                         </div>
 
-                                                        <div className="flex flex-col items-end gap-2 shrink-0">
+                                                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-700">
                                                             {getStatusBadge(progress.status)}
 
                                                             {progress.marks_obtained !== null && (
                                                                 <div className="text-right">
-                                                                    <p className="text-sm text-slate-400">Score</p>
-                                                                    <p className={`text-lg font-bold ${progress.passed ? 'text-green-400' : 'text-red-400'}`}>
+                                                                    <p className="text-xs text-slate-400">Score</p>
+                                                                    <p className={`text-base sm:text-lg font-bold ${progress.passed ? 'text-green-400' : 'text-red-400'}`}>
                                                                         {progress.marks_obtained}/{progress.module.total_marks}
                                                                     </p>
                                                                     {progress.exam_date && (
