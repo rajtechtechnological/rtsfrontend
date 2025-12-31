@@ -5,22 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import apiClient from "@/lib/api/client";
 
 interface Message {
   id: string;
   content: string;
   sender: "user" | "assistant";
   timestamp: Date;
+  source?: string;
+  relatedQuestions?: string[];
 }
 
-const SUGGESTIONS = [
-  "How do I enroll a student?",
-  "How to mark attendance?",
-  "Generate payroll",
-  "Issue certificate",
-  "View payment history",
-];
+interface QuickSuggestion {
+  text: string;
+  query: string;
+}
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,6 +34,8 @@ export function ChatWidget() {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<QuickSuggestion[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -44,9 +46,33 @@ export function ChatWidget() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = (messageText?: string) => {
+  useEffect(() => {
+    // Load quick suggestions when chat opens
+    if (isOpen && suggestions.length === 0) {
+      loadSuggestions();
+    }
+  }, [isOpen]);
+
+  const loadSuggestions = async () => {
+    try {
+      const response = await apiClient.get("/api/chatbot/suggestions");
+      setSuggestions(response.data);
+    } catch (error) {
+      console.error("Failed to load suggestions:", error);
+      // Fallback suggestions
+      setSuggestions([
+        { text: "How to register?", query: "How do I register as a student?" },
+        { text: "Available courses", query: "What courses are available?" },
+        { text: "Pay fees", query: "How do I pay my fees?" },
+        { text: "Exam process", query: "How do exams work?" },
+        { text: "Get certificate", query: "How do I get my certificate?" },
+      ]);
+    }
+  };
+
+  const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputValue;
-    if (!textToSend.trim()) return;
+    if (!textToSend.trim() || isLoading) return;
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -58,17 +84,36 @@ export function ChatWidget() {
     setMessages((prev) => [...prev, newMessage]);
     setInputValue("");
     setShowSuggestions(false);
+    setIsLoading(true);
 
-    // Simulate assistant response (will be replaced with backend integration)
-    setTimeout(() => {
+    try {
+      // Call chatbot API
+      const response = await apiClient.post("/api/chatbot/chat", {
+        message: textToSend,
+      });
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Thanks for your message! I'm still learning. Backend integration coming soon, and I'll be able to help you better!",
+        content: response.data.response,
+        sender: "assistant",
+        timestamp: new Date(),
+        source: response.data.source,
+        relatedQuestions: response.data.related_questions,
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error: any) {
+      console.error("Chatbot error:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "I'm having trouble connecting right now. Please try again or contact your institution support.",
         sender: "assistant",
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, assistantMessage]);
-    }, 1000);
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -168,20 +213,46 @@ export function ChatWidget() {
             ))}
 
             {/* Suggestions */}
-            {showSuggestions && messages.length === 1 && (
+            {showSuggestions && messages.length === 1 && suggestions.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs text-slate-400 text-center">Quick suggestions:</p>
                 <div className="flex flex-wrap gap-2">
-                  {SUGGESTIONS.map((suggestion, index) => (
+                  {suggestions.map((suggestion, index) => (
                     <button
                       key={index}
-                      onClick={() => handleSuggestionClick(suggestion)}
+                      onClick={() => handleSuggestionClick(suggestion.query)}
                       className="px-3 py-2 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full text-slate-200 transition-colors duration-200"
                     >
-                      {suggestion}
+                      {suggestion.text}
                     </button>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Related Questions */}
+            {messages.length > 1 && messages[messages.length - 1].relatedQuestions && messages[messages.length - 1].relatedQuestions!.length > 0 && (
+              <div className="space-y-2 mt-4">
+                <p className="text-xs text-slate-400 text-center">Related questions:</p>
+                <div className="flex flex-wrap gap-2">
+                  {messages[messages.length - 1].relatedQuestions!.slice(0, 3).map((question, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSuggestionClick(question)}
+                      className="px-3 py-2 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full text-slate-200 transition-colors duration-200"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="flex items-center gap-2 text-slate-400">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">Raj is thinking...</span>
               </div>
             )}
 
@@ -200,11 +271,15 @@ export function ChatWidget() {
               />
               <Button
                 onClick={() => handleSendMessage()}
-                disabled={!inputValue.trim()}
+                disabled={!inputValue.trim() || isLoading}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 size="icon"
               >
-                <Send className="h-4 w-4" />
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </div>
             <p className="text-xs text-slate-500 mt-2 text-center">

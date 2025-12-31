@@ -18,6 +18,8 @@ import {
     IndianRupee,
     Calendar,
     FileText,
+    GraduationCap,
+    ChevronRight,
 } from 'lucide-react';
 
 // Mock staff data
@@ -65,12 +67,27 @@ function StaffNav() {
         <nav className="bg-slate-900 border-b border-slate-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-red-600 to-red-700">
-                            <Users className="h-5 w-5 text-white" />
+                    <div className="flex items-center gap-4">
+                        <Link href="/" className="flex items-center gap-2">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-red-600 to-red-700">
+                                <Users className="h-5 w-5 text-white" />
+                            </div>
+                            <span className="text-lg font-bold text-white">Staff Portal</span>
+                        </Link>
+                        <div className="hidden sm:flex items-center gap-2 ml-8">
+                            <Link href="/staff">
+                                <Button variant="ghost" size="sm" className="text-white bg-slate-800">
+                                    Dashboard
+                                </Button>
+                            </Link>
+                            <Link href="/staff/students">
+                                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
+                                    <GraduationCap className="h-4 w-4 mr-2" />
+                                    Students
+                                </Button>
+                            </Link>
                         </div>
-                        <span className="text-lg font-bold text-white">Staff Portal</span>
-                    </Link>
+                    </div>
                     <div className="flex items-center gap-4">
                         <Avatar className="h-9 w-9 ring-2 ring-red-600/20">
                             <AvatarFallback className="bg-gradient-to-br from-red-600 to-red-700 text-white text-sm">
@@ -100,8 +117,26 @@ export default function StaffPortal() {
                 {/* Welcome */}
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-white mb-1">Welcome, {staffData.name}! 👋</h1>
-                    <p className="text-slate-400">View your attendance and payroll information</p>
+                    <p className="text-slate-400">Manage student progress, attendance, and payroll</p>
                 </div>
+
+                {/* Student Management Card */}
+                <Link href="/staff/students">
+                    <Card className="bg-gradient-to-r from-green-600/10 to-emerald-600/5 border-green-600/30 mb-8 cursor-pointer hover:border-green-500/50 transition-all group">
+                        <CardContent className="p-6 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 rounded-xl bg-green-600/20">
+                                    <GraduationCap className="h-8 w-8 text-green-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white">Manage Student Progress</h3>
+                                    <p className="text-slate-400 text-sm">View students, update module progress, and enter exam marks</p>
+                                </div>
+                            </div>
+                            <ChevronRight className="h-6 w-6 text-green-400 group-hover:translate-x-1 transition-transform" />
+                        </CardContent>
+                    </Card>
+                </Link>
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

@@ -4,11 +4,14 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { studentsApi } from '@/lib/api/endpoints';
+import apiClient from '@/lib/api/client';
+import { useAuth } from '@/lib/auth/auth-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     GraduationCap,
@@ -23,6 +26,8 @@ import {
     XCircle,
     Loader2,
     ArrowLeft,
+    Save,
+    Edit3,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -88,12 +93,19 @@ interface StudentCourse {
 export default function StudentDetailPage() {
     const params = useParams();
     const studentId = params.id as string;
+    const { user } = useAuth();
+
+    // Role-based permissions
+    const canEditProgress = user?.role && !['receptionist', 'staff'].includes(user.role);
 
     const [student, setStudent] = useState<Student | null>(null);
     const [courses, setCourses] = useState<StudentCourse[]>([]);
     const [courseProgress, setCourseProgress] = useState<Record<string, CourseProgress>>({});
     const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [editingModule, setEditingModule] = useState<string | null>(null);
+    const [savingMarks, setSavingMarks] = useState<string | null>(null);
+    const [marksInput, setMarksInput] = useState<Record<string, { marks: string; notes: string }>>({});
 
     useEffect(() => {
         fetchStudentData();
@@ -141,6 +153,64 @@ export default function StudentDetailPage() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSaveMarks = async (moduleId: string, moduleInfo: Module) => {
+        const data = marksInput[moduleId];
+        if (!data || !data.marks) {
+            toast.error('Please enter marks');
+            return;
+        }
+
+        const marks = parseFloat(data.marks);
+        if (isNaN(marks) || marks < 0 || marks > moduleInfo.total_marks) {
+            toast.error(`Marks must be between 0 and ${moduleInfo.total_marks}`);
+            return;
+        }
+
+        try {
+            setSavingMarks(moduleId);
+
+            await apiClient.post('/api/progress/enter-marks', {
+                student_id: studentId,
+                module_id: moduleId,
+                marks_obtained: marks,
+                notes: data.notes || null,
+                exam_date: new Date().toISOString(),
+            });
+
+            toast.success('Marks saved successfully!');
+            setEditingModule(null);
+
+            // Refresh progress data
+            if (selectedCourse) {
+                const progressResponse = await studentsApi.getCourseProgress(studentId, selectedCourse);
+                setCourseProgress((prev) => ({
+                    ...prev,
+                    [selectedCourse]: progressResponse.data,
+                }));
+            }
+        } catch (error: any) {
+            console.error('Failed to save marks:', error);
+            toast.error(error.response?.data?.detail || 'Failed to save marks');
+        } finally {
+            setSavingMarks(null);
+        }
+    };
+
+    const startEditing = (progress: ModuleProgress) => {
+        setEditingModule(progress.module_id);
+        setMarksInput((prev) => ({
+            ...prev,
+            [progress.module_id]: {
+                marks: progress.marks_obtained?.toString() || '',
+                notes: progress.notes || '',
+            },
+        }));
+    };
+
+    const cancelEditing = () => {
+        setEditingModule(null);
     };
 
     const getStatusBadge = (status: string) => {
@@ -288,11 +358,10 @@ export default function StudentDetailPage() {
                                             key={course.id}
                                             variant={selectedCourse === course.id ? 'default' : 'outline'}
                                             onClick={() => setSelectedCourse(course.id)}
-                                            className={`w-full sm:w-auto max-w-full ${
-                                                selectedCourse === course.id
-                                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600'
-                                                    : 'border-slate-700 hover:border-slate-600'
-                                            }`}
+                                            className={`w-full sm:w-auto max-w-full ${selectedCourse === course.id
+                                                ? 'bg-gradient-to-r from-blue-600 to-purple-600'
+                                                : 'border-slate-700 hover:border-slate-600'
+                                                }`}
                                         >
                                             <div className="flex flex-col items-start min-w-0 w-full">
                                                 <span className="font-medium text-sm truncate w-full text-left">{course.name}</span>
@@ -377,19 +446,99 @@ export default function StudentDetailPage() {
                                                             )}
                                                         </div>
 
-                                                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-700">
+                                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                                                             {getStatusBadge(progress.status)}
 
-                                                            {progress.marks_obtained !== null && (
-                                                                <div className="text-right">
-                                                                    <p className="text-xs text-slate-400">Score</p>
-                                                                    <p className={`text-base sm:text-lg font-bold ${progress.passed ? 'text-green-400' : 'text-red-400'}`}>
-                                                                        {progress.marks_obtained}/{progress.module.total_marks}
-                                                                    </p>
-                                                                    {progress.exam_date && (
-                                                                        <p className="text-xs text-slate-500">
-                                                                            {new Date(progress.exam_date).toLocaleDateString()}
-                                                                        </p>
+                                                            {editingModule === progress.module_id ? (
+                                                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Input
+                                                                            type="number"
+                                                                            min="0"
+                                                                            max={progress.module.total_marks}
+                                                                            step="0.5"
+                                                                            placeholder="Marks"
+                                                                            value={marksInput[progress.module_id]?.marks || ''}
+                                                                            onChange={(e) =>
+                                                                                setMarksInput((prev) => ({
+                                                                                    ...prev,
+                                                                                    [progress.module_id]: {
+                                                                                        ...prev[progress.module_id],
+                                                                                        marks: e.target.value,
+                                                                                    },
+                                                                                }))
+                                                                            }
+                                                                            className="w-20 bg-slate-900 border-slate-600 text-white"
+                                                                        />
+                                                                        <span className="text-slate-400 text-sm">
+                                                                            / {progress.module.total_marks}
+                                                                        </span>
+                                                                    </div>
+                                                                    <Input
+                                                                        placeholder="Notes (optional)"
+                                                                        value={marksInput[progress.module_id]?.notes || ''}
+                                                                        onChange={(e) =>
+                                                                            setMarksInput((prev) => ({
+                                                                                ...prev,
+                                                                                [progress.module_id]: {
+                                                                                    ...prev[progress.module_id],
+                                                                                    notes: e.target.value,
+                                                                                },
+                                                                            }))
+                                                                        }
+                                                                        className="w-full sm:w-40 bg-slate-900 border-slate-600 text-white"
+                                                                    />
+                                                                    <div className="flex gap-2">
+                                                                        <Button
+                                                                            size="sm"
+                                                                            onClick={() => handleSaveMarks(progress.module_id, progress.module)}
+                                                                            disabled={savingMarks === progress.module_id}
+                                                                            className="bg-green-600 hover:bg-green-500"
+                                                                        >
+                                                                            {savingMarks === progress.module_id ? (
+                                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                                            ) : (
+                                                                                <Save className="h-4 w-4" />
+                                                                            )}
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            onClick={cancelEditing}
+                                                                            className="text-slate-400"
+                                                                        >
+                                                                            Cancel
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center gap-3">
+                                                                    {progress.marks_obtained !== null && (
+                                                                        <div className="text-right">
+                                                                            <p className="text-xs text-slate-400">Score</p>
+                                                                            <p
+                                                                                className={`text-lg font-bold ${progress.passed ? 'text-green-400' : 'text-red-400'
+                                                                                    }`}
+                                                                            >
+                                                                                {progress.marks_obtained}/{progress.module.total_marks}
+                                                                            </p>
+                                                                            {progress.exam_date && (
+                                                                                <p className="text-xs text-slate-500">
+                                                                                    {new Date(progress.exam_date).toLocaleDateString()}
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    {canEditProgress && (
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            onClick={() => startEditing(progress)}
+                                                                            className="border-slate-600 hover:border-green-500 hover:text-green-400"
+                                                                        >
+                                                                            <Edit3 className="h-4 w-4 mr-1" />
+                                                                            {progress.marks_obtained !== null ? 'Edit' : 'Enter Marks'}
+                                                                        </Button>
                                                                     )}
                                                                 </div>
                                                             )}

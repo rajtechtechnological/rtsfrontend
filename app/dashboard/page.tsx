@@ -458,6 +458,13 @@ export default function DashboardPage() {
         },
     ] : isReceptionist ? [
         {
+            title: 'Register Student',
+            description: 'Add new student',
+            icon: GraduationCap,
+            href: '/dashboard/students?action=new',
+            gradient: 'bg-gradient-to-br from-blue-500 to-blue-600',
+        },
+        {
             title: 'Record Payment',
             description: 'Process student payments',
             icon: Wallet,
@@ -495,6 +502,13 @@ export default function DashboardPage() {
         },
     ] : [
         {
+            title: 'Student Progress',
+            description: 'Manage module marks',
+            icon: Award,
+            href: '/dashboard/marks-entry',
+            gradient: 'bg-gradient-to-br from-green-500 to-emerald-600',
+        },
+        {
             title: 'Add New Student',
             description: 'Register a new student',
             icon: GraduationCap,
@@ -528,12 +542,12 @@ export default function DashboardPage() {
                     {isDirector
                         ? "Here's an overview of all your institutions."
                         : isAccountant
-                        ? "Manage students and payments for your institution."
-                        : isReceptionist
-                        ? "Process student payments and manage enrollments."
-                        : isStaff
-                        ? "View your attendance and payroll information."
-                        : "Here's what's happening with your institution today."
+                            ? "Manage students and payments for your institution."
+                            : isReceptionist
+                                ? "Process student payments and manage enrollments."
+                                : isStaff
+                                    ? "View your attendance and payroll information."
+                                    : "Here's what's happening with your institution today."
                     }
                 </p>
             </div>

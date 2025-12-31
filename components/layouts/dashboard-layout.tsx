@@ -32,6 +32,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
 import type { UserRole } from '@/types';
+import { ChatWidgetWebSocket } from '@/components/chat/ChatWidgetWebSocket';
 
 interface NavItem {
     title: string;
@@ -251,6 +252,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     {children}
                 </main>
             </div>
+            
+            {/* WebSocket Chat Widget */}
+            <ChatWidgetWebSocket />
         </div>
     );
 }
