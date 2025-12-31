@@ -18,6 +18,7 @@ import {
     Menu,
     X,
     ChevronDown,
+    ClipboardList,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -104,6 +105,12 @@ const navItems: NavItem[] = [
         href: '/dashboard/certificates',
         icon: Award,
         roles: ['institution_director', 'staff_manager'],
+    },
+    {
+        title: 'Exams',
+        href: '/dashboard/exams',
+        icon: ClipboardList,
+        roles: ['super_admin', 'institution_director', 'staff_manager', 'student'],
     },
 ];
 

@@ -113,8 +113,8 @@ export default function MarksEntryPage() {
     const fetchCourses = async () => {
         try {
             setIsLoadingCourses(true);
-            const data = await coursesApi.list();
-            setCourses(data);
+            const response = await coursesApi.list();
+            setCourses(response.data || []);
         } catch (error) {
             console.error('Failed to fetch courses:', error);
             toast.error('Failed to load courses');

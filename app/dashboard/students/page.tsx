@@ -42,6 +42,7 @@ import {
     Trash2,
     Loader2,
     BookOpen,
+    Users,
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -122,9 +123,13 @@ function AddStudentDialog() {
         register,
         handleSubmit,
         reset,
+        setValue,
         formState: { errors },
     } = useForm<StudentFormData>({
         resolver: zodResolver(studentSchema),
+        defaultValues: {
+            batch_year: String(currentYear),
+        },
     });
 
     useEffect(() => {
@@ -145,14 +150,31 @@ function AddStudentDialog() {
     const onSubmit = async (data: StudentFormData) => {
         setIsLoading(true);
         try {
-            // API call would go here
-            console.log('Creating student:', data);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await studentsApi.register({
+                full_name: data.full_name,
+                email: data.email,
+                phone: data.phone,
+                date_of_birth: data.date_of_birth,
+                father_name: data.father_name,
+                guardian_name: data.guardian_name,
+                guardian_phone: data.guardian_phone,
+                address: data.address,
+                aadhar_number: data.aadhar_number,
+                apaar_id: data.apaar_id,
+                last_qualification: data.last_qualification,
+                batch_time: data.batch_time,
+                batch_month: data.batch_month,
+                batch_year: data.batch_year,
+                batch_identifier: data.batch_identifier,
+                course_id: data.course_id,
+            });
             toast.success('Student added successfully!');
             reset();
             setOpen(false);
-        } catch {
-            toast.error('Failed to add student');
+            // Refresh the students list
+            window.location.reload();
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || 'Failed to add student');
         } finally {
             setIsLoading(false);
         }
@@ -298,81 +320,83 @@ function AddStudentDialog() {
                         </div>
                     </div>
 
-                    {/* Course & Batch Information */}
+                    {/* Course Selection */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-white border-b border-slate-700 pb-2">Course & Batch Information</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="course_id" className="text-slate-300">Select Course</Label>
-                                <select
-                                    id="course_id"
-                                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-md px-3 py-2"
-                                    {...register('course_id')}
-                                >
-                                    <option value="">Select a course (optional)</option>
+                        <h3 className="text-lg font-semibold text-white border-b border-slate-700 pb-2">Course Enrollment</h3>
+                        <div className="space-y-2">
+                            <Label className="text-slate-300">Select Course</Label>
+                            <Select onValueChange={(value) => setValue('course_id', value)}>
+                                <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white w-full">
+                                    <SelectValue placeholder="Select a course (optional)" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-slate-900 border-slate-700">
                                     {courses.map((course) => (
-                                        <option key={course.id} value={course.id}>
+                                        <SelectItem key={course.id} value={course.id}>
                                             {course.name}
-                                        </option>
+                                        </SelectItem>
                                     ))}
-                                </select>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    {/* Target Batch Section */}
+                    <div className="bg-slate-800/30 rounded-lg p-4 space-y-4">
+                        <h3 className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            Target Batch
+                        </h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                                <Label className="text-slate-400 text-xs">Batch Time *</Label>
+                                <Select onValueChange={(value) => setValue('batch_time', value)}>
+                                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                                        <SelectValue placeholder="Select time" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-slate-900 border-slate-700">
+                                        {BATCH_TIME_SLOTS.map((slot) => (
+                                            <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="batch_time" className="text-slate-300">Batch Time</Label>
-                                <select
-                                    id="batch_time"
-                                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-md px-3 py-2"
-                                    {...register('batch_time')}
-                                >
-                                    <option value="">Select batch time</option>
-                                    {BATCH_TIME_SLOTS.map((slot) => (
-                                        <option key={slot} value={slot}>
-                                            {slot}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Label className="text-slate-400 text-xs">Batch (A/B)</Label>
+                                <Select onValueChange={(value) => setValue('batch_identifier', value)}>
+                                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                                        <SelectValue placeholder="All" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-slate-900 border-slate-700">
+                                        <SelectItem value="A">Batch A</SelectItem>
+                                        <SelectItem value="B">Batch B</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="batch_month" className="text-slate-300">Batch Month</Label>
-                                <select
-                                    id="batch_month"
-                                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-md px-3 py-2"
-                                    {...register('batch_month')}
-                                >
-                                    <option value="">Select month</option>
-                                    {MONTHS.map((month) => (
-                                        <option key={month.value} value={month.value}>
-                                            {month.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Label className="text-slate-400 text-xs">Month *</Label>
+                                <Select onValueChange={(value) => setValue('batch_month', value)}>
+                                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                                        <SelectValue placeholder="Month" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-slate-900 border-slate-700">
+                                        {MONTHS.map((month) => (
+                                            <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="batch_year" className="text-slate-300">Batch Year</Label>
-                                <select
-                                    id="batch_year"
-                                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-md px-3 py-2"
-                                    {...register('batch_year')}
-                                >
-                                    <option value="">Select year</option>
-                                    {YEARS.map((year) => (
-                                        <option key={year} value={year}>
-                                            {year}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="batch_identifier" className="text-slate-300">Batch (A/B)</Label>
-                                <select
-                                    id="batch_identifier"
-                                    className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-md px-3 py-2"
-                                    {...register('batch_identifier')}
-                                >
-                                    <option value="">Select batch</option>
-                                    <option value="A">Batch A</option>
-                                    <option value="B">Batch B</option>
-                                </select>
+                                <Label className="text-slate-400 text-xs">Year *</Label>
+                                <Select defaultValue={String(currentYear)} onValueChange={(value) => setValue('batch_year', value)}>
+                                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-slate-900 border-slate-700">
+                                        {YEARS.map((year) => (
+                                            <SelectItem key={year} value={year}>{year}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     </div>

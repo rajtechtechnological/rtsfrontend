@@ -91,10 +91,14 @@ function AddStaffDialog({ onStaffAdded }: { onStaffAdded: () => void }) {
     const onSubmit = async (data: StaffFormData) => {
         setIsLoading(true);
         try {
+            if (!user?.institution_id) {
+                toast.error('Institution not found');
+                return;
+            }
             // Create staff via API
             await staffApi.create({
                 ...data,
-                institution_id: user?.institution_id,
+                institution_id: user.institution_id,
             });
             toast.success('Staff member added successfully!');
             reset();

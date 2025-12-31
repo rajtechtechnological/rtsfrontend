@@ -24,6 +24,18 @@ import type {
     PaginatedResponse,
     StudentCourse,
     FeePayment,
+    Exam,
+    ExamDetail,
+    Question,
+    ExamSchedule,
+    ExamAttempt,
+    AvailableExam,
+    ExamAttemptStart,
+    ExamAttemptState,
+    ExamResult,
+    CreateExamRequest,
+    CreateQuestionRequest,
+    CreateScheduleRequest,
 } from '@/types';
 
 // ============ Auth Endpoints ============
@@ -97,6 +109,25 @@ export const studentsApi = {
 
     create: (data: CreateStudentRequest) =>
         apiClient.post<Student>('/api/students', data),
+
+    register: (data: {
+        full_name: string;
+        email: string;
+        phone?: string;
+        date_of_birth?: string;
+        father_name?: string;
+        guardian_name?: string;
+        guardian_phone?: string;
+        address?: string;
+        aadhar_number?: string;
+        apaar_id?: string;
+        last_qualification?: string;
+        batch_time?: string;
+        batch_month?: string;
+        batch_year?: string;
+        batch_identifier?: string;
+        course_id?: string;
+    }) => apiClient.post<Student>('/api/students/register', data),
 
     update: (id: string, data: Partial<CreateStudentRequest>) =>
         apiClient.patch<Student>(`/api/students/${id}`, data),
@@ -243,4 +274,105 @@ export const paymentsApi = {
 export const dashboardApi = {
     getStats: () =>
         apiClient.get<DashboardStats>('/api/dashboard/stats'),
+};
+
+// ============ Exam Endpoints (Manager) ============
+export const examsApi = {
+    // Exam CRUD
+    list: (params?: { course_id?: string; module_id?: string; is_active?: boolean }) =>
+        apiClient.get<Exam[]>('/api/exams', { params }),
+
+    get: (id: string) =>
+        apiClient.get<ExamDetail>(`/api/exams/${id}`),
+
+    create: (data: CreateExamRequest) =>
+        apiClient.post<Exam>('/api/exams', data),
+
+    update: (id: string, data: Partial<CreateExamRequest>) =>
+        apiClient.patch<Exam>(`/api/exams/${id}`, data),
+
+    delete: (id: string) =>
+        apiClient.delete(`/api/exams/${id}`),
+
+    // Questions
+    getQuestions: (examId: string) =>
+        apiClient.get<Question[]>(`/api/exams/${examId}/questions`),
+
+    addQuestion: (examId: string, data: CreateQuestionRequest) =>
+        apiClient.post<Question>(`/api/exams/${examId}/questions`, data),
+
+    addQuestionsBulk: (examId: string, questions: CreateQuestionRequest[]) =>
+        apiClient.post<Question[]>(`/api/exams/${examId}/questions/bulk`, { questions }),
+
+    updateQuestion: (questionId: string, data: Partial<CreateQuestionRequest>) =>
+        apiClient.patch<Question>(`/api/exams/questions/${questionId}`, data),
+
+    deleteQuestion: (questionId: string) =>
+        apiClient.delete(`/api/exams/questions/${questionId}`),
+
+    // Schedules
+    listSchedules: (params?: { exam_id?: string; batch_time?: string; scheduled_date?: string }) =>
+        apiClient.get<ExamSchedule[]>('/api/exams/schedules', { params }),
+
+    createSchedule: (data: CreateScheduleRequest) =>
+        apiClient.post<ExamSchedule>('/api/exams/schedules', data),
+
+    cancelSchedule: (scheduleId: string) =>
+        apiClient.delete(`/api/exams/schedules/${scheduleId}`),
+
+    // Verification
+    getPendingVerifications: (examId?: string) =>
+        apiClient.get<ExamAttempt[]>('/api/exams/attempts/pending', { params: { exam_id: examId } }),
+
+    reviewAttempt: (attemptId: string) =>
+        apiClient.get<any>(`/api/exams/attempts/${attemptId}/review`),
+
+    verifyAttempt: (attemptId: string, notes?: string) =>
+        apiClient.post<ExamAttempt>(`/api/exams/attempts/${attemptId}/verify`, { notes }),
+
+    allowRetake: (attemptId: string, notes?: string) =>
+        apiClient.post<ExamAttempt>(`/api/exams/attempts/${attemptId}/allow-retake`, { notes }),
+
+    verifyBulk: (attemptIds: string[]) =>
+        apiClient.post<{ verified_count: number; total_requested: number }>('/api/exams/attempts/verify-bulk', attemptIds),
+
+    getVerificationStats: () =>
+        apiClient.get<{
+            pending_verification: number;
+            verified_today: number;
+            total_verified: number;
+            pass_rate: number;
+            average_score: number;
+        }>('/api/exams/attempts/statistics'),
+};
+
+// ============ Student Exam Endpoints ============
+export const studentExamsApi = {
+    // Available exams
+    getAvailable: () =>
+        apiClient.get<AvailableExam[]>('/api/student/exams/available'),
+
+    // Start/Resume exam
+    startExam: (examId: string) =>
+        apiClient.post<ExamAttemptStart>(`/api/student/exams/${examId}/start`),
+
+    // Get attempt state
+    getAttemptState: (attemptId: string) =>
+        apiClient.get<ExamAttemptState>(`/api/student/exams/attempts/${attemptId}`),
+
+    // Submit answer (auto-save)
+    submitAnswer: (attemptId: string, questionId: string, selectedOption: string | null, markedForReview: boolean = false) =>
+        apiClient.post<{ status: string; time_remaining: number }>(`/api/student/exams/attempts/${attemptId}/answer`, {
+            question_id: questionId,
+            selected_option: selectedOption,
+            marked_for_review: markedForReview,
+        }),
+
+    // Submit exam
+    submitExam: (attemptId: string) =>
+        apiClient.post<ExamAttempt>(`/api/student/exams/attempts/${attemptId}/submit`),
+
+    // Get results
+    getResults: () =>
+        apiClient.get<ExamResult[]>('/api/student/exams/results'),
 };

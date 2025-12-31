@@ -192,7 +192,7 @@ export interface CreateStaffRequest {
     full_name: string;
     email: string;
     phone: string; // Required - used as default password
-    role: 'staff' | 'staff_manager';
+    role: 'staff' | 'staff_manager' | 'receptionist';
     daily_rate: number;
     institution_id: string;
 }
@@ -253,6 +253,214 @@ export interface PaymentSummary {
         payment_count: number;
         status: 'paid' | 'pending';
     }>;
+}
+
+// ============ Exam Types ============
+
+export interface Exam {
+    id: string;
+    course_id: string;
+    module_id: string;
+    institution_id: string;
+    title: string;
+    description: string | null;
+    total_questions: number;
+    passing_marks: number;
+    duration_minutes: number;
+    is_active: boolean;
+    allow_retakes: boolean;
+    max_retakes: number;
+    shuffle_questions: boolean;
+    shuffle_options: boolean;
+    show_result_immediately: boolean;
+    batch_time: string | null;
+    batch_month: string | null;
+    batch_year: string | null;
+    batch_identifier: string | null;
+    created_by: string;
+    created_at: string;
+    updated_at: string | null;
+}
+
+export interface ExamDetail extends Exam {
+    questions: Question[];
+    course_name?: string;
+    module_name?: string;
+}
+
+export interface Question {
+    id: string;
+    exam_id: string;
+    question_text: string;
+    option_a: string;
+    option_b: string;
+    option_c: string;
+    option_d: string;
+    correct_option: 'A' | 'B' | 'C' | 'D';
+    marks: number;
+    order_index: number;
+    explanation: string | null;
+    is_active: boolean;
+    created_at: string;
+}
+
+export interface ExamSchedule {
+    id: string;
+    exam_id: string;
+    institution_id: string;
+    batch_time: string;
+    batch_identifier: string | null;
+    batch_month: string | null;
+    batch_year: string | null;
+    scheduled_date: string;
+    start_time: string;
+    end_time: string;
+    is_active: boolean;
+    created_by: string;
+    created_at: string;
+    exam_title?: string;
+    course_name?: string;
+    module_name?: string;
+}
+
+export interface ExamAttempt {
+    id: string;
+    exam_id: string;
+    student_id: string;
+    attempt_number: number;
+    status: 'in_progress' | 'completed' | 'submitted' | 'timed_out';
+    start_time: string;
+    end_time: string | null;
+    total_marks: number | null;
+    obtained_marks: number | null;
+    percentage: number | null;
+    passed: boolean | null;
+    total_answered: number;
+    correct_answers: number | null;
+    is_verified: boolean;
+    verified_at: string | null;
+    created_at: string;
+    exam_title?: string;
+    student_name?: string;
+    student_email?: string;
+}
+
+export interface AvailableExam {
+    exam_id: string;
+    exam_title: string;
+    course_id: string;
+    course_name: string;
+    module_id: string;
+    module_name: string;
+    total_questions: number;
+    duration_minutes: number;
+    passing_marks: number;
+    is_locked: boolean;
+    lock_reason: string | null;
+    schedule_id: string | null;
+    scheduled_date: string | null;
+    start_time: string | null;
+    end_time: string | null;
+    previous_attempts: number;
+    can_retake: boolean;
+    best_score: number | null;
+}
+
+export interface ExamAttemptStart {
+    attempt_id: string;
+    exam_id: string;
+    exam_title: string;
+    duration_minutes: number;
+    total_questions: number;
+    start_time: string;
+    end_time: string;
+    questions: ExamQuestion[];
+}
+
+export interface ExamQuestion {
+    id: string;
+    index: number;
+    question_text: string;
+    option_a: string;
+    option_b: string;
+    option_c: string;
+    option_d: string;
+    marks: number;
+}
+
+export interface ExamAttemptState {
+    attempt_id: string;
+    exam_id: string;
+    exam_title: string;
+    status: string;
+    current_question_index: number;
+    total_questions: number;
+    time_remaining_seconds: number;
+    answers: Record<string, string | null>;
+    marked_for_review: string[];
+}
+
+export interface ExamResult {
+    attempt_id: string;
+    exam_id: string;
+    exam_title: string;
+    course_name: string;
+    module_name: string;
+    attempt_number: number;
+    status: string;
+    start_time: string;
+    end_time: string | null;
+    duration_taken_minutes: number | null;
+    total_questions: number;
+    total_answered: number;
+    correct_answers: number;
+    total_marks: number;
+    obtained_marks: number;
+    percentage: number;
+    passed: boolean;
+    is_verified: boolean;
+    verified_at: string | null;
+}
+
+export interface CreateExamRequest {
+    course_id: string;
+    module_id: string;
+    title: string;
+    description?: string;
+    passing_marks?: number;
+    duration_minutes?: number;
+    allow_retakes?: boolean;
+    max_retakes?: number;
+    shuffle_questions?: boolean;
+    shuffle_options?: boolean;
+    show_result_immediately?: boolean;
+    batch_time: string;
+    batch_month: string;
+    batch_year: string;
+    batch_identifier?: string;
+}
+
+export interface CreateQuestionRequest {
+    question_text: string;
+    option_a: string;
+    option_b: string;
+    option_c: string;
+    option_d: string;
+    correct_option: 'A' | 'B' | 'C' | 'D';
+    marks?: number;
+    explanation?: string;
+    order_index?: number;
+}
+
+export interface CreateScheduleRequest {
+    exam_id: string;
+    batch_time: string;
+    batch_identifier?: string;
+    batch_month?: string;
+    batch_year?: string;
+    scheduled_date: string;
+    start_time: string;
+    end_time: string;
 }
 
 // Dashboard stats

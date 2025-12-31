@@ -199,7 +199,7 @@ export function ChatWidget() {
                 className="flex-1 bg-slate-800 border-slate-700 focus:border-purple-600 focus:ring-purple-600 text-white placeholder:text-slate-400"
               />
               <Button
-                onClick={handleSendMessage}
+                onClick={() => handleSendMessage()}
                 disabled={!inputValue.trim()}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 size="icon"

@@ -140,6 +140,7 @@ function StudentDashboard({ user }: { user: any }) {
                     // Get progress for each course
                     const progressData: Record<string, any> = {};
                     for (const enrollment of coursesData) {
+                        if (!enrollment.course) continue;
                         try {
                             const progressResponse = await studentsApi.getCourseProgress(
                                 currentStudent.id,

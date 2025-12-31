@@ -62,20 +62,20 @@ interface CourseProgress {
 interface Student {
     id: string;
     student_id: string;
-    user: {
+    user?: {
         full_name: string;
         email: string;
-        phone: string;
+        phone: string | null;
     };
-    date_of_birth: string;
-    address: string;
+    date_of_birth: string | null;
+    address: string | null;
     enrollment_date: string;
     photo_url: string | null;
 }
 
 interface StudentCourse {
     id: string;
-    course: {
+    course?: {
         id: string;
         name: string;
         duration_months: number;
@@ -115,6 +115,7 @@ export default function StudentDetailPage() {
             // Fetch progress for each course
             const progressData: Record<string, CourseProgress> = {};
             for (const enrollment of coursesData) {
+                if (!enrollment.course) continue;
                 try {
                     const progressResponse = await studentsApi.getCourseProgress(
                         studentId,
@@ -131,7 +132,7 @@ export default function StudentDetailPage() {
             setCourseProgress(progressData);
 
             // Select first course by default
-            if (coursesData.length > 0 && !selectedCourse) {
+            if (coursesData.length > 0 && !selectedCourse && coursesData[0].course) {
                 setSelectedCourse(coursesData[0].course.id);
             }
         } catch (error) {
@@ -222,22 +223,22 @@ export default function StudentDetailPage() {
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
                         <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-2 border-slate-700">
                             <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl sm:text-2xl">
-                                {student.user.full_name.split(' ').map((n) => n[0]).join('').toUpperCase()}
+                                {student.user?.full_name?.split(' ').map((n) => n[0]).join('').toUpperCase() || 'ST'}
                             </AvatarFallback>
                         </Avatar>
 
                         <div className="flex-1 space-y-4 text-center sm:text-left w-full">
                             <div>
-                                <h2 className="text-xl sm:text-2xl font-bold text-white">{student.user.full_name}</h2>
+                                <h2 className="text-xl sm:text-2xl font-bold text-white">{student.user?.full_name || 'Unknown'}</h2>
                                 <p className="text-slate-400 text-sm sm:text-base">ID: {student.student_id}</p>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                                 <div className="flex items-center justify-center sm:justify-start gap-2 text-sm">
                                     <Mail className="h-4 w-4 text-slate-500 shrink-0" />
-                                    <span className="text-slate-300 truncate">{student.user.email}</span>
+                                    <span className="text-slate-300 truncate">{student.user?.email || '-'}</span>
                                 </div>
-                                {student.user.phone && (
+                                {student.user?.phone && (
                                     <div className="flex items-center justify-center sm:justify-start gap-2 text-sm">
                                         <Phone className="h-4 w-4 text-slate-500 shrink-0" />
                                         <span className="text-slate-300">{student.user.phone}</span>
@@ -279,21 +280,22 @@ export default function StudentDetailPage() {
                         <>
                             {/* Course Selection Tabs */}
                             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 w-full">
-                                {courses.map((enrollment) => {
-                                    const progress = courseProgress[enrollment.course.id];
+                                {courses.filter(e => e.course).map((enrollment) => {
+                                    const course = enrollment.course!;
+                                    const progress = courseProgress[course.id];
                                     return (
                                         <Button
-                                            key={enrollment.course.id}
-                                            variant={selectedCourse === enrollment.course.id ? 'default' : 'outline'}
-                                            onClick={() => setSelectedCourse(enrollment.course.id)}
+                                            key={course.id}
+                                            variant={selectedCourse === course.id ? 'default' : 'outline'}
+                                            onClick={() => setSelectedCourse(course.id)}
                                             className={`w-full sm:w-auto max-w-full ${
-                                                selectedCourse === enrollment.course.id
+                                                selectedCourse === course.id
                                                     ? 'bg-gradient-to-r from-blue-600 to-purple-600'
                                                     : 'border-slate-700 hover:border-slate-600'
                                             }`}
                                         >
                                             <div className="flex flex-col items-start min-w-0 w-full">
-                                                <span className="font-medium text-sm truncate w-full text-left">{enrollment.course.name}</span>
+                                                <span className="font-medium text-sm truncate w-full text-left">{course.name}</span>
                                                 {progress && (
                                                     <span className="text-xs opacity-75">
                                                         {progress.completed_modules}/{progress.total_modules} completed
