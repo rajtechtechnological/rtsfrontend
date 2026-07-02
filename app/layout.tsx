@@ -1,17 +1,28 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-const inter = Inter({
+const geistSans = Geist({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-geist-sans",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+});
+
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  variable: "--font-source-serif",
 });
 
 export const metadata: Metadata = {
-  title: "EduManage - Multi-Institution Education Platform",
-  description: "A comprehensive multi-tenant education management platform for franchise-based institutions. Manage students, staff, attendance, payroll, and certificates.",
-  keywords: ["education", "management", "platform", "students", "staff", "payroll", "certificates"],
+  title: "RTS Education — Institution Management",
+  description:
+    "Rajtech Technological Systems — education management platform for institutions: students, staff, payments, examinations, and certificates.",
+  keywords: ["education", "institution", "students", "staff", "payments", "certificates"],
 };
 
 export default function RootLayout({
@@ -20,11 +31,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased bg-slate-950 text-slate-100`} suppressHydrationWarning>
-        <Providers>
-          {children}
-        </Providers>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} font-sans antialiased`}
+        suppressHydrationWarning
+      >
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
