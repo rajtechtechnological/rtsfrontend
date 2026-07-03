@@ -8,12 +8,12 @@ import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth/auth-context';
 import { examsApi, coursesApi, studentExamsApi } from '@/lib/api/endpoints';
 import type { Exam, Course, AvailableExam } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { LedgerTable, type LedgerColumn } from '@/components/ui/ledger-table';
+import { Stamp } from '@/components/ui/stamp';
 import {
     Dialog,
     DialogContent,
@@ -34,24 +34,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-    ClipboardList,
-    Plus,
-    Search,
-    Clock,
-    FileQuestion,
-    Users,
-    Edit,
-    Trash2,
-    Loader2,
-    MoreHorizontal,
-    Calendar,
-    CheckCircle,
-    Lock,
-    Play,
-    Eye,
-    Award,
-} from 'lucide-react';
+import { Loader2, MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
 
 const MANAGER_ROLES = ['super_admin', 'institution_director', 'staff_manager'];
@@ -110,6 +93,8 @@ const examSchema = z.object({
 
 type ExamFormData = z.infer<typeof examSchema>;
 
+const fieldLabelClass = 'text-xs uppercase tracking-wide text-ink-muted';
+
 function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => void; courses: Course[] }) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -166,33 +151,25 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Exam
-                </Button>
+                <Button>Create Exam</Button>
             </DialogTrigger>
-            <DialogContent className="bg-slate-900 border-slate-800 sm:max-w-xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle className="text-white flex items-center gap-2">
-                        <ClipboardList className="h-5 w-5 text-blue-400" />
-                        Create New Exam
-                    </DialogTitle>
+                    <DialogTitle className="font-serif text-ink">Create New Exam</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label className="text-slate-300">Exam Title *</Label>
+                        <Label className={fieldLabelClass}>Exam Title (required)</Label>
                         <Input
-                            className="bg-slate-800/50 border-slate-700 text-white"
                             placeholder="e.g., Module 1 Final Exam"
                             {...register('title')}
                         />
-                        {errors.title && <p className="text-sm text-red-400">{errors.title.message}</p>}
+                        {errors.title && <p className="text-sm text-danger">{errors.title.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-slate-300">Description</Label>
+                        <Label className={fieldLabelClass}>Description</Label>
                         <Input
-                            className="bg-slate-800/50 border-slate-700 text-white"
                             placeholder="Brief exam description"
                             {...register('description')}
                         />
@@ -200,15 +177,15 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
 
                     {/* Course & Module - Stacked on mobile */}
                     <div className="space-y-2">
-                        <Label className="text-slate-300">Course *</Label>
+                        <Label className={fieldLabelClass}>Course (required)</Label>
                         <Select onValueChange={(value) => {
                             setSelectedCourse(value);
                             setValue('course_id', value);
                         }}>
-                            <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white w-full">
+                            <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select course" />
                             </SelectTrigger>
-                            <SelectContent className="bg-slate-900 border-slate-700 max-w-[calc(100vw-3rem)]">
+                            <SelectContent className="max-w-[calc(100vw-3rem)]">
                                 {courses.map((course) => (
                                     <SelectItem key={course.id} value={course.id} className="truncate">
                                         {course.name}
@@ -216,16 +193,16 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.course_id && <p className="text-sm text-red-400">{errors.course_id.message}</p>}
+                        {errors.course_id && <p className="text-sm text-danger">{errors.course_id.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-slate-300">Module *</Label>
+                        <Label className={fieldLabelClass}>Module (required)</Label>
                         <Select onValueChange={(value) => setValue('module_id', value)} disabled={!selectedCourse}>
-                            <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white w-full">
+                            <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select module" />
                             </SelectTrigger>
-                            <SelectContent className="bg-slate-900 border-slate-700 max-w-[calc(100vw-3rem)]">
+                            <SelectContent className="max-w-[calc(100vw-3rem)]">
                                 {modules.map((module: any) => (
                                     <SelectItem key={module.id} value={module.id} className="truncate">
                                         Module {module.module_number}: {module.module_name}
@@ -233,89 +210,84 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.module_id && <p className="text-sm text-red-400">{errors.module_id.message}</p>}
+                        {errors.module_id && <p className="text-sm text-danger">{errors.module_id.message}</p>}
                     </div>
 
                     {/* Batch Information Section */}
-                    <div className="bg-slate-800/30 rounded-lg p-4 space-y-4">
-                        <h3 className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                            <Users className="h-4 w-4" />
-                            Target Batch
-                        </h3>
+                    <div className="rounded-md border border-line p-4 space-y-4">
+                        <h3 className={fieldLabelClass}>Target Batch</h3>
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
-                                <Label className="text-slate-400 text-xs">Batch Time *</Label>
+                                <Label className={fieldLabelClass}>Batch Time (required)</Label>
                                 <Select onValueChange={(value) => setValue('batch_time', value)}>
-                                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                                    <SelectTrigger>
                                         <SelectValue placeholder="Select time" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-slate-900 border-slate-700">
+                                    <SelectContent>
                                         {BATCH_TIME_SLOTS.map((slot) => (
                                             <SelectItem key={slot} value={slot}>{slot}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.batch_time && <p className="text-xs text-red-400">{errors.batch_time.message}</p>}
+                                {errors.batch_time && <p className="text-xs text-danger">{errors.batch_time.message}</p>}
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-400 text-xs">Batch (A/B)</Label>
+                                <Label className={fieldLabelClass}>Batch (A/B)</Label>
                                 <Select onValueChange={(value) => setValue('batch_identifier', value)}>
-                                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                                    <SelectTrigger>
                                         <SelectValue placeholder="All" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-slate-900 border-slate-700">
+                                    <SelectContent>
                                         <SelectItem value="A">Batch A</SelectItem>
                                         <SelectItem value="B">Batch B</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-400 text-xs">Month *</Label>
+                                <Label className={fieldLabelClass}>Month (required)</Label>
                                 <Select onValueChange={(value) => setValue('batch_month', value)}>
-                                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                                    <SelectTrigger>
                                         <SelectValue placeholder="Month" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-slate-900 border-slate-700">
+                                    <SelectContent>
                                         {MONTHS.map((month) => (
                                             <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.batch_month && <p className="text-xs text-red-400">{errors.batch_month.message}</p>}
+                                {errors.batch_month && <p className="text-xs text-danger">{errors.batch_month.message}</p>}
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-400 text-xs">Year *</Label>
+                                <Label className={fieldLabelClass}>Year (required)</Label>
                                 <Select defaultValue={String(currentYear)} onValueChange={(value) => setValue('batch_year', value)}>
-                                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                                    <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-slate-900 border-slate-700">
+                                    <SelectContent>
                                         {YEARS.map((year) => (
                                             <SelectItem key={year} value={year}>{year}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.batch_year && <p className="text-xs text-red-400">{errors.batch_year.message}</p>}
+                                {errors.batch_year && <p className="text-xs text-danger">{errors.batch_year.message}</p>}
                             </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-slate-300">Duration (minutes) *</Label>
+                            <Label className={fieldLabelClass}>Duration in Minutes (required)</Label>
                             <Input
                                 type="number"
-                                className="bg-slate-800/50 border-slate-700 text-white"
                                 {...register('duration_minutes', { valueAsNumber: true })}
                             />
-                            {errors.duration_minutes && <p className="text-sm text-red-400">{errors.duration_minutes.message}</p>}
+                            {errors.duration_minutes && <p className="text-sm text-danger">{errors.duration_minutes.message}</p>}
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-slate-300">Passing Marks (%)</Label>
+                            <Label className={fieldLabelClass}>Passing Marks (%)</Label>
                             <Input
                                 type="number"
-                                className="bg-slate-800/50 border-slate-700 text-white"
                                 {...register('passing_marks', { valueAsNumber: true })}
                             />
                         </div>
@@ -323,7 +295,7 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
 
                     <div className="space-y-4 pt-2">
                         <div className="flex items-center justify-between">
-                            <Label className="text-slate-300">Shuffle Questions</Label>
+                            <Label className={fieldLabelClass}>Shuffle Questions</Label>
                             <Switch
                                 defaultChecked={true}
                                 onCheckedChange={(checked) => setValue('shuffle_questions', checked)}
@@ -331,7 +303,7 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
                         </div>
 
                         <div className="flex items-center justify-between">
-                            <Label className="text-slate-300">Shuffle Options</Label>
+                            <Label className={fieldLabelClass}>Shuffle Options</Label>
                             <Switch
                                 defaultChecked={true}
                                 onCheckedChange={(checked) => setValue('shuffle_options', checked)}
@@ -339,7 +311,7 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
                         </div>
 
                         <div className="flex items-center justify-between">
-                            <Label className="text-slate-300">Allow Retakes</Label>
+                            <Label className={fieldLabelClass}>Allow Retakes</Label>
                             <Switch
                                 onCheckedChange={(checked) => setValue('allow_retakes', checked)}
                             />
@@ -347,30 +319,24 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
 
                         {allowRetakes && (
                             <div className="space-y-2">
-                                <Label className="text-slate-300">Max Retakes (0 = unlimited)</Label>
+                                <Label className={fieldLabelClass}>Max Retakes (0 = unlimited)</Label>
                                 <Input
                                     type="number"
-                                    className="bg-slate-800/50 border-slate-700 text-white"
                                     {...register('max_retakes', { valueAsNumber: true })}
                                 />
                             </div>
                         )}
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-4">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-line">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => setOpen(false)}
-                            className="border-slate-700 text-slate-300 hover:bg-slate-800"
                         >
                             Cancel
                         </Button>
-                        <Button
-                            type="submit"
-                            disabled={isLoading}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                        >
+                        <Button type="submit" disabled={isLoading}>
                             {isLoading ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -387,105 +353,10 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
     );
 }
 
-function ExamCard({ exam, onDelete }: { exam: Exam; onDelete: () => void }) {
-    // Format batch info for display
-    const batchInfo = exam.batch_time ? (
-        `${exam.batch_time}${exam.batch_identifier ? ` (${exam.batch_identifier})` : ''} • ${MONTHS.find(m => m.value === exam.batch_month)?.label || exam.batch_month} ${exam.batch_year}`
-    ) : null;
-
-    return (
-        <Card className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all">
-            <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                        <CardTitle className="text-lg text-white">{exam.title}</CardTitle>
-                        {batchInfo && (
-                            <p className="text-xs text-blue-400 mt-1 flex items-center gap-1">
-                                <Users className="h-3 w-3" />
-                                {batchInfo}
-                            </p>
-                        )}
-                        {exam.description && <p className="text-sm text-slate-400 mt-1">{exam.description}</p>}
-                    </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
-                            <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/exams/${exam.id}/questions`} className="text-slate-300 hover:text-white hover:bg-slate-800">
-                                    <FileQuestion className="h-4 w-4 mr-2" /> Manage Questions
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/exams/${exam.id}/schedule`} className="text-slate-300 hover:text-white hover:bg-slate-800">
-                                    <Calendar className="h-4 w-4 mr-2" /> Schedule
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
-                                <Edit className="h-4 w-4 mr-2" /> Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={onDelete} className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-blue-500/10">
-                            <FileQuestion className="h-4 w-4 text-blue-400" />
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Questions</p>
-                            <p className="text-sm font-medium text-white">{exam.total_questions}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-purple-500/10">
-                            <Clock className="h-4 w-4 text-purple-400" />
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Duration</p>
-                            <p className="text-sm font-medium text-white">{exam.duration_minutes} min</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-green-500/10">
-                            <Award className="h-4 w-4 text-green-400" />
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Pass %</p>
-                            <p className="text-sm font-medium text-white">{exam.passing_marks}%</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Badge className={exam.is_active ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-slate-500/10 text-slate-400 border-slate-500/30'}>
-                            {exam.is_active ? 'Active' : 'Inactive'}
-                        </Badge>
-                    </div>
-                </div>
-                <div className="mt-4 flex gap-2">
-                    <Link href={`/dashboard/exams/${exam.id}/questions`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full border-slate-700 text-slate-300 hover:bg-slate-800">
-                            <FileQuestion className="h-4 w-4 mr-2" />
-                            Questions
-                        </Button>
-                    </Link>
-                    <Link href={`/dashboard/exams/${exam.id}/schedule`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full border-slate-700 text-slate-300 hover:bg-slate-800">
-                            <Calendar className="h-4 w-4 mr-2" />
-                            Schedule
-                        </Button>
-                    </Link>
-                </div>
-            </CardContent>
-        </Card>
-    );
+function batchLabel(exam: Exam): string | null {
+    if (!exam.batch_time) return null;
+    const month = MONTHS.find(m => m.value === exam.batch_month)?.label || exam.batch_month;
+    return `${exam.batch_time}${exam.batch_identifier ? ` (${exam.batch_identifier})` : ''} · ${month} ${exam.batch_year}`;
 }
 
 function ManagerExamsView() {
@@ -529,61 +400,125 @@ function ManagerExamsView() {
         exam.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const columns: LedgerColumn<Exam>[] = [
+        {
+            key: 'title',
+            header: 'Exam',
+            cell: (exam) => (
+                <Link
+                    href={`/dashboard/exams/${exam.id}/questions`}
+                    className="font-medium text-ink hover:underline"
+                >
+                    {exam.title}
+                </Link>
+            ),
+        },
+        {
+            key: 'batch',
+            header: 'Batch',
+            cell: (exam) => batchLabel(exam) ?? <span className="text-ink-muted">—</span>,
+        },
+        {
+            key: 'questions',
+            header: 'Questions',
+            numeric: true,
+            cell: (exam) => exam.total_questions,
+        },
+        {
+            key: 'duration',
+            header: 'Duration',
+            numeric: true,
+            cell: (exam) => `${exam.duration_minutes} min`,
+        },
+        {
+            key: 'passing',
+            header: 'Pass Mark',
+            numeric: true,
+            cell: (exam) => `${exam.passing_marks}%`,
+        },
+        {
+            key: 'status',
+            header: 'Status',
+            cell: (exam) => <Stamp status={exam.is_active ? 'Active' : 'Inactive'} />,
+        },
+        {
+            key: 'actions',
+            header: '',
+            align: 'right',
+            headerClassName: 'w-12',
+            cell: (exam) => (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon-sm" className="text-ink-muted hover:text-ink">
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/exams/${exam.id}/questions`}>Manage Questions</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/exams/${exam.id}/schedule`}>Schedule</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem variant="destructive" onClick={() => handleDelete(exam.id)}>
+                            Delete
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            ),
+        },
+    ];
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <ClipboardList className="h-7 w-7 text-blue-400" />
-                        Exam Management
-                    </h1>
-                    <p className="text-slate-400 mt-1">Create and manage exams for courses</p>
+                    <h1 className="font-serif text-2xl font-semibold text-ink">Examinations</h1>
+                    <p className="text-sm text-ink-muted mt-1">Create and manage exams for courses</p>
                 </div>
                 <div className="flex gap-2">
                     <Link href="/dashboard/exams/verify">
-                        <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Verify Results
-                        </Button>
+                        <Button variant="outline">Verify Results</Button>
                     </Link>
                     <CreateExamDialog onExamCreated={fetchData} courses={courses} />
                 </div>
             </div>
 
-            <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                    <div className="relative max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                        <Input
-                            placeholder="Search exams..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 bg-slate-800/50 border-slate-700 text-white"
-                        />
-                    </div>
-                </CardContent>
-            </Card>
+            {/* Toolbar */}
+            <div className="flex items-center gap-3">
+                <Input
+                    placeholder="Search exams..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-9 w-full sm:w-64"
+                />
+            </div>
 
-            {isLoading ? (
-                <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+            <section className="rounded-md border border-line bg-surface">
+                <div className="flex items-center justify-between border-b border-line px-4 py-3">
+                    <h2 className="font-serif text-lg text-ink">Exam Register</h2>
+                    <span className="font-mono text-xs tabular-nums text-ink-muted">
+                        {filteredExams.length} records
+                    </span>
                 </div>
-            ) : filteredExams.length === 0 ? (
-                <Card className="bg-slate-900/50 border-slate-800">
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                        <ClipboardList className="h-12 w-12 text-slate-600 mb-4" />
-                        <p className="text-slate-400 text-center">
-                            {searchQuery ? 'No exams found matching your search' : 'No exams created yet. Create your first exam!'}
-                        </p>
-                    </CardContent>
-                </Card>
-            ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {filteredExams.map((exam) => (
-                        <ExamCard key={exam.id} exam={exam} onDelete={() => handleDelete(exam.id)} />
-                    ))}
-                </div>
-            )}
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
+                    </div>
+                ) : (
+                    <LedgerTable
+                        columns={columns}
+                        rows={filteredExams}
+                        rowKey={(exam) => exam.id}
+                        emptyMessage={
+                            searchQuery
+                                ? 'No exams match your search.'
+                                : 'No exams have been created yet.'
+                        }
+                    />
+                )}
+            </section>
         </div>
     );
 }
@@ -610,105 +545,102 @@ function StudentExamsView() {
         }
     };
 
+    const columns: LedgerColumn<AvailableExam>[] = [
+        {
+            key: 'title',
+            header: 'Exam',
+            cell: (exam) => <span className="font-medium">{exam.exam_title}</span>,
+        },
+        {
+            key: 'course',
+            header: 'Course / Module',
+            cell: (exam) => (
+                <span className="text-ink-muted">
+                    {exam.course_name} — {exam.module_name}
+                </span>
+            ),
+        },
+        {
+            key: 'questions',
+            header: 'Questions',
+            numeric: true,
+            cell: (exam) => exam.total_questions,
+        },
+        {
+            key: 'duration',
+            header: 'Duration',
+            numeric: true,
+            cell: (exam) => `${exam.duration_minutes} min`,
+        },
+        {
+            key: 'passing',
+            header: 'Pass Mark',
+            numeric: true,
+            cell: (exam) => `${exam.passing_marks}%`,
+        },
+        {
+            key: 'best',
+            header: 'Best Score',
+            numeric: true,
+            cell: (exam) =>
+                exam.best_score !== null ? `${exam.best_score.toFixed(1)}%` : '—',
+        },
+        {
+            key: 'status',
+            header: 'Status',
+            align: 'right',
+            cell: (exam) =>
+                exam.is_locked ? (
+                    <span className="inline-flex items-center gap-2">
+                        {exam.lock_reason && (
+                            <span className="text-xs text-ink-muted normal-case">{exam.lock_reason}</span>
+                        )}
+                        <Stamp status="Locked" bordered />
+                    </span>
+                ) : (
+                    <Link href={`/dashboard/exams/take/${exam.exam_id}`}>
+                        <Button size="sm" variant="outline">
+                            {exam.previous_attempts > 0 && exam.can_retake ? 'Retake Exam' : 'Start Exam'}
+                        </Button>
+                    </Link>
+                ),
+        },
+    ];
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+                <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
             </div>
         );
     }
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <ClipboardList className="h-7 w-7 text-blue-400" />
-                    My Exams
-                </h1>
-                <p className="text-slate-400 mt-1">View and take your scheduled exams</p>
-            </div>
-
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="font-serif text-2xl font-semibold text-ink">My Exams</h1>
+                    <p className="text-sm text-ink-muted mt-1">View and take your scheduled exams</p>
+                </div>
                 <Link href="/dashboard/exams/results">
-                    <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
-                        <Award className="h-4 w-4 mr-2" />
-                        View Results
-                    </Button>
+                    <Button variant="outline">View Results</Button>
                 </Link>
             </div>
 
-            {exams.length === 0 ? (
-                <Card className="bg-slate-900/50 border-slate-800">
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                        <ClipboardList className="h-12 w-12 text-slate-600 mb-4" />
-                        <p className="text-slate-400 text-center">No exams available at the moment</p>
-                    </CardContent>
-                </Card>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {exams.map((exam) => (
-                        <Card key={exam.exam_id} className="bg-slate-900/50 border-slate-800">
-                            <CardHeader className="pb-3">
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <CardTitle className="text-lg text-white">{exam.exam_title}</CardTitle>
-                                        <p className="text-sm text-slate-400 mt-1">{exam.course_name} - {exam.module_name}</p>
-                                    </div>
-                                    {exam.is_locked ? (
-                                        <Lock className="h-5 w-5 text-red-400" />
-                                    ) : (
-                                        <CheckCircle className="h-5 w-5 text-green-400" />
-                                    )}
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-slate-400">Questions</span>
-                                        <span className="text-white">{exam.total_questions}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-slate-400">Duration</span>
-                                        <span className="text-white">{exam.duration_minutes} minutes</span>
-                                    </div>
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-slate-400">Pass Mark</span>
-                                        <span className="text-white">{exam.passing_marks}%</span>
-                                    </div>
-                                    {exam.previous_attempts > 0 && (
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-slate-400">Attempts</span>
-                                            <span className="text-white">{exam.previous_attempts}</span>
-                                        </div>
-                                    )}
-                                    {exam.best_score !== null && (
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-slate-400">Best Score</span>
-                                            <span className="text-green-400">{exam.best_score.toFixed(1)}%</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {exam.is_locked ? (
-                                    <div className="mt-4">
-                                        <Badge className="bg-red-500/10 text-red-400 border-red-500/30 w-full justify-center py-2">
-                                            <Lock className="h-3 w-3 mr-2" />
-                                            {exam.lock_reason}
-                                        </Badge>
-                                    </div>
-                                ) : (
-                                    <Link href={`/dashboard/exams/take/${exam.exam_id}`}>
-                                        <Button className="w-full mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                                            <Play className="h-4 w-4 mr-2" />
-                                            {exam.previous_attempts > 0 && exam.can_retake ? 'Retake Exam' : 'Start Exam'}
-                                        </Button>
-                                    </Link>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ))}
+            <section className="rounded-md border border-line bg-surface">
+                <div className="flex items-center justify-between border-b border-line px-4 py-3">
+                    <h2 className="font-serif text-lg text-ink">Scheduled Exams</h2>
+                    <span className="font-mono text-xs tabular-nums text-ink-muted">
+                        {exams.length} records
+                    </span>
                 </div>
-            )}
+                <LedgerTable
+                    columns={columns}
+                    rows={exams}
+                    rowKey={(exam) => exam.exam_id}
+                    emptyMessage="No exams are available at the moment."
+                />
+            </section>
         </div>
     );
 }
@@ -722,7 +654,7 @@ export default function ExamsPage() {
     if (!user) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+                <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
             </div>
         );
     }

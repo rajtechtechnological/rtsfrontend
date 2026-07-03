@@ -9,7 +9,6 @@ import { useRouter } from 'next/navigation';
 import { staffApi } from '@/lib/api/endpoints';
 import type { Staff } from '@/types';
 import { useAuth } from '@/lib/auth/auth-context';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,29 +19,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { LedgerTable, type LedgerColumn } from '@/components/ui/ledger-table';
+import { Stamp } from '@/components/ui/stamp';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-    Users,
-    Plus,
-    Search,
-    MoreHorizontal,
-    Mail,
-    Phone,
-    Eye,
-    Edit,
-    Trash2,
-    Loader2,
-    IndianRupee,
-} from 'lucide-react';
+import { Loader2, MoreHorizontal } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -68,6 +48,8 @@ const staffSchema = z.object({
 });
 
 type StaffFormData = z.infer<typeof staffSchema>;
+
+const fieldLabelClass = 'text-xs uppercase tracking-wide text-ink-muted';
 
 function AddStaffDialog({ onStaffAdded }: { onStaffAdded: () => void }) {
     const [open, setOpen] = useState(false);
@@ -114,99 +96,84 @@ function AddStaffDialog({ onStaffAdded }: { onStaffAdded: () => void }) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-lg shadow-purple-500/25">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Staff
-                </Button>
+                <Button>Add Staff</Button>
             </DialogTrigger>
-            <DialogContent className="bg-slate-900 border-slate-800 sm:max-w-md">
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-white flex items-center gap-2">
-                        <Users className="h-5 w-5 text-purple-400" />
-                        Add New Staff Member
-                    </DialogTitle>
+                    <DialogTitle className="font-serif text-ink">Add New Staff Member</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="full_name" className="text-slate-300">Full Name *</Label>
+                        <Label htmlFor="full_name" className={fieldLabelClass}>Full Name (required)</Label>
                         <Input
                             id="full_name"
-                            className="bg-slate-800/50 border-slate-700 text-white"
                             placeholder="Enter staff name"
                             {...register('full_name')}
                         />
                         {errors.full_name && (
-                            <p className="text-sm text-red-400">{errors.full_name.message}</p>
+                            <p className="text-sm text-danger">{errors.full_name.message}</p>
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="email" className="text-slate-300">Email *</Label>
+                        <Label htmlFor="email" className={fieldLabelClass}>Email (required)</Label>
                         <Input
                             id="email"
                             type="email"
-                            className="bg-slate-800/50 border-slate-700 text-white"
                             placeholder="staff@institute.com"
                             {...register('email')}
                         />
                         {errors.email && (
-                            <p className="text-sm text-red-400">{errors.email.message}</p>
+                            <p className="text-sm text-danger">{errors.email.message}</p>
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-slate-300">Phone *</Label>
+                        <Label htmlFor="phone" className={fieldLabelClass}>Phone (required)</Label>
                         <Input
                             id="phone"
-                            className="bg-slate-800/50 border-slate-700 text-white"
                             placeholder="+91 98765 43210"
                             {...register('phone')}
                         />
                         {errors.phone && (
-                            <p className="text-sm text-red-400">{errors.phone.message}</p>
+                            <p className="text-sm text-danger">{errors.phone.message}</p>
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label className="text-slate-300">Role *</Label>
+                        <Label className={fieldLabelClass}>Role (required)</Label>
                         <Select onValueChange={(value) => setValue('role', value as 'staff' | 'staff_manager' | 'receptionist')}>
-                            <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                            <SelectTrigger>
                                 <SelectValue placeholder="Select role" />
                             </SelectTrigger>
-                            <SelectContent className="bg-slate-900 border-slate-800">
-                                <SelectItem value="staff" className="text-white hover:bg-slate-800">Staff</SelectItem>
-                                <SelectItem value="staff_manager" className="text-white hover:bg-slate-800">Accountant</SelectItem>
-                                <SelectItem value="receptionist" className="text-white hover:bg-slate-800">Receptionist</SelectItem>
+                            <SelectContent>
+                                <SelectItem value="staff">Staff</SelectItem>
+                                <SelectItem value="staff_manager">Accountant</SelectItem>
+                                <SelectItem value="receptionist">Receptionist</SelectItem>
                             </SelectContent>
                         </Select>
                         {errors.role && (
-                            <p className="text-sm text-red-400">{errors.role.message}</p>
+                            <p className="text-sm text-danger">{errors.role.message}</p>
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="daily_rate" className="text-slate-300">Daily Rate (₹) *</Label>
+                        <Label htmlFor="daily_rate" className={fieldLabelClass}>Daily Rate in ₹ (required)</Label>
                         <Input
                             id="daily_rate"
                             type="number"
-                            className="bg-slate-800/50 border-slate-700 text-white"
                             placeholder="Enter daily rate"
                             {...register('daily_rate', { valueAsNumber: true })}
                         />
                         {errors.daily_rate && (
-                            <p className="text-sm text-red-400">{errors.daily_rate.message}</p>
+                            <p className="text-sm text-danger">{errors.daily_rate.message}</p>
                         )}
                     </div>
-                    <div className="flex justify-end gap-3 pt-4">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-line">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => setOpen(false)}
-                            className="border-slate-700 text-slate-300 hover:bg-slate-800"
                         >
                             Cancel
                         </Button>
-                        <Button
-                            type="submit"
-                            disabled={isLoading}
-                            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white"
-                        >
+                        <Button type="submit" disabled={isLoading}>
                             {isLoading ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -223,29 +190,12 @@ function AddStaffDialog({ onStaffAdded }: { onStaffAdded: () => void }) {
     );
 }
 
-function getRoleBadge(role: string) {
-    const roleConfig: Record<string, { label: string; className: string }> = {
-        institution_director: {
-            label: 'Director',
-            className: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-        },
-        staff_manager: {
-            label: 'Accountant',
-            className: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
-        },
-        receptionist: {
-            label: 'Receptionist',
-            className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-        },
-        staff: {
-            label: 'Staff',
-            className: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-        },
-    };
-
-    const config = roleConfig[role] || roleConfig.staff;
-    return <Badge className={config.className}>{config.label}</Badge>;
-}
+const ROLE_LABELS: Record<string, string> = {
+    institution_director: 'Director',
+    staff_manager: 'Accountant',
+    receptionist: 'Receptionist',
+    staff: 'Staff',
+};
 
 export default function StaffPage() {
     const router = useRouter();
@@ -277,161 +227,134 @@ export default function StaffPage() {
             member.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const columns: LedgerColumn<Staff>[] = [
+        {
+            key: 'name',
+            header: 'Staff Member',
+            cell: (member) => (
+                <span className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6 rounded-sm">
+                        <AvatarFallback className="rounded-sm bg-muted text-[10px] text-ink-muted">
+                            {member.full_name
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .slice(0, 2)}
+                        </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{member.full_name}</span>
+                </span>
+            ),
+        },
+        {
+            key: 'email',
+            header: 'Email',
+            cell: (member) => <span className="text-ink-muted">{member.email}</span>,
+        },
+        {
+            key: 'phone',
+            header: 'Phone',
+            cell: (member) => (
+                <span className="font-mono tabular-nums text-ink-muted">{member.phone}</span>
+            ),
+        },
+        {
+            key: 'role',
+            header: 'Role',
+            cell: (member) => ROLE_LABELS[member.role] || ROLE_LABELS.staff,
+        },
+        {
+            key: 'daily_rate',
+            header: 'Daily Rate',
+            numeric: true,
+            cell: (member) => `₹${member.daily_rate.toLocaleString('en-IN')}`,
+        },
+        {
+            key: 'joined',
+            header: 'Joined',
+            cell: (member) =>
+                new Date(member.join_date).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                }),
+        },
+        {
+            key: 'status',
+            header: 'Status',
+            cell: (member) => <Stamp status={member.status} />,
+        },
+        {
+            key: 'actions',
+            header: '',
+            align: 'right',
+            headerClassName: 'w-12',
+            cell: (member) => (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon-sm" className="text-ink-muted hover:text-ink">
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                            onClick={() => router.push(`/dashboard/staff/${member.id}`)}
+                            className="cursor-pointer"
+                        >
+                            View Profile
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer">Edit</DropdownMenuItem>
+                        <DropdownMenuItem variant="destructive" className="cursor-pointer">
+                            Remove
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            ),
+        },
+    ];
+
     return (
         <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <Users className="h-7 w-7 text-purple-400" />
-                        Staff Management
-                    </h1>
-                    <p className="text-slate-400 mt-1">Manage staff members and their daily rates</p>
+                    <h1 className="font-serif text-2xl font-semibold text-ink">Staff</h1>
+                    <p className="text-sm text-ink-muted mt-1">Staff members and their daily rates</p>
                 </div>
                 <AddStaffDialog onStaffAdded={fetchStaff} />
             </div>
 
-            {/* Search */}
-            <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                    <div className="relative max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                        <Input
-                            placeholder="Search staff by name or email..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
-                        />
-                    </div>
-                </CardContent>
-            </Card>
+            {/* Toolbar */}
+            <div className="flex items-center gap-3">
+                <Input
+                    placeholder="Search staff by name or email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-9 w-full sm:w-64"
+                />
+            </div>
 
-            {/* Staff Table */}
-            <Card className="bg-slate-900/50 border-slate-800">
-                <CardHeader>
-                    <CardTitle className="text-white">
-                        All Staff
-                        <Badge variant="secondary" className="ml-2 bg-slate-800 text-slate-300">
-                            {filteredStaff.length}
-                        </Badge>
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="border-slate-800 hover:bg-transparent">
-                                    <TableHead className="text-slate-400">Staff Member</TableHead>
-                                    <TableHead className="text-slate-400">Contact</TableHead>
-                                    <TableHead className="text-slate-400">Role</TableHead>
-                                    <TableHead className="text-slate-400">Daily Rate</TableHead>
-                                    <TableHead className="text-slate-400">Joined</TableHead>
-                                    <TableHead className="text-slate-400">Status</TableHead>
-                                    <TableHead className="text-slate-400 text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {isLoading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="text-center py-12">
-                                            <Loader2 className="h-8 w-8 animate-spin text-purple-400 mx-auto" />
-                                        </TableCell>
-                                    </TableRow>
-                                ) : filteredStaff.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="text-center py-12">
-                                            <Users className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                                            <p className="text-slate-400">No staff members found</p>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    filteredStaff.map((staff) => (
-                                    <TableRow
-                                        key={staff.id}
-                                        className="border-slate-800 hover:bg-slate-800/50 transition-colors"
-                                    >
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-10 w-10 ring-2 ring-purple-500/20">
-                                                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white">
-                                                        {staff.full_name
-                                                            .split(' ')
-                                                            .map((n) => n[0])
-                                                            .join('')}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-medium text-white">{staff.full_name}</p>
-                                                    <p className="text-sm text-slate-400">{staff.email}</p>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="flex items-center gap-1 text-sm text-slate-300">
-                                                    <Mail className="h-3 w-3" /> {staff.email}
-                                                </span>
-                                                <span className="flex items-center gap-1 text-sm text-slate-400">
-                                                    <Phone className="h-3 w-3" /> {staff.phone}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{getRoleBadge(staff.role)}</TableCell>
-                                        <TableCell>
-                                            <span className="flex items-center text-emerald-400 font-medium">
-                                                <IndianRupee className="h-4 w-4" />
-                                                {staff.daily_rate.toLocaleString()}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-slate-300">
-                                            {new Date(staff.join_date).toLocaleDateString('en-IN', {
-                                                day: 'numeric',
-                                                month: 'short',
-                                                year: 'numeric',
-                                            })}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                className={
-                                                    staff.status === 'active'
-                                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                                        : 'bg-slate-500/10 text-slate-400 border-slate-500/30'
-                                                }
-                                            >
-                                                {staff.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
-                                                    <DropdownMenuItem
-                                                        onClick={() => router.push(`/dashboard/staff/${staff.id}`)}
-                                                        className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
-                                                    >
-                                                        <Eye className="h-4 w-4 mr-2" /> View Profile
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer">
-                                                        <Edit className="h-4 w-4 mr-2" /> Edit
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer">
-                                                        <Trash2 className="h-4 w-4 mr-2" /> Remove
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                                )}
-                            </TableBody>
-                        </Table>
+            {/* Staff Register */}
+            <section className="rounded-md border border-line bg-surface">
+                <div className="flex items-center justify-between border-b border-line px-4 py-3">
+                    <h2 className="font-serif text-lg text-ink">All Staff</h2>
+                    <span className="font-mono text-xs tabular-nums text-ink-muted">
+                        {filteredStaff.length} records
+                    </span>
+                </div>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
                     </div>
-                </CardContent>
-            </Card>
+                ) : (
+                    <LedgerTable
+                        columns={columns}
+                        rows={filteredStaff}
+                        rowKey={(member) => member.id}
+                        emptyMessage="No staff members found."
+                    />
+                )}
+            </section>
         </div>
     );
 }

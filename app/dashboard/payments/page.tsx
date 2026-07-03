@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { paymentsApi, studentsApi, coursesApi } from '@/lib/api/endpoints';
 import { useAuth } from '@/lib/auth/auth-context';
 import type { FeePayment, Student, Course, StudentCourse, RecordPaymentRequest } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,27 +14,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { LedgerTable, type LedgerColumn } from '@/components/ui/ledger-table';
 import { Textarea } from '@/components/ui/textarea';
-import {
-    Wallet,
-    Plus,
-    X,
-    Download,
-    Loader2,
-    Search,
-    Receipt,
-    CreditCard,
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+const fieldLabelClass = 'text-xs uppercase tracking-wide text-ink-muted';
 
 export default function PaymentsPage() {
     const { user } = useAuth();
@@ -212,23 +196,86 @@ export default function PaymentsPage() {
         return ['online', 'upi', 'card'].includes(method);
     };
 
-    const getPaymentMethodBadge = (method: string) => {
-        const config: Record<string, { className: string }> = {
-            online: { className: 'bg-blue-500/10 text-blue-400 border-blue-500/30' },
-            upi: { className: 'bg-purple-500/10 text-purple-400 border-purple-500/30' },
-            card: { className: 'bg-pink-500/10 text-pink-400 border-pink-500/30' },
-            cash: { className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' },
-            bank_transfer: { className: 'bg-amber-500/10 text-amber-400 border-amber-500/30' },
-            offline: { className: 'bg-slate-500/10 text-slate-400 border-slate-500/30' },
-        };
-        const methodConfig = config[method] || config.offline;
-        return <Badge className={methodConfig.className}>{method.toUpperCase()}</Badge>;
-    };
+    const totalAmount = payments.reduce((acc, p) => acc + (p.amount || 0), 0);
+
+    const columns: LedgerColumn<FeePayment>[] = [
+        {
+            key: 'receipt',
+            header: 'Receipt No.',
+            cell: (payment) => (
+                <span className="font-mono tabular-nums">{payment.receipt_number}</span>
+            ),
+        },
+        {
+            key: 'date',
+            header: 'Date',
+            cell: (payment) =>
+                new Date(payment.payment_date).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                }),
+        },
+        ...(!isStudent
+            ? [
+                  {
+                      key: 'student',
+                      header: 'Student',
+                      cell: (payment) => (
+                          <span className="font-medium">{getStudentName(payment.student_id)}</span>
+                      ),
+                  } satisfies LedgerColumn<FeePayment>,
+              ]
+            : []),
+        {
+            key: 'course',
+            header: 'Course',
+            cell: (payment) => getCourseName(payment.course_id),
+        },
+        {
+            key: 'method',
+            header: 'Method',
+            cell: (payment) => (
+                <span className="text-xs uppercase tracking-wide text-ink-muted">
+                    {payment.payment_method.replace('_', ' ')}
+                </span>
+            ),
+        },
+        {
+            key: 'transaction',
+            header: 'Transaction ID',
+            cell: (payment) => (
+                <span className="font-mono tabular-nums text-ink-muted">
+                    {payment.transaction_id || '—'}
+                </span>
+            ),
+        },
+        {
+            key: 'amount',
+            header: 'Amount',
+            numeric: true,
+            cell: (payment) => `₹${payment.amount.toLocaleString('en-IN')}`,
+        },
+        {
+            key: 'actions',
+            header: '',
+            align: 'right',
+            cell: (payment) => (
+                <Button
+                    onClick={() => handleDownloadReceipt(payment.id, payment.receipt_number)}
+                    size="sm"
+                    variant="outline"
+                >
+                    Receipt
+                </Button>
+            ),
+        },
+    ];
 
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+                <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
             </div>
         );
     }
@@ -238,75 +285,55 @@ export default function PaymentsPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        {isStudent ? (
-                            <CreditCard className="h-7 w-7 text-blue-400" />
-                        ) : (
-                            <Wallet className="h-7 w-7 text-blue-400" />
-                        )}
-                        {isStudent ? 'My Payment History' : 'Payment Management'}
+                    <h1 className="font-serif text-2xl font-semibold text-ink">
+                        {isStudent ? 'My Payment History' : 'Payments'}
                     </h1>
-                    <p className="text-slate-400 mt-1">
+                    <p className="text-sm text-ink-muted mt-1">
                         {isStudent
-                            ? 'View your fee payment history and download receipts'
+                            ? 'Your fee payment history and receipts'
                             : 'Record and manage student fee payments'
                         }
                     </p>
                     {isStudent && currentStudentRecord && (
-                        <p className="text-sm text-slate-500 mt-1">
-                            Student ID: <span className="text-blue-400 font-mono">{currentStudentRecord.student_id}</span>
+                        <p className="text-sm text-ink-muted mt-1">
+                            Student ID: <span className="font-mono tabular-nums text-ink">{currentStudentRecord.student_id}</span>
                         </p>
                     )}
                 </div>
                 {canRecordPayments && (
                     <Button
+                        variant={showForm ? 'outline' : 'default'}
                         onClick={() => {
                             if (showForm) {
                                 resetForm();
                             }
                             setShowForm(!showForm);
                         }}
-                        className={showForm
-                            ? "bg-slate-700 hover:bg-slate-600 text-white"
-                            : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
-                        }
                     >
-                        {showForm ? (
-                            <>
-                                <X className="h-4 w-4 mr-2" />
-                                Cancel
-                            </>
-                        ) : (
-                            <>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Record Payment
-                            </>
-                        )}
+                        {showForm ? 'Cancel' : 'Record Payment'}
                     </Button>
                 )}
             </div>
 
             {/* Payment Recording Form */}
             {showForm && (
-                <Card className="bg-slate-900/50 border-slate-800">
-                    <CardHeader>
-                        <CardTitle className="text-white">Record New Payment</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                <section className="rounded-md border border-line bg-surface">
+                    <div className="border-b border-line px-4 py-3">
+                        <h2 className="font-serif text-lg text-ink">Record New Payment</h2>
+                    </div>
+                    <div className="p-4">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Student Search Section */}
-                            <div className="border border-slate-700 rounded-lg p-4 bg-slate-800/30">
-                                <h3 className="text-sm font-semibold text-white mb-3">Student Information</h3>
+                            <div className="rounded-md border border-line p-4">
+                                <h3 className={`${fieldLabelClass} mb-3`}>Student Information</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {/* Student ID Input */}
                                     <div className="space-y-2">
-                                        <Label className="text-slate-300">
-                                            Student ID <span className="text-red-400">*</span>
-                                        </Label>
+                                        <Label className={fieldLabelClass}>Student ID (required)</Label>
                                         <Input
                                             value={studentIdInput}
                                             onChange={(e) => setStudentIdInput(e.target.value.toUpperCase())}
-                                            className="bg-slate-800/50 border-slate-700 text-white uppercase font-mono"
+                                            className="uppercase font-mono"
                                             placeholder="RTS-NAL-RCC-12-2025-0001"
                                             disabled={!!foundStudent}
                                         />
@@ -314,14 +341,13 @@ export default function PaymentsPage() {
 
                                     {/* Student Name Input */}
                                     <div className="space-y-2">
-                                        <Label className="text-slate-300">
+                                        <Label className={fieldLabelClass}>
                                             Student Name
-                                            <span className="text-xs text-slate-500 ml-1">(for verification)</span>
+                                            <span className="normal-case tracking-normal">(for verification)</span>
                                         </Label>
                                         <Input
                                             value={studentNameInput}
                                             onChange={(e) => setStudentNameInput(e.target.value)}
-                                            className="bg-slate-800/50 border-slate-700 text-white"
                                             placeholder="Enter student name"
                                             disabled={!!foundStudent}
                                         />
@@ -329,14 +355,14 @@ export default function PaymentsPage() {
 
                                     {/* Search Button */}
                                     <div className="space-y-2">
-                                        <Label className="text-slate-300 opacity-0">Search</Label>
+                                        <Label className={`${fieldLabelClass} opacity-0`}>Search</Label>
                                         {!foundStudent ? (
                                             <Button
                                                 type="button"
                                                 onClick={handleSearchStudent}
-                                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                                variant="outline"
+                                                className="w-full"
                                             >
-                                                <Search className="h-4 w-4 mr-2" />
                                                 Find Student
                                             </Button>
                                         ) : (
@@ -344,9 +370,8 @@ export default function PaymentsPage() {
                                                 type="button"
                                                 onClick={resetForm}
                                                 variant="outline"
-                                                className="w-full border-slate-700 text-slate-300 hover:bg-slate-800"
+                                                className="w-full"
                                             >
-                                                <X className="h-4 w-4 mr-2" />
                                                 Clear
                                             </Button>
                                         )}
@@ -355,17 +380,17 @@ export default function PaymentsPage() {
 
                                 {/* Search Error */}
                                 {searchError && (
-                                    <p className="text-sm text-red-400 mt-2">{searchError}</p>
+                                    <p className="text-sm text-danger mt-2">{searchError}</p>
                                 )}
 
                                 {/* Found Student Display */}
                                 {foundStudent && (
-                                    <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                                        <p className="text-sm text-green-400">
-                                            ✓ Student found: <span className="font-semibold">{foundStudent.user?.full_name}</span>
+                                    <div className="mt-3 rounded-md border border-line bg-accent-soft p-3">
+                                        <p className="text-sm text-ink">
+                                            Student found: <span className="font-medium">{foundStudent.user?.full_name}</span>
                                         </p>
-                                        <p className="text-xs text-slate-400 mt-1">
-                                            ID: {foundStudent.student_id}
+                                        <p className="mt-1 font-mono text-xs tabular-nums text-ink-muted">
+                                            {foundStudent.student_id}
                                         </p>
                                     </div>
                                 )}
@@ -377,9 +402,7 @@ export default function PaymentsPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {/* Course Selection */}
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">
-                                                Course <span className="text-red-400">*</span>
-                                            </Label>
+                                            <Label className={fieldLabelClass}>Course (required)</Label>
                                             <Select
                                                 required
                                                 value={formData.course_id}
@@ -392,7 +415,7 @@ export default function PaymentsPage() {
                                                     }
                                                 }}
                                             >
-                                                <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                                                <SelectTrigger>
                                                     <SelectValue placeholder="Select enrolled course" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -404,15 +427,13 @@ export default function PaymentsPage() {
                                                 </SelectContent>
                                             </Select>
                                             {studentCourses.length === 0 && (
-                                                <p className="text-xs text-amber-400">Student has no enrolled courses</p>
+                                                <p className="text-xs text-warning">Student has no enrolled courses</p>
                                             )}
                                         </div>
 
                                         {/* Amount */}
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">
-                                                Amount <span className="text-red-400">*</span>
-                                            </Label>
+                                            <Label className={fieldLabelClass}>Amount (required)</Label>
                                             <Input
                                                 type="number"
                                                 required
@@ -420,22 +441,20 @@ export default function PaymentsPage() {
                                                 step="0.01"
                                                 value={formData.amount}
                                                 onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
-                                                className="bg-slate-800/50 border-slate-700 text-white"
+                                                className="font-mono"
                                                 placeholder="Enter amount"
                                             />
                                         </div>
 
                                         {/* Payment Method */}
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">
-                                                Payment Method <span className="text-red-400">*</span>
-                                            </Label>
+                                            <Label className={fieldLabelClass}>Payment Method (required)</Label>
                                             <Select
                                                 required
                                                 value={formData.payment_method}
                                                 onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
                                             >
-                                                <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                                                <SelectTrigger>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -452,15 +471,13 @@ export default function PaymentsPage() {
                                         {/* Transaction ID (conditional) */}
                                         {requiresTransactionId(formData.payment_method) && (
                                             <div className="space-y-2">
-                                                <Label className="text-slate-300">
-                                                    Transaction ID <span className="text-red-400">*</span>
-                                                </Label>
+                                                <Label className={fieldLabelClass}>Transaction ID (required)</Label>
                                                 <Input
                                                     type="text"
                                                     required
                                                     value={formData.transaction_id}
                                                     onChange={(e) => setFormData({ ...formData, transaction_id: e.target.value })}
-                                                    className="bg-slate-800/50 border-slate-700 text-white"
+                                                    className="font-mono"
                                                     placeholder="Enter transaction ID"
                                                 />
                                             </div>
@@ -468,23 +485,21 @@ export default function PaymentsPage() {
 
                                         {/* Payment Date */}
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Payment Date</Label>
+                                            <Label className={fieldLabelClass}>Payment Date</Label>
                                             <Input
                                                 type="date"
                                                 value={formData.payment_date || ''}
                                                 onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })}
-                                                className="bg-slate-800/50 border-slate-700 text-white"
                                             />
                                         </div>
                                     </div>
 
                                     {/* Notes */}
                                     <div className="space-y-2">
-                                        <Label className="text-slate-300">Notes</Label>
+                                        <Label className={fieldLabelClass}>Notes</Label>
                                         <Textarea
                                             value={formData.notes}
                                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                            className="bg-slate-800/50 border-slate-700 text-white"
                                             rows={3}
                                             placeholder="Additional notes (optional)"
                                         />
@@ -492,12 +507,7 @@ export default function PaymentsPage() {
 
                                     {/* Submit Buttons */}
                                     <div className="flex gap-2">
-                                        <Button
-                                            type="submit"
-                                            className="bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
-                                        >
-                                            Record Payment
-                                        </Button>
+                                        <Button type="submit">Record Payment</Button>
                                         <Button
                                             type="button"
                                             onClick={() => {
@@ -505,7 +515,6 @@ export default function PaymentsPage() {
                                                 setShowForm(false);
                                             }}
                                             variant="outline"
-                                            className="border-slate-700 text-slate-300 hover:bg-slate-800"
                                         >
                                             Cancel
                                         </Button>
@@ -513,122 +522,47 @@ export default function PaymentsPage() {
                                 </>
                             )}
                         </form>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Filter - Only for staff/admin */}
-            {!isStudent && (
-                <Card className="bg-slate-900/50 border-slate-800">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
-                            <Label className="text-slate-300">Filter by Student:</Label>
-                            <Select
-                                value={filterStudentId || undefined}
-                                onValueChange={(value) => setFilterStudentId(value || '')}
-                            >
-                                <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white max-w-xs">
-                                    <SelectValue placeholder="All Students" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {students.map(student => (
-                                        <SelectItem key={student.id} value={student.id}>
-                                            {student.user?.full_name || student.id}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Payment History Table */}
-            <Card className="bg-slate-900/50 border-slate-800">
-                <CardHeader>
-                    <CardTitle className="text-white">
-                        {isStudent ? 'My Payments' : 'Payment History'}
-                        <Badge variant="secondary" className="ml-2 bg-slate-800 text-slate-300">
-                            {payments.length}
-                        </Badge>
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="border-slate-800 hover:bg-transparent">
-                                    <TableHead className="text-slate-400">Receipt No.</TableHead>
-                                    <TableHead className="text-slate-400">Date</TableHead>
-                                    {!isStudent && <TableHead className="text-slate-400">Student</TableHead>}
-                                    <TableHead className="text-slate-400">Course</TableHead>
-                                    <TableHead className="text-slate-400">Amount</TableHead>
-                                    <TableHead className="text-slate-400">Method</TableHead>
-                                    <TableHead className="text-slate-400">Transaction ID</TableHead>
-                                    <TableHead className="text-slate-400 text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {payments.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={isStudent ? 7 : 8} className="text-center py-12">
-                                            <Receipt className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                                            <p className="text-slate-400">
-                                                {isStudent ? 'No payment records found' : 'No payments found'}
-                                            </p>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    payments.map(payment => (
-                                        <TableRow
-                                            key={payment.id}
-                                            className="border-slate-800 hover:bg-slate-800/50 transition-colors"
-                                        >
-                                            <TableCell className="font-mono text-slate-300">
-                                                {payment.receipt_number}
-                                            </TableCell>
-                                            <TableCell className="text-slate-300">
-                                                {new Date(payment.payment_date).toLocaleDateString('en-IN', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric',
-                                                })}
-                                            </TableCell>
-                                            {!isStudent && (
-                                                <TableCell className="text-white">
-                                                    {getStudentName(payment.student_id)}
-                                                </TableCell>
-                                            )}
-                                            <TableCell className="text-slate-300">
-                                                {getCourseName(payment.course_id)}
-                                            </TableCell>
-                                            <TableCell className="text-emerald-400 font-semibold">
-                                                ₹{payment.amount.toLocaleString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                {getPaymentMethodBadge(payment.payment_method)}
-                                            </TableCell>
-                                            <TableCell className="font-mono text-slate-400">
-                                                {payment.transaction_id || '-'}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <Button
-                                                    onClick={() => handleDownloadReceipt(payment.id, payment.receipt_number)}
-                                                    size="sm"
-                                                    className="bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700"
-                                                >
-                                                    <Download className="h-4 w-4 mr-1" />
-                                                    Receipt
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
                     </div>
-                </CardContent>
-            </Card>
+                </section>
+            )}
+
+            {/* Payment Ledger */}
+            <section className="rounded-md border border-line bg-surface">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3">
+                    <h2 className="font-serif text-lg text-ink">
+                        {isStudent ? 'My Payments' : 'Payment Ledger'}
+                    </h2>
+                    <div className="flex items-center gap-3">
+                        {!isStudent && (
+                            <select
+                                value={filterStudentId}
+                                onChange={(e) => setFilterStudentId(e.target.value)}
+                                className="h-9 rounded-md border border-line bg-surface px-2 text-sm text-ink focus:outline-none focus:ring-1 focus:ring-ring"
+                            >
+                                <option value="">All students</option>
+                                {students.map(student => (
+                                    <option key={student.id} value={student.id}>
+                                        {student.user?.full_name || student.id}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                        <span className="font-mono text-xs tabular-nums text-ink-muted">
+                            {payments.length} entries
+                        </span>
+                    </div>
+                </div>
+                <LedgerTable
+                    columns={columns}
+                    rows={payments}
+                    rowKey={(payment) => payment.id}
+                    emptyMessage="No payments have been recorded."
+                    subtotal={{
+                        receipt: 'Total',
+                        amount: `₹${totalAmount.toLocaleString('en-IN')}`,
+                    }}
+                />
+            </section>
         </div>
     );
 }
