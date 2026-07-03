@@ -8,34 +8,37 @@ import { Avatar } from "@/components/ui/avatar";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import apiClient from "@/lib/api/client";
 
+export interface ChatChip {
+  label: string;
+  intent: string;
+  entity?: Record<string, unknown> | null;
+}
+
 interface Message {
   id: string;
   content: string;
   sender: "user" | "assistant";
   timestamp: Date;
   source?: string;
-  relatedQuestions?: string[];
+  chips?: ChatChip[];
 }
 
-interface QuickSuggestion {
-  text: string;
-  query: string;
-}
+const WELCOME_MESSAGE =
+  "Welcome to Rajtech Technological Systems! I'm Raj, your assistant. Pick a topic below or type a question.";
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      content: "Welcome to Rajtech Technological Systems! I'm Raj, your AI assistant. How can I help you today?",
+      content: WELCOME_MESSAGE,
       sender: "assistant",
       timestamp: new Date(),
     },
   ]);
   const [inputValue, setInputValue] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState<QuickSuggestion[]>([]);
+  const [menuChips, setMenuChips] = useState<ChatChip[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -47,66 +50,55 @@ export function ChatWidget() {
   }, [messages]);
 
   useEffect(() => {
-    // Load quick suggestions when chat opens
-    if (isOpen && suggestions.length === 0) {
-      loadSuggestions();
+    // Load the role-specific menu chips for the empty state
+    if (isOpen && menuChips.length === 0) {
+      loadMenu();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const loadSuggestions = async () => {
+  const loadMenu = async () => {
     try {
-      const response = await apiClient.get("/api/chatbot/suggestions");
-      setSuggestions(response.data);
+      const response = await apiClient.get("/api/chatbot/menu");
+      setMenuChips(response.data.chips ?? []);
     } catch (error) {
-      console.error("Failed to load suggestions:", error);
-      // Fallback suggestions
-      setSuggestions([
-        { text: "How to register?", query: "How do I register as a student?" },
-        { text: "Available courses", query: "What courses are available?" },
-        { text: "Pay fees", query: "How do I pay my fees?" },
-        { text: "Exam process", query: "How do exams work?" },
-        { text: "Get certificate", query: "How do I get my certificate?" },
-      ]);
+      console.error("Failed to load chatbot menu:", error);
     }
   };
 
-  const handleSendMessage = async (messageText?: string) => {
-    const textToSend = messageText || inputValue;
-    if (!textToSend.trim() || isLoading) return;
+  const postMessage = async (
+    body: { text: string } | { intent: string; entity?: Record<string, unknown> | null },
+    displayText: string
+  ) => {
+    if (isLoading) return;
 
-    const newMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
-      content: textToSend,
+      content: displayText,
       sender: "user",
       timestamp: new Date(),
     };
-
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
-    setShowSuggestions(false);
     setIsLoading(true);
 
     try {
-      // Call chatbot API
-      const response = await apiClient.post("/api/chatbot/chat", {
-        message: textToSend,
-      });
-
+      const response = await apiClient.post("/api/chatbot/message", body);
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: response.data.response,
+        content: response.data.reply,
         sender: "assistant",
         timestamp: new Date(),
         source: response.data.source,
-        relatedQuestions: response.data.related_questions,
+        chips: response.data.chips ?? [],
       };
-
       setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Chatbot error:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "I'm having trouble connecting right now. Please try again or contact your institution support.",
+        content:
+          "I'm having trouble connecting right now. Please try again or contact your institution support.",
         sender: "assistant",
         timestamp: new Date(),
       };
@@ -116,16 +108,31 @@ export function ChatWidget() {
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    handleSendMessage(suggestion);
+  const handleSendText = (text?: string) => {
+    const textToSend = (text ?? inputValue).trim();
+    if (!textToSend) return;
+    postMessage({ text: textToSend }, textToSend);
+  };
+
+  // Chip clicks send {intent, entity} — they bypass text matching entirely.
+  const handleChipClick = (chip: ChatChip) => {
+    postMessage({ intent: chip.intent, entity: chip.entity ?? undefined }, chip.label);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSendText();
     }
   };
+
+  const lastMessage = messages[messages.length - 1];
+  const activeChips: ChatChip[] =
+    messages.length === 1
+      ? menuChips
+      : lastMessage.sender === "assistant" && lastMessage.chips
+        ? lastMessage.chips
+        : [];
 
   return (
     <>
@@ -138,9 +145,6 @@ export function ChatWidget() {
             aria-label="Chat with Raj"
           >
             <MessageCircle className="h-6 w-6" />
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
-              AI
-            </span>
           </Button>
           <div className="absolute bottom-16 right-0 bg-slate-800 text-white text-xs px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
             Ask Raj anything
@@ -162,7 +166,7 @@ export function ChatWidget() {
               </div>
               <div>
                 <h3 className="font-semibold text-white">Raj</h3>
-                <p className="text-xs text-slate-400">AI Assistant</p>
+                <p className="text-xs text-slate-400">RTS Assistant</p>
               </div>
             </div>
             <Button
@@ -196,7 +200,7 @@ export function ChatWidget() {
                       : "bg-slate-800 text-slate-100 border border-slate-700"
                   }`}
                 >
-                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                   <span className="text-xs opacity-70 mt-1 block">
                     {message.timestamp.toLocaleTimeString([], {
                       hour: "2-digit",
@@ -212,36 +216,20 @@ export function ChatWidget() {
               </div>
             ))}
 
-            {/* Suggestions */}
-            {showSuggestions && messages.length === 1 && suggestions.length > 0 && (
+            {/* Chips: role menu for the empty state, follow-ups after a reply */}
+            {!isLoading && activeChips.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs text-slate-400 text-center">Quick suggestions:</p>
+                {messages.length === 1 && (
+                  <p className="text-xs text-slate-400 text-center">I can help with:</p>
+                )}
                 <div className="flex flex-wrap gap-2">
-                  {suggestions.map((suggestion, index) => (
+                  {activeChips.map((chip, index) => (
                     <button
-                      key={index}
-                      onClick={() => handleSuggestionClick(suggestion.query)}
+                      key={`${chip.intent}-${index}`}
+                      onClick={() => handleChipClick(chip)}
                       className="px-3 py-2 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full text-slate-200 transition-colors duration-200"
                     >
-                      {suggestion.text}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Related Questions */}
-            {messages.length > 1 && messages[messages.length - 1].relatedQuestions && messages[messages.length - 1].relatedQuestions!.length > 0 && (
-              <div className="space-y-2 mt-4">
-                <p className="text-xs text-slate-400 text-center">Related questions:</p>
-                <div className="flex flex-wrap gap-2">
-                  {messages[messages.length - 1].relatedQuestions!.slice(0, 3).map((question, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSuggestionClick(question)}
-                      className="px-3 py-2 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full text-slate-200 transition-colors duration-200"
-                    >
-                      {question}
+                      {chip.label}
                     </button>
                   ))}
                 </div>
@@ -252,7 +240,7 @@ export function ChatWidget() {
             {isLoading && (
               <div className="flex items-center gap-2 text-slate-400">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">Raj is thinking...</span>
+                <span className="text-sm">Looking that up...</span>
               </div>
             )}
 
@@ -270,7 +258,7 @@ export function ChatWidget() {
                 className="flex-1 bg-slate-800 border-slate-700 focus:border-purple-600 focus:ring-purple-600 text-white placeholder:text-slate-400"
               />
               <Button
-                onClick={() => handleSendMessage()}
+                onClick={() => handleSendText()}
                 disabled={!inputValue.trim() || isLoading}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 size="icon"
@@ -283,7 +271,7 @@ export function ChatWidget() {
               </Button>
             </div>
             <p className="text-xs text-slate-500 mt-2 text-center">
-              Press Enter to send • Shift+Enter for new line
+              Press Enter to send • Answers come from your institution&apos;s records
             </p>
           </div>
         </Card>

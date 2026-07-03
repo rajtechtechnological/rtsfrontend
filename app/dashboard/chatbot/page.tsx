@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -14,32 +13,36 @@ import {
     Loader2,
     Sparkles,
 } from 'lucide-react';
+import apiClient from '@/lib/api/client';
+
+interface ChatChip {
+    label: string;
+    intent: string;
+    entity?: Record<string, unknown> | null;
+}
 
 interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: Date;
+    source?: string;
+    chips?: ChatChip[];
 }
-
-const suggestedQuestions = [
-    'What courses are available?',
-    'How do I enroll a new student?',
-    'How is payroll calculated?',
-    'How to generate certificates?',
-];
 
 export default function ChatbotPage() {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
             role: 'assistant',
-            content: "Hello! I'm your AI assistant for EduManage. I can help you with questions about courses, students, staff management, payroll, and more. How can I assist you today?",
+            content:
+                "Hello! I'm Raj, your RTS assistant. I answer from your institution's records — fees, exams, results, courses and more. Pick a topic below or type a question.",
             timestamp: new Date(),
         },
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [menuChips, setMenuChips] = useState<ChatChip[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -50,54 +53,70 @@ export default function ChatbotPage() {
         scrollToBottom();
     }, [messages]);
 
-    const handleSend = async (message?: string) => {
-        const messageText = message || input;
-        if (!messageText.trim()) return;
+    useEffect(() => {
+        // Role-specific menu chips for the empty state
+        const loadMenu = async () => {
+            try {
+                const response = await apiClient.get('/api/chatbot/menu');
+                setMenuChips(response.data.chips ?? []);
+            } catch (error) {
+                console.error('Failed to load chatbot menu:', error);
+            }
+        };
+        loadMenu();
+    }, []);
+
+    const postMessage = async (
+        body: { text: string } | { intent: string; entity?: Record<string, unknown> | null },
+        displayText: string
+    ) => {
+        if (isLoading) return;
 
         const userMessage: Message = {
             id: Date.now().toString(),
             role: 'user',
-            content: messageText,
+            content: displayText,
             timestamp: new Date(),
         };
-
         setMessages((prev) => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
         try {
-            // Simulate AI response (in production, this would call the API)
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-
-            // Mock responses based on question
-            let responseContent = '';
-            const lowerMessage = messageText.toLowerCase();
-
-            if (lowerMessage.includes('course')) {
-                responseContent = "We offer a variety of courses including:\n\n• **Web Development Bootcamp** (6 months) - ₹45,000\n• **Python Programming** (3 months) - ₹25,000\n• **Data Science Essentials** (6 months) - ₹55,000\n• **Mobile App Development** (4 months) - ₹40,000\n• **UI/UX Design** (3 months) - ₹30,000\n\nYou can view all courses in the Courses section or enroll students through the Students page.";
-            } else if (lowerMessage.includes('student') || lowerMessage.includes('enroll')) {
-                responseContent = "To enroll a new student:\n\n1. Go to the **Students** section from the sidebar\n2. Click the **Add Student** button\n3. Fill in the student details (name, email, phone, etc.)\n4. After adding, you can enroll them in courses from their profile\n5. Record fee payments as they are received\n\nNeed help with anything else?";
-            } else if (lowerMessage.includes('payroll')) {
-                responseContent = "Payroll is calculated based on attendance:\n\n• **Formula**: `(Days Present × Daily Rate) + (Half Days × Daily Rate × 0.5)`\n• Daily rates are set per staff member\n• Deductions can be applied as needed\n\nTo generate payroll:\n1. Ensure attendance is marked for the month\n2. Go to the **Payroll** section\n3. Select the month and year\n4. Review calculations and generate payslips\n\nWould you like more details?";
-            } else if (lowerMessage.includes('certificate')) {
-                responseContent = "Certificates are generated for students who complete their courses:\n\n1. Go to the **Certificates** section\n2. Students with 'eligible' status can have certificates generated\n3. Click **Generate** to create the certificate\n4. Each certificate has a unique number (e.g., INST-WEB-2024-001)\n5. Download or share the PDF certificate\n\nIs there anything specific about certificates you'd like to know?";
-            } else {
-                responseContent = "I can help you with various aspects of the EduManage platform:\n\n• **Students**: Adding, enrolling, and managing student records\n• **Staff**: Managing staff members and their daily rates\n• **Attendance**: Marking and tracking staff attendance\n• **Payroll**: Calculating salaries and generating payslips\n• **Courses**: Creating and managing course offerings\n• **Certificates**: Generating completion certificates\n\nWhat would you like to know more about?";
-            }
-
+            const response = await apiClient.post('/api/chatbot/message', body);
             const assistantMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: responseContent,
+                content: response.data.reply,
+                timestamp: new Date(),
+                source: response.data.source,
+                chips: response.data.chips ?? [],
+            };
+            setMessages((prev) => [...prev, assistantMessage]);
+        } catch (error) {
+            console.error('Chatbot error:', error);
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                role: 'assistant',
+                content:
+                    "I couldn't reach the server. Please try again or contact your institution support.",
                 timestamp: new Date(),
             };
-
-            setMessages((prev) => [...prev, assistantMessage]);
-        } catch {
-            toast.error('Failed to get response');
+            setMessages((prev) => [...prev, errorMessage]);
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSend = (message?: string) => {
+        const messageText = (message ?? input).trim();
+        if (!messageText) return;
+        postMessage({ text: messageText }, messageText);
+    };
+
+    // Chip clicks send {intent, entity} — no free-text matching involved.
+    const handleChipClick = (chip: ChatChip) => {
+        postMessage({ intent: chip.intent, entity: chip.entity ?? undefined }, chip.label);
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -107,15 +126,23 @@ export default function ChatbotPage() {
         }
     };
 
+    const lastMessage = messages[messages.length - 1];
+    const followupChips: ChatChip[] =
+        messages.length > 1 && lastMessage.role === 'assistant' && lastMessage.chips
+            ? lastMessage.chips
+            : [];
+
     return (
         <div className="h-[calc(100vh-8rem)] flex flex-col">
             {/* Header */}
             <div className="mb-4">
                 <h1 className="text-2xl font-bold text-white flex items-center gap-2">
                     <MessageSquare className="h-7 w-7 text-blue-400" />
-                    AI Assistant
+                    Assistant
                 </h1>
-                <p className="text-slate-400 mt-1">Get help with platform features and questions</p>
+                <p className="text-slate-400 mt-1">
+                    Instant answers from your institution&apos;s records
+                </p>
             </div>
 
             {/* Chat Container */}
@@ -181,31 +208,48 @@ export default function ChatbotPage() {
                             <div className="bg-slate-800 rounded-2xl px-4 py-3">
                                 <div className="flex items-center gap-2 text-slate-400">
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    <span className="text-sm">Thinking...</span>
+                                    <span className="text-sm">Looking that up...</span>
                                 </div>
                             </div>
+                        </div>
+                    )}
+
+                    {/* Follow-up chips from the last reply */}
+                    {!isLoading && followupChips.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pl-11">
+                            {followupChips.map((chip, index) => (
+                                <Button
+                                    key={`${chip.intent}-${index}`}
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleChipClick(chip)}
+                                    className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                                >
+                                    {chip.label}
+                                </Button>
+                            ))}
                         </div>
                     )}
                     <div ref={messagesEndRef} />
                 </CardContent>
 
-                {/* Suggested Questions */}
-                {messages.length === 1 && (
+                {/* Role-specific menu chips (empty state) */}
+                {messages.length === 1 && menuChips.length > 0 && (
                     <div className="px-4 pb-4">
                         <p className="text-sm text-slate-400 mb-2 flex items-center gap-1">
                             <Sparkles className="h-4 w-4" />
-                            Suggested questions
+                            I can help with
                         </p>
                         <div className="flex flex-wrap gap-2">
-                            {suggestedQuestions.map((question) => (
+                            {menuChips.map((chip, index) => (
                                 <Button
-                                    key={question}
+                                    key={`${chip.intent}-${index}`}
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleSend(question)}
+                                    onClick={() => handleChipClick(chip)}
                                     className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
                                 >
-                                    {question}
+                                    {chip.label}
                                 </Button>
                             ))}
                         </div>
@@ -219,7 +263,7 @@ export default function ChatbotPage() {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={handleKeyPress}
-                            placeholder="Ask me anything about EduManage..."
+                            placeholder="Ask about fees, exams, results, courses..."
                             disabled={isLoading}
                             className="flex-1 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500"
                         />
