@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth/auth-context';
 import {
@@ -29,7 +29,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { User, UserRole } from '@/types';
 import { ChatWidget } from '@/components/chat/ChatWidget';
 
@@ -264,6 +264,23 @@ function Header() {
 }
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
+    const { user, isAuthenticated, isLoading } = useAuth();
+    const router = useRouter();
+
+    // The dashboard is staff-only: students have their own portal at /student.
+    useEffect(() => {
+        if (isLoading) return;
+        if (!isAuthenticated) {
+            router.replace('/login');
+        } else if (user?.role === 'student') {
+            router.replace('/student');
+        }
+    }, [isAuthenticated, isLoading, user?.role, router]);
+
+    if (isLoading || !isAuthenticated || user?.role === 'student') {
+        return <div className="flex h-screen items-center justify-center bg-paper" />;
+    }
+
     return (
         <div className="flex h-screen bg-paper">
             {/* Desktop Sidebar — 232px */}
