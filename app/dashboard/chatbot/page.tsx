@@ -168,19 +168,20 @@ export default function ChatbotPage() {
                                     }`}
                             >
                                 <div className="text-sm whitespace-pre-wrap leading-relaxed">
-                                    {message.content.split('\n').map((line, i) => {
-                                        // Simple markdown-like formatting for bold text
-                                        const formattedLine = line.replace(
-                                            /\*\*(.*?)\*\*/g,
-                                            '<strong>$1</strong>'
-                                        );
-                                        return (
-                                            <span
-                                                key={i}
-                                                dangerouslySetInnerHTML={{ __html: formattedLine + (i < message.content.split('\n').length - 1 ? '<br/>' : '') }}
-                                            />
-                                        );
-                                    })}
+                                    {/* **bold** rendered as elements, never as raw HTML
+                                        (message content may echo user input — XSS). */}
+                                    {message.content.split('\n').map((line, i, lines) => (
+                                        <span key={i}>
+                                            {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
+                                                part.startsWith('**') && part.endsWith('**') ? (
+                                                    <strong key={j}>{part.slice(2, -2)}</strong>
+                                                ) : (
+                                                    part
+                                                )
+                                            )}
+                                            {i < lines.length - 1 && <br />}
+                                        </span>
+                                    ))}
                                 </div>
                                 <p className={`text-xs mt-2 ${message.role === 'user' ? 'text-primary' : 'text-ink-muted'}`}>
                                     {message.timestamp.toLocaleTimeString('en-IN', {

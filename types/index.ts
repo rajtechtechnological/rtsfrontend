@@ -25,6 +25,7 @@ export interface Institution extends BaseEntity {
     address: string | null;
     contact_email: string | null;
     contact_phone: string | null;
+    upi_vpa: string | null;
     director_id: string | null;
 }
 
@@ -295,6 +296,29 @@ export interface PaymentSummary {
         balance: number;
         payment_count: number;
         status: 'paid' | 'pending';
+    }>;
+}
+
+// Logged-in student's own fee position (/api/payments/my/summary)
+export interface MyPaymentSummary {
+    student_id: string;
+    student_code: string;
+    total_balance: number;
+    courses: Array<{
+        course_id: string;
+        course_name: string;
+        total_fee: number;
+        total_paid: number;
+        balance: number;
+        status: 'paid' | 'pending';
+    }>;
+    recent_payments: Array<{
+        id: string;
+        amount: number;
+        paid_at: string | null;
+        payment_method: string;
+        receipt_number: string | null;
+        course_name: string | null;
     }>;
 }
 

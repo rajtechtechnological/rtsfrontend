@@ -1,10 +1,21 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { useAuth } from '@/lib/auth/auth-context';
+import { paymentsApi, institutionsApi } from '@/lib/api/endpoints';
 import { PortalNav } from '@/components/layouts/portal-nav';
 import { ChatWidget } from '@/components/chat/ChatWidget';
+import { UpiQr } from '@/components/payments/upi-qr';
+import type { MyPaymentSummary, Institution } from '@/types';
 import {
     BookOpen,
     Award,
@@ -16,8 +27,8 @@ import {
     Play,
 } from 'lucide-react';
 
-// Placeholder data until the student portal is wired to the API
-// (enrollments, payments and certificates all exist backend-side).
+// Placeholder data until courses/certificates are wired to the API
+// (payments ARE wired — see paymentsApi.getMySummary below).
 const studentData = {
     enrolledCourses: [
         {
@@ -35,14 +46,9 @@ const studentData = {
             instructor: 'Amit Kumar',
         },
     ],
-    payments: [
-        { id: 1, date: '2024-11-15', amount: 15000, status: 'paid', description: 'Web Dev - Installment 2' },
-        { id: 2, date: '2024-10-01', amount: 15000, status: 'paid', description: 'Web Dev - Installment 1' },
-    ],
     certificates: [
         { id: 1, course: 'HTML & CSS Fundamentals', date: '2024-09-20', status: 'issued' },
     ],
-    pendingAmount: 15000,
 };
 
 function StatCard({
@@ -72,6 +78,23 @@ function StatCard({
 export default function StudentPortal() {
     const { user } = useAuth();
 
+    const [summary, setSummary] = useState<MyPaymentSummary | null>(null);
+    const [institution, setInstitution] = useState<Institution | null>(null);
+    const [payDialogOpen, setPayDialogOpen] = useState(false);
+
+    useEffect(() => {
+        if (!user) return;
+        paymentsApi.getMySummary().then((res) => setSummary(res.data)).catch(() => setSummary(null));
+        if (user.institution_id) {
+            institutionsApi
+                .get(user.institution_id)
+                .then((res) => setInstitution(res.data))
+                .catch(() => setInstitution(null));
+        }
+    }, [user]);
+
+    const pendingAmount = summary?.total_balance ?? 0;
+
     return (
         <div className="min-h-screen bg-paper">
             <PortalNav title="Student Portal" />
@@ -93,7 +116,7 @@ export default function StudentPortal() {
                     <StatCard icon={Award} value={studentData.certificates.length} label="Certificates" />
                     <StatCard
                         icon={CreditCard}
-                        value={`₹${studentData.pendingAmount.toLocaleString()}`}
+                        value={summary ? `₹${pendingAmount.toLocaleString('en-IN')}` : '—'}
                         label="Amount due"
                     />
                     <StatCard icon={Calendar} value={2} label="Classes today" />
@@ -156,27 +179,44 @@ export default function StudentPortal() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-1">
-                                {studentData.payments.map((payment) => (
+                                {summary && summary.recent_payments.length === 0 && (
+                                    <p className="py-2 font-serif text-sm text-ink-muted">
+                                        No payments recorded yet.
+                                    </p>
+                                )}
+                                {summary?.recent_payments.map((payment) => (
                                     <div
                                         key={payment.id}
                                         className="flex items-center justify-between border-b border-line py-2 last:border-0"
                                     >
                                         <div>
-                                            <p className="text-sm text-ink">{payment.description}</p>
-                                            <p className="text-xs text-ink-muted">{payment.date}</p>
+                                            <p className="text-sm text-ink">
+                                                {payment.course_name || 'Course fee'}
+                                            </p>
+                                            <p className="text-xs text-ink-muted">
+                                                {payment.paid_at || '—'} · {payment.receipt_number}
+                                            </p>
                                         </div>
                                         <div className="text-right">
                                             <p className="font-mono text-sm font-medium tabular-nums text-ink">
-                                                ₹{payment.amount.toLocaleString()}
+                                                ₹{payment.amount.toLocaleString('en-IN')}
                                             </p>
                                             <p className="text-[10px] font-medium uppercase tracking-widest text-success">
-                                                Paid
+                                                {payment.payment_method.replace('_', ' ')}
                                             </p>
                                         </div>
                                     </div>
                                 ))}
-                                <Button variant="outline" size="sm" className="mt-3 w-full">
-                                    Pay pending amount
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="mt-3 w-full"
+                                    disabled={!summary || pendingAmount <= 0}
+                                    onClick={() => setPayDialogOpen(true)}
+                                >
+                                    {pendingAmount > 0
+                                        ? `Pay pending amount (₹${pendingAmount.toLocaleString('en-IN')})`
+                                        : 'No amount pending'}
                                 </Button>
                             </CardContent>
                         </Card>
@@ -222,6 +262,51 @@ export default function StudentPortal() {
                     </div>
                 </div>
             </main>
+
+            {/* Pay-by-UPI dialog: student scans the institution's QR; the
+                office confirms the credit and records the UTR. */}
+            <Dialog open={payDialogOpen} onOpenChange={setPayDialogOpen}>
+                <DialogContent className="border-line bg-surface sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle className="font-serif text-ink">Pay your pending fee</DialogTitle>
+                        <DialogDescription className="text-ink-muted">
+                            Pay via any UPI app, then show the payment confirmation at your
+                            center&apos;s office — they will verify it and issue your receipt.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {institution?.upi_vpa ? (
+                        <UpiQr
+                            vpa={institution.upi_vpa}
+                            payeeName={institution.name}
+                            amount={pendingAmount}
+                            note={`Fee ${summary?.student_code ?? ''}`.trim()}
+                            hint="Keep the payment confirmation — the office will verify it and issue your receipt."
+                        />
+                    ) : (
+                        <p className="rounded-md border border-line bg-muted p-3 text-sm text-ink-muted">
+                            Online payment is not set up for your institution yet. Please pay at
+                            the office counter.
+                        </p>
+                    )}
+                    {summary && summary.courses.filter((c) => c.balance > 0).length > 0 && (
+                        <div className="rounded-md border border-line">
+                            {summary.courses
+                                .filter((c) => c.balance > 0)
+                                .map((c) => (
+                                    <div
+                                        key={c.course_id}
+                                        className="flex items-center justify-between border-b border-line p-3 text-sm last:border-0"
+                                    >
+                                        <span className="text-ink">{c.course_name}</span>
+                                        <span className="font-mono font-medium tabular-nums text-ink">
+                                            ₹{c.balance.toLocaleString('en-IN')}
+                                        </span>
+                                    </div>
+                                ))}
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
 
             <ChatWidget />
         </div>

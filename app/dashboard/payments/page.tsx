@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { paymentsApi, studentsApi, coursesApi } from '@/lib/api/endpoints';
+import { paymentsApi, studentsApi, coursesApi, institutionsApi } from '@/lib/api/endpoints';
 import { useAuth } from '@/lib/auth/auth-context';
-import type { FeePayment, Student, Course, StudentCourse, RecordPaymentRequest } from '@/types';
+import { UpiQr } from '@/components/payments/upi-qr';
+import type { FeePayment, Student, Course, StudentCourse, RecordPaymentRequest, Institution } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -48,6 +49,17 @@ export default function PaymentsPage() {
     const [foundStudent, setFoundStudent] = useState<Student | null>(null);
     const [studentCourses, setStudentCourses] = useState<StudentCourse[]>([]);
     const [searchError, setSearchError] = useState('');
+
+    // Institution record: carries upi_vpa for the fee-collection QR.
+    const [institution, setInstitution] = useState<Institution | null>(null);
+
+    useEffect(() => {
+        if (!user?.institution_id || !canRecordPayments) return;
+        institutionsApi
+            .get(user.institution_id)
+            .then((res) => setInstitution(res.data))
+            .catch(() => setInstitution(null));
+    }, [user?.institution_id, canRecordPayments]);
 
     useEffect(() => {
         loadData();
@@ -467,6 +479,26 @@ export default function PaymentsPage() {
                                                 </SelectContent>
                                             </Select>
                                         </div>
+
+                                        {/* UPI QR (Phase 1: scan → pay → record UTR) */}
+                                        {formData.payment_method === 'upi' && (
+                                            <div className="md:col-span-2">
+                                                {institution?.upi_vpa ? (
+                                                    <UpiQr
+                                                        vpa={institution.upi_vpa}
+                                                        payeeName={institution.name}
+                                                        amount={formData.amount}
+                                                        note={`Fee ${foundStudent?.student_id ?? ''}`.trim()}
+                                                    />
+                                                ) : (
+                                                    <p className="rounded-md border border-line bg-muted p-3 text-sm text-ink-muted">
+                                                        No UPI ID is configured for this institution yet. The
+                                                        director can set it via institution settings
+                                                        (upi_vpa), after which a payment QR appears here.
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
 
                                         {/* Transaction ID (conditional) */}
                                         {requiresTransactionId(formData.payment_method) && (

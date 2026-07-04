@@ -1,5 +1,6 @@
 import apiClient from './client';
 import type {
+    MyPaymentSummary,
     User,
     Institution,
     Student,
@@ -263,6 +264,10 @@ export const paymentsApi = {
 
     getStudentSummary: (studentId: string) =>
         apiClient.get<PaymentSummary>(`/api/payments/student/${studentId}/summary`),
+
+    // Logged-in student's own fee position (enrollment-based) + recent payments
+    getMySummary: () =>
+        apiClient.get<MyPaymentSummary>('/api/payments/my/summary'),
 
     downloadReceipt: (paymentId: string) =>
         apiClient.get(`/api/payments/${paymentId}/receipt`, { responseType: 'blob' }),
