@@ -136,17 +136,17 @@ export default function ChatbotPage() {
         <div className="h-[calc(100vh-8rem)] flex flex-col">
             {/* Header */}
             <div className="mb-4">
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <MessageSquare className="h-7 w-7 text-blue-400" />
+                <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+                    <MessageSquare className="h-7 w-7 text-primary" />
                     Assistant
                 </h1>
-                <p className="text-slate-400 mt-1">
+                <p className="text-ink-muted mt-1">
                     Instant answers from your institution&apos;s records
                 </p>
             </div>
 
             {/* Chat Container */}
-            <Card className="flex-1 flex flex-col bg-slate-900/50 border-slate-800 overflow-hidden">
+            <Card className="flex-1 flex flex-col bg-surface border-line overflow-hidden">
                 {/* Messages */}
                 <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
                     {messages.map((message) => (
@@ -155,16 +155,16 @@ export default function ChatbotPage() {
                             className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
                             {message.role === 'assistant' && (
-                                <Avatar className="h-8 w-8 ring-2 ring-blue-500/20 flex-shrink-0">
-                                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                                <Avatar className="h-8 w-8 ring-2 ring-primary/20 flex-shrink-0">
+                                    <AvatarFallback className="bg-accent-soft text-ink">
                                         <Bot className="h-4 w-4" />
                                     </AvatarFallback>
                                 </Avatar>
                             )}
                             <div
                                 className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
-                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                                        : 'bg-slate-800 text-slate-100'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-muted text-ink'
                                     }`}
                             >
                                 <div className="text-sm whitespace-pre-wrap leading-relaxed">
@@ -182,7 +182,7 @@ export default function ChatbotPage() {
                                         );
                                     })}
                                 </div>
-                                <p className={`text-xs mt-2 ${message.role === 'user' ? 'text-blue-200' : 'text-slate-500'}`}>
+                                <p className={`text-xs mt-2 ${message.role === 'user' ? 'text-primary' : 'text-ink-muted'}`}>
                                     {message.timestamp.toLocaleTimeString('en-IN', {
                                         hour: '2-digit',
                                         minute: '2-digit',
@@ -190,8 +190,8 @@ export default function ChatbotPage() {
                                 </p>
                             </div>
                             {message.role === 'user' && (
-                                <Avatar className="h-8 w-8 ring-2 ring-purple-500/20 flex-shrink-0">
-                                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-600 text-white">
+                                <Avatar className="h-8 w-8 ring-2 ring-primary/20 flex-shrink-0">
+                                    <AvatarFallback className="bg-accent-soft text-ink">
                                         <User className="h-4 w-4" />
                                     </AvatarFallback>
                                 </Avatar>
@@ -200,13 +200,13 @@ export default function ChatbotPage() {
                     ))}
                     {isLoading && (
                         <div className="flex gap-3">
-                            <Avatar className="h-8 w-8 ring-2 ring-blue-500/20">
-                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                            <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+                                <AvatarFallback className="bg-accent-soft text-ink">
                                     <Bot className="h-4 w-4" />
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="bg-slate-800 rounded-2xl px-4 py-3">
-                                <div className="flex items-center gap-2 text-slate-400">
+                            <div className="bg-muted rounded-2xl px-4 py-3">
+                                <div className="flex items-center gap-2 text-ink-muted">
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                     <span className="text-sm">Looking that up...</span>
                                 </div>
@@ -223,7 +223,7 @@ export default function ChatbotPage() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleChipClick(chip)}
-                                    className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                                    className="border-line text-ink hover:bg-muted hover:text-ink"
                                 >
                                     {chip.label}
                                 </Button>
@@ -236,7 +236,7 @@ export default function ChatbotPage() {
                 {/* Role-specific menu chips (empty state) */}
                 {messages.length === 1 && menuChips.length > 0 && (
                     <div className="px-4 pb-4">
-                        <p className="text-sm text-slate-400 mb-2 flex items-center gap-1">
+                        <p className="text-sm text-ink-muted mb-2 flex items-center gap-1">
                             <Sparkles className="h-4 w-4" />
                             I can help with
                         </p>
@@ -247,7 +247,7 @@ export default function ChatbotPage() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleChipClick(chip)}
-                                    className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                                    className="border-line text-ink hover:bg-muted hover:text-ink"
                                 >
                                     {chip.label}
                                 </Button>
@@ -257,7 +257,7 @@ export default function ChatbotPage() {
                 )}
 
                 {/* Input */}
-                <div className="border-t border-slate-800 p-4">
+                <div className="border-t border-line p-4">
                     <div className="flex gap-2">
                         <Input
                             value={input}
@@ -265,12 +265,12 @@ export default function ChatbotPage() {
                             onKeyPress={handleKeyPress}
                             placeholder="Ask about fees, exams, results, courses..."
                             disabled={isLoading}
-                            className="flex-1 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500"
+                            className="flex-1 bg-muted border-line text-ink placeholder:text-ink-muted focus:border-ring"
                         />
                         <Button
                             onClick={() => handleSend()}
                             disabled={!input.trim() || isLoading}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-4"
+                            className="bg-primary text-primary-foreground px-4"
                         >
                             <Send className="h-4 w-4" />
                         </Button>

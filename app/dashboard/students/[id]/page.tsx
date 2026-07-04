@@ -217,22 +217,22 @@ export default function StudentDetailPage() {
         const statusConfig = {
             not_started: {
                 label: 'Not Started',
-                className: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
+                className: 'bg-muted text-ink-muted border-line',
                 icon: Clock,
             },
             in_progress: {
                 label: 'In Progress',
-                className: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+                className: 'bg-accent-soft text-primary border-line',
                 icon: BookOpen,
             },
             completed: {
                 label: 'Completed',
-                className: 'bg-green-500/10 text-green-400 border-green-500/30',
+                className: 'bg-accent-soft text-primary border-line',
                 icon: CheckCircle,
             },
             failed: {
                 label: 'Failed',
-                className: 'bg-red-500/10 text-red-400 border-red-500/30',
+                className: 'bg-danger/10 text-danger border-line',
                 icon: XCircle,
             },
         };
@@ -251,7 +251,7 @@ export default function StudentDetailPage() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -259,7 +259,7 @@ export default function StudentDetailPage() {
     if (!student) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
-                <p className="text-slate-400 mb-4">Student not found</p>
+                <p className="text-ink-muted mb-4">Student not found</p>
                 <Link href="/dashboard/students">
                     <Button variant="outline">
                         <ArrowLeft className="h-4 w-4 mr-2" />
@@ -282,47 +282,47 @@ export default function StudentDetailPage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-3xl font-bold text-white">Student Profile</h1>
-                    <p className="text-slate-400">View student details and progress</p>
+                    <h1 className="text-3xl font-bold text-ink">Student Profile</h1>
+                    <p className="text-ink-muted">View student details and progress</p>
                 </div>
             </div>
 
             {/* Student Info Card */}
-            <Card className="bg-slate-900 border-slate-800">
+            <Card className="bg-surface border-line">
                 <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-                        <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-2 border-slate-700">
-                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl sm:text-2xl">
+                        <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-2 border-line">
+                            <AvatarFallback className="bg-accent-soft text-ink text-xl sm:text-2xl">
                                 {student.user?.full_name?.split(' ').map((n) => n[0]).join('').toUpperCase() || 'ST'}
                             </AvatarFallback>
                         </Avatar>
 
                         <div className="flex-1 space-y-4 text-center sm:text-left w-full">
                             <div>
-                                <h2 className="text-xl sm:text-2xl font-bold text-white">{student.user?.full_name || 'Unknown'}</h2>
-                                <p className="text-slate-400 text-sm sm:text-base">ID: {student.student_id}</p>
+                                <h2 className="text-xl sm:text-2xl font-bold text-ink">{student.user?.full_name || 'Unknown'}</h2>
+                                <p className="text-ink-muted text-sm sm:text-base">ID: {student.student_id}</p>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                                 <div className="flex items-center justify-center sm:justify-start gap-2 text-sm">
-                                    <Mail className="h-4 w-4 text-slate-500 shrink-0" />
-                                    <span className="text-slate-300 truncate">{student.user?.email || '-'}</span>
+                                    <Mail className="h-4 w-4 text-ink-muted shrink-0" />
+                                    <span className="text-ink truncate">{student.user?.email || '-'}</span>
                                 </div>
                                 {student.user?.phone && (
                                     <div className="flex items-center justify-center sm:justify-start gap-2 text-sm">
-                                        <Phone className="h-4 w-4 text-slate-500 shrink-0" />
-                                        <span className="text-slate-300">{student.user.phone}</span>
+                                        <Phone className="h-4 w-4 text-ink-muted shrink-0" />
+                                        <span className="text-ink">{student.user.phone}</span>
                                     </div>
                                 )}
                                 {student.address && (
                                     <div className="flex items-center justify-center sm:justify-start gap-2 text-sm">
-                                        <MapPin className="h-4 w-4 text-slate-500 shrink-0" />
-                                        <span className="text-slate-300 truncate">{student.address}</span>
+                                        <MapPin className="h-4 w-4 text-ink-muted shrink-0" />
+                                        <span className="text-ink truncate">{student.address}</span>
                                     </div>
                                 )}
                                 <div className="flex items-center justify-center sm:justify-start gap-2 text-sm">
-                                    <Calendar className="h-4 w-4 text-slate-500 shrink-0" />
-                                    <span className="text-slate-300">
+                                    <Calendar className="h-4 w-4 text-ink-muted shrink-0" />
+                                    <span className="text-ink">
                                         Enrolled: {new Date(student.enrollment_date).toLocaleDateString()}
                                     </span>
                                 </div>
@@ -333,18 +333,18 @@ export default function StudentDetailPage() {
             </Card>
 
             {/* Module Progress Section */}
-            <Card className="bg-slate-900 border-slate-800">
+            <Card className="bg-surface border-line">
                 <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                        <GraduationCap className="h-5 w-5 text-blue-500" />
+                    <CardTitle className="text-ink flex items-center gap-2">
+                        <GraduationCap className="h-5 w-5 text-primary" />
                         Course Progress
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     {courses.length === 0 ? (
                         <div className="text-center py-12">
-                            <BookOpen className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                            <p className="text-slate-400">No courses enrolled yet</p>
+                            <BookOpen className="h-12 w-12 text-ink-muted mx-auto mb-4" />
+                            <p className="text-ink-muted">No courses enrolled yet</p>
                         </div>
                     ) : (
                         <>
@@ -359,8 +359,8 @@ export default function StudentDetailPage() {
                                             variant={selectedCourse === course.id ? 'default' : 'outline'}
                                             onClick={() => setSelectedCourse(course.id)}
                                             className={`w-full sm:w-auto max-w-full ${selectedCourse === course.id
-                                                ? 'bg-gradient-to-r from-blue-600 to-purple-600'
-                                                : 'border-slate-700 hover:border-slate-600'
+                                                ? 'bg-primary'
+                                                : 'border-line hover:border-primary/40'
                                                 }`}
                                         >
                                             <div className="flex flex-col items-start min-w-0 w-full">
@@ -380,37 +380,37 @@ export default function StudentDetailPage() {
                             {selectedCourseProgress && (
                                 <div className="space-y-6">
                                     {/* Overall Progress */}
-                                    <div className="bg-slate-800/50 rounded-lg p-6 space-y-4">
+                                    <div className="bg-muted rounded-lg p-6 space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h3 className="text-lg font-semibold text-white">Overall Progress</h3>
-                                            <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/30 border text-lg px-3 py-1">
+                                            <h3 className="text-lg font-semibold text-ink">Overall Progress</h3>
+                                            <Badge className="bg-accent-soft text-primary border-line border text-lg px-3 py-1">
                                                 {selectedCourseProgress.overall_percentage.toFixed(1)}%
                                             </Badge>
                                         </div>
                                         <Progress value={selectedCourseProgress.overall_percentage} className="h-2" />
 
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                                            <div className="bg-slate-900 rounded p-3">
-                                                <p className="text-xs text-slate-400 mb-1">Total Modules</p>
-                                                <p className="text-2xl font-bold text-white">
+                                            <div className="bg-surface rounded p-3">
+                                                <p className="text-xs text-ink-muted mb-1">Total Modules</p>
+                                                <p className="text-2xl font-bold text-ink">
                                                     {selectedCourseProgress.total_modules}
                                                 </p>
                                             </div>
-                                            <div className="bg-slate-900 rounded p-3">
-                                                <p className="text-xs text-green-400 mb-1">Completed</p>
-                                                <p className="text-2xl font-bold text-green-400">
+                                            <div className="bg-surface rounded p-3">
+                                                <p className="text-xs text-primary mb-1">Completed</p>
+                                                <p className="text-2xl font-bold text-primary">
                                                     {selectedCourseProgress.completed_modules}
                                                 </p>
                                             </div>
-                                            <div className="bg-slate-900 rounded p-3">
-                                                <p className="text-xs text-blue-400 mb-1">In Progress</p>
-                                                <p className="text-2xl font-bold text-blue-400">
+                                            <div className="bg-surface rounded p-3">
+                                                <p className="text-xs text-primary mb-1">In Progress</p>
+                                                <p className="text-2xl font-bold text-primary">
                                                     {selectedCourseProgress.in_progress_modules}
                                                 </p>
                                             </div>
-                                            <div className="bg-slate-900 rounded p-3">
-                                                <p className="text-xs text-slate-400 mb-1">Not Started</p>
-                                                <p className="text-2xl font-bold text-slate-400">
+                                            <div className="bg-surface rounded p-3">
+                                                <p className="text-xs text-ink-muted mb-1">Not Started</p>
+                                                <p className="text-2xl font-bold text-ink-muted">
                                                     {selectedCourseProgress.not_started_modules}
                                                 </p>
                                             </div>
@@ -419,28 +419,28 @@ export default function StudentDetailPage() {
 
                                     {/* Module List */}
                                     <div className="space-y-3">
-                                        <h3 className="text-lg font-semibold text-white">Modules</h3>
+                                        <h3 className="text-lg font-semibold text-ink">Modules</h3>
                                         {selectedCourseProgress.module_progress.map((progress) => (
-                                            <Card key={progress.id} className="bg-slate-800/50 border-slate-700">
+                                            <Card key={progress.id} className="bg-muted border-line">
                                                 <CardContent className="p-3 sm:p-4">
                                                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                                                         <div className="flex-1 space-y-2">
                                                             <div className="flex flex-wrap items-start gap-2 sm:gap-3">
-                                                                <Badge className="bg-slate-700 text-slate-300 shrink-0 text-xs">
+                                                                <Badge className="bg-muted text-ink shrink-0 text-xs">
                                                                     Module {progress.module.module_number}
                                                                 </Badge>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <h4 className="font-semibold text-white text-sm sm:text-base">
+                                                                    <h4 className="font-semibold text-ink text-sm sm:text-base">
                                                                         {progress.module.module_name}
                                                                     </h4>
-                                                                    <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                                                                    <p className="text-xs sm:text-sm text-ink-muted mt-1">
                                                                         {progress.module.lesson_count} lessons • {progress.module.total_marks} marks
                                                                     </p>
                                                                 </div>
                                                             </div>
 
                                                             {progress.notes && (
-                                                                <p className="text-xs sm:text-sm text-slate-400 italic">
+                                                                <p className="text-xs sm:text-sm text-ink-muted italic">
                                                                     Note: {progress.notes}
                                                                 </p>
                                                             )}
@@ -468,9 +468,9 @@ export default function StudentDetailPage() {
                                                                                     },
                                                                                 }))
                                                                             }
-                                                                            className="w-20 bg-slate-900 border-slate-600 text-white"
+                                                                            className="w-20 bg-surface border-line text-ink"
                                                                         />
-                                                                        <span className="text-slate-400 text-sm">
+                                                                        <span className="text-ink-muted text-sm">
                                                                             / {progress.module.total_marks}
                                                                         </span>
                                                                     </div>
@@ -486,14 +486,14 @@ export default function StudentDetailPage() {
                                                                                 },
                                                                             }))
                                                                         }
-                                                                        className="w-full sm:w-40 bg-slate-900 border-slate-600 text-white"
+                                                                        className="w-full sm:w-40 bg-surface border-line text-ink"
                                                                     />
                                                                     <div className="flex gap-2">
                                                                         <Button
                                                                             size="sm"
                                                                             onClick={() => handleSaveMarks(progress.module_id, progress.module)}
                                                                             disabled={savingMarks === progress.module_id}
-                                                                            className="bg-green-600 hover:bg-green-500"
+                                                                            className="bg-primary hover:bg-primary"
                                                                         >
                                                                             {savingMarks === progress.module_id ? (
                                                                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -505,7 +505,7 @@ export default function StudentDetailPage() {
                                                                             size="sm"
                                                                             variant="ghost"
                                                                             onClick={cancelEditing}
-                                                                            className="text-slate-400"
+                                                                            className="text-ink-muted"
                                                                         >
                                                                             Cancel
                                                                         </Button>
@@ -515,15 +515,15 @@ export default function StudentDetailPage() {
                                                                 <div className="flex items-center gap-3">
                                                                     {progress.marks_obtained !== null && (
                                                                         <div className="text-right">
-                                                                            <p className="text-xs text-slate-400">Score</p>
+                                                                            <p className="text-xs text-ink-muted">Score</p>
                                                                             <p
-                                                                                className={`text-lg font-bold ${progress.passed ? 'text-green-400' : 'text-red-400'
+                                                                                className={`text-lg font-bold ${progress.passed ? 'text-primary' : 'text-danger'
                                                                                     }`}
                                                                             >
                                                                                 {progress.marks_obtained}/{progress.module.total_marks}
                                                                             </p>
                                                                             {progress.exam_date && (
-                                                                                <p className="text-xs text-slate-500">
+                                                                                <p className="text-xs text-ink-muted">
                                                                                     {new Date(progress.exam_date).toLocaleDateString()}
                                                                                 </p>
                                                                             )}
@@ -534,7 +534,7 @@ export default function StudentDetailPage() {
                                                                             size="sm"
                                                                             variant="outline"
                                                                             onClick={() => startEditing(progress)}
-                                                                            className="border-slate-600 hover:border-green-500 hover:text-green-400"
+                                                                            className="border-line hover:border-primary/40 hover:text-primary"
                                                                         >
                                                                             <Edit3 className="h-4 w-4 mr-1" />
                                                                             {progress.marks_obtained !== null ? 'Edit' : 'Enter Marks'}

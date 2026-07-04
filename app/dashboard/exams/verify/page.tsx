@@ -135,7 +135,7 @@ export default function ExamVerificationPage() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -149,13 +149,13 @@ export default function ExamVerificationPage() {
                     </Button>
                 </Link>
                 <div className="flex-1">
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <ClipboardCheck className="h-7 w-7 text-green-400" />
+                    <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+                        <ClipboardCheck className="h-7 w-7 text-primary" />
                         Exam Verification
                     </h1>
-                    <p className="text-slate-400 mt-1">Review and verify student exam results</p>
+                    <p className="text-ink-muted mt-1">Review and verify student exam results</p>
                 </div>
-                <Button onClick={fetchData} variant="outline" className="border-slate-700">
+                <Button onClick={fetchData} variant="outline" className="border-line">
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Refresh
                 </Button>
@@ -164,67 +164,67 @@ export default function ExamVerificationPage() {
             {/* Stats Cards */}
             {stats && (
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <Card className="bg-slate-900/50 border-slate-800">
+                    <Card className="bg-surface border-line">
                         <CardContent className="p-4">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-yellow-500/10">
                                     <ClipboardCheck className="h-5 w-5 text-yellow-400" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400">Pending</p>
-                                    <p className="text-2xl font-bold text-white">{stats.pending_verification}</p>
+                                    <p className="text-xs text-ink-muted">Pending</p>
+                                    <p className="text-2xl font-bold text-ink">{stats.pending_verification}</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="bg-slate-900/50 border-slate-800">
+                    <Card className="bg-surface border-line">
                         <CardContent className="p-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-green-500/10">
-                                    <CheckCircle className="h-5 w-5 text-green-400" />
+                                <div className="p-2 rounded-lg bg-accent-soft">
+                                    <CheckCircle className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400">Today</p>
-                                    <p className="text-2xl font-bold text-white">{stats.verified_today}</p>
+                                    <p className="text-xs text-ink-muted">Today</p>
+                                    <p className="text-2xl font-bold text-ink">{stats.verified_today}</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="bg-slate-900/50 border-slate-800">
+                    <Card className="bg-surface border-line">
                         <CardContent className="p-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-blue-500/10">
-                                    <Users className="h-5 w-5 text-blue-400" />
+                                <div className="p-2 rounded-lg bg-accent-soft">
+                                    <Users className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400">Total</p>
-                                    <p className="text-2xl font-bold text-white">{stats.total_verified}</p>
+                                    <p className="text-xs text-ink-muted">Total</p>
+                                    <p className="text-2xl font-bold text-ink">{stats.total_verified}</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="bg-slate-900/50 border-slate-800">
+                    <Card className="bg-surface border-line">
                         <CardContent className="p-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-purple-500/10">
-                                    <TrendingUp className="h-5 w-5 text-purple-400" />
+                                <div className="p-2 rounded-lg bg-accent-soft">
+                                    <TrendingUp className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400">Pass Rate</p>
-                                    <p className="text-2xl font-bold text-white">{stats.pass_rate}%</p>
+                                    <p className="text-xs text-ink-muted">Pass Rate</p>
+                                    <p className="text-2xl font-bold text-ink">{stats.pass_rate}%</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="bg-slate-900/50 border-slate-800">
+                    <Card className="bg-surface border-line">
                         <CardContent className="p-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-emerald-500/10">
-                                    <Award className="h-5 w-5 text-emerald-400" />
+                                <div className="p-2 rounded-lg bg-accent-soft">
+                                    <Award className="h-5 w-5 text-success" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400">Avg Score</p>
-                                    <p className="text-2xl font-bold text-white">{stats.average_score}%</p>
+                                    <p className="text-xs text-ink-muted">Avg Score</p>
+                                    <p className="text-2xl font-bold text-ink">{stats.average_score}%</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -233,22 +233,22 @@ export default function ExamVerificationPage() {
             )}
 
             {/* Search and Bulk Actions */}
-            <Card className="bg-slate-900/50 border-slate-800">
+            <Card className="bg-surface border-line">
                 <CardContent className="p-4">
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="relative flex-1 max-w-md">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
                             <Input
                                 placeholder="Search by student or exam..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 bg-slate-800/50 border-slate-700 text-white"
+                                className="pl-10 bg-muted border-line text-ink"
                             />
                         </div>
                         {filteredAttempts.length > 0 && (
                             <Button
                                 onClick={handleBulkVerify}
-                                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white"
+                                className="bg-primary text-primary-foreground"
                             >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Verify All ({filteredAttempts.length})
@@ -260,44 +260,44 @@ export default function ExamVerificationPage() {
 
             {/* Pending Verifications */}
             {filteredAttempts.length === 0 ? (
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="flex flex-col items-center justify-center py-12">
-                        <CheckCircle className="h-12 w-12 text-green-400 mb-4" />
-                        <p className="text-slate-400 text-center">All caught up! No pending verifications.</p>
+                        <CheckCircle className="h-12 w-12 text-primary mb-4" />
+                        <p className="text-ink-muted text-center">All caught up! No pending verifications.</p>
                     </CardContent>
                 </Card>
             ) : (
                 <div className="space-y-3">
                     {filteredAttempts.map((attempt) => (
-                        <Card key={attempt.id} className="bg-slate-900/50 border-slate-800">
+                        <Card key={attempt.id} className="bg-surface border-line">
                             <CardContent className="p-4">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-semibold text-white">{attempt.student_name}</h3>
-                                            <Badge variant="outline" className="text-slate-400 border-slate-600 text-xs">
+                                            <h3 className="font-semibold text-ink">{attempt.student_name}</h3>
+                                            <Badge variant="outline" className="text-ink-muted border-line text-xs">
                                                 Attempt #{attempt.attempt_number}
                                             </Badge>
                                         </div>
-                                        <p className="text-sm text-slate-400">{attempt.exam_title}</p>
-                                        <p className="text-xs text-slate-500 mt-1">
+                                        <p className="text-sm text-ink-muted">{attempt.exam_title}</p>
+                                        <p className="text-xs text-ink-muted mt-1">
                                             Submitted: {formatDate(attempt.end_time || attempt.created_at)}
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="text-right">
-                                            <p className={`text-2xl font-bold ${attempt.passed ? 'text-green-400' : 'text-red-400'}`}>
+                                            <p className={`text-2xl font-bold ${attempt.passed ? 'text-primary' : 'text-danger'}`}>
                                                 {attempt.percentage?.toFixed(1)}%
                                             </p>
-                                            <p className="text-xs text-slate-400">
+                                            <p className="text-xs text-ink-muted">
                                                 {attempt.obtained_marks}/{attempt.total_marks} marks
                                             </p>
                                         </div>
                                         <Badge
                                             className={`${
                                                 attempt.passed
-                                                    ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                                                    : 'bg-red-500/10 text-red-400 border-red-500/30'
+                                                    ? 'bg-accent-soft text-primary border-line'
+                                                    : 'bg-danger/10 text-danger border-line'
                                             }`}
                                         >
                                             {attempt.passed ? 'Passed' : 'Failed'}
@@ -308,7 +308,7 @@ export default function ExamVerificationPage() {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => handleReview(attempt.id)}
-                                            className="border-slate-700 text-slate-300"
+                                            className="border-line text-ink"
                                         >
                                             <Eye className="h-4 w-4 mr-1" />
                                             Review
@@ -316,7 +316,7 @@ export default function ExamVerificationPage() {
                                         <Button
                                             size="sm"
                                             onClick={() => handleVerify(attempt.id)}
-                                            className="bg-green-600 hover:bg-green-500 text-white"
+                                            className=""
                                         >
                                             <CheckCircle className="h-4 w-4 mr-1" />
                                             Verify
@@ -331,9 +331,9 @@ export default function ExamVerificationPage() {
 
             {/* Review Dialog */}
             <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-                <DialogContent className="bg-slate-900 border-slate-800 max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="bg-surface border-line max-w-4xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-white">
+                        <DialogTitle className="text-ink">
                             Review Exam Attempt
                         </DialogTitle>
                     </DialogHeader>
@@ -342,25 +342,25 @@ export default function ExamVerificationPage() {
                         <div className="space-y-6">
                             {/* Summary */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="bg-slate-800/50 rounded-lg p-3">
-                                    <p className="text-xs text-slate-400 mb-1">Student</p>
-                                    <p className="font-medium text-white">{selectedAttempt.attempt.student_name}</p>
+                                <div className="bg-muted rounded-lg p-3">
+                                    <p className="text-xs text-ink-muted mb-1">Student</p>
+                                    <p className="font-medium text-ink">{selectedAttempt.attempt.student_name}</p>
                                 </div>
-                                <div className="bg-slate-800/50 rounded-lg p-3">
-                                    <p className="text-xs text-slate-400 mb-1">Score</p>
-                                    <p className={`font-bold text-xl ${selectedAttempt.attempt.passed ? 'text-green-400' : 'text-red-400'}`}>
+                                <div className="bg-muted rounded-lg p-3">
+                                    <p className="text-xs text-ink-muted mb-1">Score</p>
+                                    <p className={`font-bold text-xl ${selectedAttempt.attempt.passed ? 'text-primary' : 'text-danger'}`}>
                                         {selectedAttempt.attempt.percentage?.toFixed(1)}%
                                     </p>
                                 </div>
-                                <div className="bg-slate-800/50 rounded-lg p-3">
-                                    <p className="text-xs text-slate-400 mb-1">Correct</p>
-                                    <p className="font-medium text-white">
+                                <div className="bg-muted rounded-lg p-3">
+                                    <p className="text-xs text-ink-muted mb-1">Correct</p>
+                                    <p className="font-medium text-ink">
                                         {selectedAttempt.attempt.correct_answers}/{selectedAttempt.attempt.total_questions}
                                     </p>
                                 </div>
-                                <div className="bg-slate-800/50 rounded-lg p-3">
-                                    <p className="text-xs text-slate-400 mb-1">Time Taken</p>
-                                    <p className="font-medium text-white">
+                                <div className="bg-muted rounded-lg p-3">
+                                    <p className="text-xs text-ink-muted mb-1">Time Taken</p>
+                                    <p className="font-medium text-ink">
                                         {selectedAttempt.attempt.time_taken_minutes} min
                                     </p>
                                 </div>
@@ -368,25 +368,25 @@ export default function ExamVerificationPage() {
 
                             {/* Questions Review */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold text-white">Questions & Answers</h3>
+                                <h3 className="text-lg font-semibold text-ink">Questions & Answers</h3>
                                 {selectedAttempt.questions?.map((q: any, idx: number) => (
-                                    <Card key={q.question_id} className={`border ${q.is_correct ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
+                                    <Card key={q.question_id} className={`border ${q.is_correct ? 'border-line bg-accent-soft' : 'border-line bg-danger/10'}`}>
                                         <CardContent className="p-4">
                                             <div className="flex items-start justify-between mb-3">
-                                                <Badge variant="outline" className="text-slate-400">Q{idx + 1}</Badge>
+                                                <Badge variant="outline" className="text-ink-muted">Q{idx + 1}</Badge>
                                                 {q.is_correct ? (
-                                                    <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
+                                                    <Badge className="bg-accent-soft text-primary border-line">
                                                         <CheckCircle className="h-3 w-3 mr-1" />
                                                         Correct
                                                     </Badge>
                                                 ) : (
-                                                    <Badge className="bg-red-500/10 text-red-400 border-red-500/30">
+                                                    <Badge className="bg-danger/10 text-danger border-line">
                                                         <XCircle className="h-3 w-3 mr-1" />
                                                         Incorrect
                                                     </Badge>
                                                 )}
                                             </div>
-                                            <p className="text-white mb-3">{q.question_text}</p>
+                                            <p className="text-ink mb-3">{q.question_text}</p>
                                             <div className="grid grid-cols-2 gap-2 text-sm">
                                                 {['A', 'B', 'C', 'D'].map((opt) => {
                                                     const optKey = `option_${opt.toLowerCase()}`;
@@ -398,18 +398,18 @@ export default function ExamVerificationPage() {
                                                             key={opt}
                                                             className={`p-2 rounded ${
                                                                 isCorrect
-                                                                    ? 'bg-green-500/20 border border-green-500/30'
+                                                                    ? 'bg-accent-soft border border-line'
                                                                     : isSelected && !isCorrect
-                                                                    ? 'bg-red-500/20 border border-red-500/30'
-                                                                    : 'bg-slate-800/50'
+                                                                    ? 'bg-danger/10 border border-line'
+                                                                    : 'bg-muted'
                                                             }`}
                                                         >
                                                             <span className="font-medium mr-2">{opt}.</span>
-                                                            <span className={isCorrect ? 'text-green-400' : isSelected ? 'text-red-400' : 'text-slate-300'}>
+                                                            <span className={isCorrect ? 'text-primary' : isSelected ? 'text-danger' : 'text-ink'}>
                                                                 {q[optKey]}
                                                             </span>
-                                                            {isCorrect && <CheckCircle className="h-3 w-3 inline ml-2 text-green-400" />}
-                                                            {isSelected && !isCorrect && <XCircle className="h-3 w-3 inline ml-2 text-red-400" />}
+                                                            {isCorrect && <CheckCircle className="h-3 w-3 inline ml-2 text-primary" />}
+                                                            {isSelected && !isCorrect && <XCircle className="h-3 w-3 inline ml-2 text-danger" />}
                                                         </div>
                                                     );
                                                 })}
@@ -436,7 +436,7 @@ export default function ExamVerificationPage() {
                         <Button
                             onClick={() => selectedAttempt && handleVerify(selectedAttempt.attempt.id)}
                             disabled={isVerifying}
-                            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white"
+                            className="bg-primary text-primary-foreground"
                         >
                             {isVerifying ? (
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

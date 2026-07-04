@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
+import { homePathForRole } from '@/lib/auth/roles';
 
 const loginSchema = z.object({
     email: z.string().email('Please enter a valid email'),
@@ -24,16 +25,18 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
     const router = useRouter();
-    const { login, isAuthenticated } = useAuth();
+    const { login, user, isAuthenticated, isLoading: authLoading } = useAuth();
 
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Already signed in (validated against the server in AuthProvider):
+    // send the user to THEIR portal, by role — never blindly to /dashboard.
     useEffect(() => {
-        if (isAuthenticated) {
-            router.push('/dashboard');
+        if (!authLoading && isAuthenticated && user) {
+            router.replace(homePathForRole(user.role));
         }
-    }, [isAuthenticated, router]);
+    }, [authLoading, isAuthenticated, user, router]);
 
     const {
         register,
@@ -46,25 +49,12 @@ export default function LoginPage() {
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true);
         try {
-            await login(data);
+            const loggedInUser = await login(data);
 
             toast.success('Login successful!');
 
             // Role comes from the authenticated user object, not user choice.
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-
-                if (user.role === 'student') {
-                    router.push('/student');
-                } else if (user.role === 'staff') {
-                    router.push('/staff');
-                } else {
-                    router.push('/dashboard');
-                }
-            } else {
-                router.push('/dashboard');
-            }
+            router.replace(homePathForRole(loggedInUser.role));
         } catch (error) {
             const message = error instanceof Error ? error.message : null;
             toast.error(message || 'Login failed. Please check your credentials.');
@@ -183,7 +173,16 @@ export default function LoginPage() {
                     </CardContent>
                 </Card>
 
-                <p className="mt-8 text-center text-xs text-ink-muted">
+                <p className="mt-6 text-center text-sm">
+                    <Link
+                        href="/"
+                        className="text-ink-muted transition-colors hover:text-primary"
+                    >
+                        ← Back to home
+                    </Link>
+                </p>
+
+                <p className="mt-4 text-center text-xs text-ink-muted">
                     Powered by RTS — Rajtech Technological Systems
                 </p>
             </div>

@@ -4,7 +4,6 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import {
     GraduationCap,
     Users,
@@ -32,26 +31,30 @@ interface StatCardProps {
     description: string;
     icon: React.ElementType;
     trend?: { value: number; isPositive: boolean } | null;
-    gradient: string;
 }
 
-function StatCard({ title, value, description, icon: Icon, trend, gradient }: StatCardProps) {
+function StatCard({ title, value, description, icon: Icon, trend }: StatCardProps) {
     return (
-        <Card className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/50 group">
+        <Card className="rounded-md border-line bg-surface shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-400">{title}</CardTitle>
-                <div className={`p-2 rounded-lg ${gradient} shadow-lg`}>
-                    <Icon className="h-4 w-4 text-white" />
+                <CardTitle className="text-xs font-medium uppercase tracking-wide text-ink-muted">
+                    {title}
+                </CardTitle>
+                <div className="rounded-md bg-accent-soft p-2">
+                    <Icon className="h-4 w-4 text-primary" />
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="text-3xl font-bold text-white tracking-tight">{value}</div>
-                <div className="flex items-center justify-between mt-2">
-                    <p className="text-xs text-slate-500">{description}</p>
+                <div className="font-mono text-3xl font-semibold tabular-nums tracking-tight text-ink">
+                    {value}
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                    <p className="text-xs text-ink-muted">{description}</p>
                     {trend && (
                         <div
-                            className={`flex items-center text-xs font-medium ${trend.isPositive ? 'text-emerald-400' : 'text-red-400'
-                                }`}
+                            className={`flex items-center text-xs font-medium ${
+                                trend.isPositive ? 'text-success' : 'text-danger'
+                            }`}
                         >
                             <ArrowUpRight
                                 className={`h-3 w-3 mr-1 ${!trend.isPositive && 'rotate-90'}`}
@@ -70,30 +73,28 @@ function QuickActionCard({
     description,
     icon: Icon,
     href,
-    gradient,
 }: {
     title: string;
     description: string;
     icon: React.ElementType;
     href: string;
-    gradient: string;
 }) {
     return (
-        <a href={href} className="block group">
-            <Card className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/50 h-full">
-                <CardContent className="p-6 flex items-center gap-4">
-                    <div className={`p-3 rounded-xl ${gradient} shadow-lg group-hover:scale-110 transition-transform`}>
-                        <Icon className="h-6 w-6 text-white" />
+        <Link href={href} className="group block">
+            <Card className="h-full rounded-md border-line bg-surface shadow-sm transition-colors group-hover:border-primary/40">
+                <CardContent className="flex items-center gap-4 p-6">
+                    <div className="rounded-md bg-accent-soft p-3">
+                        <Icon className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors">
+                        <h3 className="font-medium text-ink transition-colors group-hover:text-primary">
                             {title}
                         </h3>
-                        <p className="text-sm text-slate-400">{description}</p>
+                        <p className="text-sm text-ink-muted">{description}</p>
                     </div>
                 </CardContent>
             </Card>
-        </a>
+        </Link>
     );
 }
 
@@ -101,12 +102,12 @@ function LoadingSkeleton() {
     return (
         <div className="space-y-8">
             <div>
-                <Skeleton className="h-8 w-64 bg-slate-800" />
-                <Skeleton className="h-4 w-96 mt-2 bg-slate-800" />
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="mt-2 h-4 w-96" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[1, 2, 3, 4].map((i) => (
-                    <Skeleton key={i} className="h-32 bg-slate-800 rounded-xl" />
+                    <Skeleton key={i} className="h-32 rounded-md" />
                 ))}
             </div>
         </div>
@@ -172,15 +173,15 @@ function StudentDashboard({ user }: { user: any }) {
         <div className="space-y-8">
             {/* Welcome Section */}
             <div>
-                <h1 className="text-3xl font-bold text-white">
-                    Welcome, {user?.full_name?.split(' ')[0] || 'Student'}! 👋
+                <h1 className="font-serif text-2xl font-semibold text-ink">
+                    Welcome, {user?.full_name?.split(' ')[0] || 'Student'}
                 </h1>
-                <p className="text-slate-400 mt-2">
+                <p className="mt-2 text-ink-muted">
                     Track your courses, progress, and achievements.
                 </p>
                 {studentData && (
-                    <p className="text-sm text-slate-500 mt-1">
-                        Student ID: <span className="text-blue-400 font-mono">{studentData.student_id}</span>
+                    <p className="mt-1 text-sm text-ink-muted">
+                        Student ID: <span className="font-mono text-primary">{studentData.student_id}</span>
                     </p>
                 )}
             </div>
@@ -192,42 +193,37 @@ function StudentDashboard({ user }: { user: any }) {
                     value={courses.length}
                     description="Active courses"
                     icon={BookOpen}
-                    gradient="bg-gradient-to-br from-blue-500 to-blue-600"
                 />
                 <StatCard
                     title="Completed Modules"
                     value={Object.values(courseProgress).reduce((acc: number, p: any) => acc + (p?.completed_modules || 0), 0)}
                     description="Across all courses"
                     icon={CheckCircle}
-                    gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
                 />
                 <StatCard
                     title="In Progress"
                     value={Object.values(courseProgress).reduce((acc: number, p: any) => acc + (p?.in_progress_modules || 0), 0)}
                     description="Modules in progress"
                     icon={Clock}
-                    gradient="bg-gradient-to-br from-amber-500 to-orange-600"
                 />
                 <StatCard
                     title="Overall Progress"
                     value={`${Math.round(Object.values(courseProgress).reduce((acc: number, p: any) => acc + (p?.overall_percentage || 0), 0) / Math.max(courses.length, 1))}%`}
                     description="Average completion"
                     icon={TrendingUp}
-                    gradient="bg-gradient-to-br from-purple-500 to-purple-600"
                 />
             </div>
 
             {/* Enrolled Courses */}
             <div>
-                <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                    <GraduationCap className="h-5 w-5 text-blue-400" />
+                <h2 className="mb-4 flex items-center gap-2 font-serif text-lg font-semibold text-ink">
+                    <GraduationCap className="h-5 w-5 text-primary" />
                     My Courses
                 </h2>
                 {courses.length === 0 ? (
-                    <Card className="bg-slate-900/50 border-slate-800">
+                    <Card className="rounded-md border-line bg-surface shadow-sm">
                         <CardContent className="p-8 text-center">
-                            <BookOpen className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                            <p className="text-slate-400">You are not enrolled in any courses yet.</p>
+                            <p className="font-serif text-ink-muted">You are not enrolled in any courses yet.</p>
                         </CardContent>
                     </Card>
                 ) : (
@@ -235,47 +231,47 @@ function StudentDashboard({ user }: { user: any }) {
                         {courses.map((enrollment: any) => {
                             const progress = courseProgress[enrollment.course.id];
                             return (
-                                <Card key={enrollment.id} className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all">
+                                <Card key={enrollment.id} className="rounded-md border-line bg-surface shadow-sm">
                                     <CardHeader className="pb-2">
                                         <div className="flex items-start justify-between">
                                             <div>
-                                                <CardTitle className="text-white text-lg">{enrollment.course.name}</CardTitle>
-                                                <p className="text-sm text-slate-400 mt-1">
+                                                <CardTitle className="font-serif text-lg text-ink">{enrollment.course.name}</CardTitle>
+                                                <p className="mt-1 text-sm text-ink-muted">
                                                     Duration: {enrollment.course.duration_months} months
                                                 </p>
                                             </div>
-                                            <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/30">
+                                            <span className="text-[11px] font-medium uppercase tracking-widest text-success">
                                                 {enrollment.status || 'Active'}
-                                            </Badge>
+                                            </span>
                                         </div>
                                     </CardHeader>
                                     <CardContent>
                                         {progress ? (
                                             <div className="space-y-4">
                                                 <div>
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-sm text-slate-400">Progress</span>
-                                                        <span className="text-sm font-medium text-white">{progress.overall_percentage}%</span>
+                                                    <div className="mb-2 flex items-center justify-between">
+                                                        <span className="text-sm text-ink-muted">Progress</span>
+                                                        <span className="font-mono text-sm font-medium tabular-nums text-ink">{progress.overall_percentage}%</span>
                                                     </div>
                                                     <Progress value={progress.overall_percentage} className="h-2" />
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-2 text-center">
-                                                    <div className="bg-slate-800/50 rounded-lg p-2">
-                                                        <p className="text-lg font-bold text-emerald-400">{progress.completed_modules}</p>
-                                                        <p className="text-xs text-slate-400">Completed</p>
+                                                    <div className="rounded-md border border-line p-2">
+                                                        <p className="font-mono text-lg font-semibold tabular-nums text-success">{progress.completed_modules}</p>
+                                                        <p className="text-xs text-ink-muted">Completed</p>
                                                     </div>
-                                                    <div className="bg-slate-800/50 rounded-lg p-2">
-                                                        <p className="text-lg font-bold text-blue-400">{progress.in_progress_modules}</p>
-                                                        <p className="text-xs text-slate-400">In Progress</p>
+                                                    <div className="rounded-md border border-line p-2">
+                                                        <p className="font-mono text-lg font-semibold tabular-nums text-ink">{progress.in_progress_modules}</p>
+                                                        <p className="text-xs text-ink-muted">In Progress</p>
                                                     </div>
-                                                    <div className="bg-slate-800/50 rounded-lg p-2">
-                                                        <p className="text-lg font-bold text-slate-400">{progress.not_started_modules}</p>
-                                                        <p className="text-xs text-slate-400">Pending</p>
+                                                    <div className="rounded-md border border-line p-2">
+                                                        <p className="font-mono text-lg font-semibold tabular-nums text-ink-muted">{progress.not_started_modules}</p>
+                                                        <p className="text-xs text-ink-muted">Pending</p>
                                                     </div>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <p className="text-sm text-slate-400">Loading progress...</p>
+                                            <p className="text-sm text-ink-muted">Loading progress...</p>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -287,28 +283,25 @@ function StudentDashboard({ user }: { user: any }) {
 
             {/* Quick Actions for Students */}
             <div>
-                <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
+                <h2 className="mb-4 font-serif text-lg font-semibold text-ink">Quick Actions</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <QuickActionCard
                         title="View Progress"
                         description="Detailed course progress"
                         icon={TrendingUp}
                         href={studentData ? `/dashboard/students/${studentData.id}` : '#'}
-                        gradient="bg-gradient-to-br from-blue-500 to-blue-600"
                     />
                     <QuickActionCard
                         title="My Certificates"
                         description="View earned certificates"
                         icon={Award}
                         href="/dashboard/certificates"
-                        gradient="bg-gradient-to-br from-amber-500 to-orange-600"
                     />
                     <QuickActionCard
                         title="Payment History"
                         description="View fee payments"
                         icon={CreditCard}
                         href="/dashboard/payments"
-                        gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
                     />
                 </div>
             </div>
@@ -326,25 +319,6 @@ const iconMap: Record<string, React.ElementType> = {
     'Total Staff': Users,
     'Revenue': IndianRupee,
 };
-
-// Gradient mapping for stats
-const gradientMap: Record<string, string> = {
-    'Total Franchises': 'bg-gradient-to-br from-red-500 to-red-600',
-    'Total Revenue': 'bg-gradient-to-br from-sky-500 to-sky-600',
-    'Active Courses': 'bg-gradient-to-br from-emerald-500 to-emerald-600',
-    'Total Enrollments': 'bg-gradient-to-br from-amber-500 to-orange-600',
-    'Total Students': 'bg-gradient-to-br from-blue-500 to-blue-600',
-    'Total Staff': 'bg-gradient-to-br from-purple-500 to-purple-600',
-    'Revenue': 'bg-gradient-to-br from-amber-500 to-orange-600',
-};
-
-// Color mapping for popular courses
-const courseColors = [
-    'from-red-500 to-red-600',
-    'from-sky-500 to-sky-600',
-    'from-emerald-500 to-emerald-600',
-    'from-amber-500 to-amber-600',
-];
 
 export default function DashboardPage() {
     const { user, isLoading: authLoading } = useAuth();
@@ -377,7 +351,7 @@ export default function DashboardPage() {
     if (!dashboardData) {
         return (
             <div className="flex items-center justify-center h-64">
-                <p className="text-slate-400">Failed to load dashboard data</p>
+                <p className="font-serif text-ink-muted">Failed to load dashboard data</p>
             </div>
         );
     }
@@ -399,28 +373,24 @@ export default function DashboardPage() {
             description: 'Add & oversee locations',
             icon: Building2,
             href: '/dashboard/institutions',
-            gradient: 'bg-gradient-to-br from-red-500 to-red-600',
         },
         {
             title: 'Manage Courses',
             description: 'Add & edit courses',
             icon: BookOpen,
             href: '/dashboard/courses',
-            gradient: 'bg-gradient-to-br from-sky-500 to-sky-600',
         },
         {
             title: 'Revenue Reports',
             description: 'Financial overview',
             icon: IndianRupee,
             href: '/dashboard/revenue',
-            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
         },
         {
             title: 'Analytics Dashboard',
             description: 'Trends & insights',
             icon: TrendingUp,
             href: '/dashboard/analytics',
-            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
         },
     ] : isAccountant ? [
         {
@@ -428,28 +398,24 @@ export default function DashboardPage() {
             description: 'Add new student',
             icon: GraduationCap,
             href: '/dashboard/students?action=new',
-            gradient: 'bg-gradient-to-br from-blue-500 to-blue-600',
         },
         {
             title: 'Manage Students',
             description: 'View & edit students',
             icon: Users,
             href: '/dashboard/students',
-            gradient: 'bg-gradient-to-br from-purple-500 to-purple-600',
         },
         {
             title: 'Record Payment',
             description: 'Process student payments',
             icon: IndianRupee,
             href: '/dashboard/payments',
-            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
         },
         {
             title: 'My Attendance',
             description: 'Mark your attendance',
             icon: Calendar,
             href: '/dashboard/attendance',
-            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
         },
     ] : isReceptionist ? [
         {
@@ -457,28 +423,24 @@ export default function DashboardPage() {
             description: 'Add new student',
             icon: GraduationCap,
             href: '/dashboard/students?action=new',
-            gradient: 'bg-gradient-to-br from-blue-500 to-blue-600',
         },
         {
             title: 'Record Payment',
             description: 'Process student payments',
             icon: Wallet,
             href: '/dashboard/payments',
-            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
         },
         {
             title: 'View Students',
             description: 'Search students',
             icon: Users,
             href: '/dashboard/students',
-            gradient: 'bg-gradient-to-br from-purple-500 to-purple-600',
         },
         {
             title: 'My Attendance',
             description: 'Mark your attendance',
             icon: Calendar,
             href: '/dashboard/attendance',
-            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
         },
     ] : isStaff ? [
         {
@@ -486,14 +448,12 @@ export default function DashboardPage() {
             description: 'Mark today\'s attendance',
             icon: Calendar,
             href: '/dashboard/attendance',
-            gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
         },
         {
             title: 'View Payroll',
             description: 'Check payment history',
             icon: Wallet,
             href: '/dashboard/payroll',
-            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
         },
     ] : [
         {
@@ -501,28 +461,24 @@ export default function DashboardPage() {
             description: 'Manage module marks',
             icon: Award,
             href: '/dashboard/marks-entry',
-            gradient: 'bg-gradient-to-br from-green-500 to-emerald-600',
         },
         {
             title: 'Add New Student',
             description: 'Register a new student',
             icon: GraduationCap,
             href: '/dashboard/students?action=new',
-            gradient: 'bg-gradient-to-br from-blue-500 to-blue-600',
         },
         {
             title: 'View Staff',
             description: 'Manage staff members',
             icon: Users,
             href: '/dashboard/staff',
-            gradient: 'bg-gradient-to-br from-purple-500 to-purple-600',
         },
         {
             title: 'Manage Courses',
             description: 'View and edit courses',
             icon: BookOpen,
             href: '/dashboard/courses',
-            gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
         },
     ];
 
@@ -530,10 +486,10 @@ export default function DashboardPage() {
         <div className="space-y-8">
             {/* Welcome Section */}
             <div>
-                <h1 className="text-3xl font-bold text-white">
-                    Welcome back, {user?.full_name?.split(' ')[0] || 'User'}! 👋
+                <h1 className="font-serif text-2xl font-semibold text-ink">
+                    Welcome back, {user?.full_name?.split(' ')[0] || 'User'}
                 </h1>
-                <p className="text-slate-400 mt-2">
+                <p className="mt-2 text-ink-muted">
                     {isDirector
                         ? "Here's an overview of all your institutions."
                         : isAccountant
@@ -558,7 +514,6 @@ export default function DashboardPage() {
                             description={stat.description}
                             icon={iconMap[stat.title] || BookOpen}
                             trend={stat.trend}
-                            gradient={gradientMap[stat.title] || 'bg-gradient-to-br from-blue-500 to-blue-600'}
                         />
                     ))}
                 </div>
@@ -566,7 +521,7 @@ export default function DashboardPage() {
 
             {/* Quick Actions */}
             <div>
-                <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
+                <h2 className="mb-4 font-serif text-lg font-semibold text-ink">Quick Actions</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {quickActions.map((action) => (
                         <QuickActionCard key={action.title} {...action} />
@@ -576,78 +531,78 @@ export default function DashboardPage() {
 
             {/* Recent Activity & Insights */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="rounded-md border-line bg-surface shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-white flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2 font-serif text-lg text-ink">
                             {isDirector ? (
                                 <>
-                                    <BookOpen className="h-5 w-5 text-sky-400" />
+                                    <BookOpen className="h-5 w-5 text-primary" />
                                     Most Popular Courses
                                 </>
                             ) : (
                                 <>
-                                    <TrendingUp className="h-5 w-5 text-blue-400" />
+                                    <TrendingUp className="h-5 w-5 text-primary" />
                                     Recent Enrollments
                                 </>
                             )}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
+                        <div className="space-y-0">
                             {isDirector && dashboardData.popularCourses ? (
                                 dashboardData.popularCourses.map((item, i) => (
                                     <div
                                         key={i}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 hover:bg-slate-800/50 transition-colors"
+                                        className="flex items-center justify-between border-b border-line py-3 last:border-0"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${courseColors[i % courseColors.length]} flex items-center justify-center text-white font-semibold text-sm`}>
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft font-mono text-sm font-semibold tabular-nums text-primary">
                                                 {item.enrollments}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-white">{item.course}</p>
-                                                <p className="text-xs text-slate-400">{item.franchise} Franchise</p>
+                                                <p className="text-sm font-medium text-ink">{item.course}</p>
+                                                <p className="text-xs text-ink-muted">{item.franchise} Franchise</p>
                                             </div>
                                         </div>
-                                        <span className="text-xs text-emerald-400 font-medium">+{item.trend}%</span>
+                                        <span className="text-xs font-medium text-success">+{item.trend}%</span>
                                     </div>
                                 ))
                             ) : dashboardData.recentEnrollments ? (
                                 dashboardData.recentEnrollments.map((item, i) => (
                                     <div
                                         key={i}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors"
+                                        className="flex items-center justify-between border-b border-line py-3 last:border-0"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted font-medium text-ink">
                                                 {item.student_name.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-white">{item.student_name}</p>
-                                                <p className="text-xs text-slate-400">{item.course}</p>
+                                                <p className="text-sm font-medium text-ink">{item.student_name}</p>
+                                                <p className="text-xs text-ink-muted">{item.course}</p>
                                             </div>
                                         </div>
-                                        <span className="text-xs text-slate-500">{item.time_ago}</span>
+                                        <span className="text-xs text-ink-muted">{item.time_ago}</span>
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-sm text-slate-400 text-center py-4">No data available</p>
+                                <p className="py-4 text-center font-serif text-sm text-ink-muted">No data available</p>
                             )}
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="rounded-md border-line bg-surface shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-white flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2 font-serif text-lg text-ink">
                             {isDirector ? (
                                 <>
-                                    <IndianRupee className="h-5 w-5 text-red-400" />
+                                    <IndianRupee className="h-5 w-5 text-primary" />
                                     Revenue by Franchise
                                 </>
                             ) : (
                                 <>
-                                    <Calendar className="h-5 w-5 text-emerald-400" />
+                                    <Calendar className="h-5 w-5 text-primary" />
                                     Today's Schedule
                                 </>
                             )}
@@ -662,12 +617,12 @@ export default function DashboardPage() {
                                         className="space-y-2"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <p className="text-sm font-medium text-white">{item.name}</p>
-                                            <span className="text-sm font-semibold text-white">₹{(item.revenue / 100000).toFixed(1)}L</span>
+                                            <p className="text-sm font-medium text-ink">{item.name}</p>
+                                            <span className="font-mono text-sm font-semibold tabular-nums text-ink">₹{(item.revenue / 100000).toFixed(1)}L</span>
                                         </div>
-                                        <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
+                                        <div className="relative h-1.5 overflow-hidden rounded-full bg-muted">
                                             <div
-                                                className={`absolute inset-y-0 left-0 bg-gradient-to-r ${courseColors[i % courseColors.length]} rounded-full`}
+                                                className="absolute inset-y-0 left-0 rounded-full bg-primary"
                                                 style={{ width: `${item.percentage}%` }}
                                             />
                                         </div>
@@ -681,12 +636,12 @@ export default function DashboardPage() {
                                 ].map((item, i) => (
                                     <div
                                         key={i}
-                                        className="flex items-center gap-4 p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors"
+                                        className="flex items-center gap-4 border-b border-line py-3 last:border-0"
                                     >
-                                        <div className="text-sm font-medium text-blue-400 w-20">{item.time}</div>
+                                        <div className="w-20 font-mono text-sm font-medium tabular-nums text-primary">{item.time}</div>
                                         <div className="flex-1">
-                                            <p className="text-sm font-medium text-white">{item.event}</p>
-                                            <p className="text-xs text-slate-400 capitalize">{item.type}</p>
+                                            <p className="text-sm font-medium text-ink">{item.event}</p>
+                                            <p className="text-xs capitalize text-ink-muted">{item.type}</p>
                                         </div>
                                     </div>
                                 ))

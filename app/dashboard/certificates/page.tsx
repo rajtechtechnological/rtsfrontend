@@ -81,95 +81,95 @@ export default function CertificatesPage() {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <Award className="h-7 w-7 text-amber-400" />
+                <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+                    <Award className="h-7 w-7 text-warning" />
                     Certificates
                 </h1>
-                <p className="text-slate-400 mt-1">Generate and manage course completion certificates</p>
+                <p className="text-ink-muted mt-1">Generate and manage course completion certificates</p>
             </div>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-emerald-500/10">
-                            <Award className="h-6 w-6 text-emerald-400" />
+                        <div className="p-3 rounded-xl bg-accent-soft">
+                            <Award className="h-6 w-6 text-success" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{issuedCount}</p>
-                            <p className="text-sm text-slate-400">Issued</p>
+                            <p className="text-2xl font-bold text-ink">{issuedCount}</p>
+                            <p className="text-sm text-ink-muted">Issued</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-blue-500/10">
-                            <GraduationCap className="h-6 w-6 text-blue-400" />
+                        <div className="p-3 rounded-xl bg-accent-soft">
+                            <GraduationCap className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{eligibleCount}</p>
-                            <p className="text-sm text-slate-400">Eligible</p>
+                            <p className="text-2xl font-bold text-ink">{eligibleCount}</p>
+                            <p className="text-sm text-ink-muted">Eligible</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-amber-500/10">
-                            <FileText className="h-6 w-6 text-amber-400" />
+                        <div className="p-3 rounded-xl bg-warning/10">
+                            <FileText className="h-6 w-6 text-warning" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{pendingCount}</p>
-                            <p className="text-sm text-slate-400">Pending</p>
+                            <p className="text-2xl font-bold text-ink">{pendingCount}</p>
+                            <p className="text-sm text-ink-muted">Pending</p>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
             {/* Search */}
-            <Card className="bg-slate-900/50 border-slate-800">
+            <Card className="bg-surface border-line">
                 <CardContent className="p-4">
                     <div className="relative max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
                         <Input
                             placeholder="Search by student, course, or certificate number..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                            className="pl-10 bg-muted border-line text-ink placeholder:text-ink-muted"
                         />
                     </div>
                 </CardContent>
             </Card>
 
             {/* Certificates Table */}
-            <Card className="bg-slate-900/50 border-slate-800">
+            <Card className="bg-surface border-line">
                 <CardHeader>
-                    <CardTitle className="text-white">All Certificates</CardTitle>
+                    <CardTitle className="text-ink">All Certificates</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="border-slate-800 hover:bg-transparent">
-                                    <TableHead className="text-slate-400">Student</TableHead>
-                                    <TableHead className="text-slate-400">Course</TableHead>
-                                    <TableHead className="text-slate-400">Certificate No.</TableHead>
-                                    <TableHead className="text-slate-400">Issue Date</TableHead>
-                                    <TableHead className="text-slate-400">Status</TableHead>
-                                    <TableHead className="text-slate-400 text-right">Actions</TableHead>
+                                <TableRow className="border-line hover:bg-transparent">
+                                    <TableHead className="text-ink-muted">Student</TableHead>
+                                    <TableHead className="text-ink-muted">Course</TableHead>
+                                    <TableHead className="text-ink-muted">Certificate No.</TableHead>
+                                    <TableHead className="text-ink-muted">Issue Date</TableHead>
+                                    <TableHead className="text-ink-muted">Status</TableHead>
+                                    <TableHead className="text-ink-muted text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {isLoading ? (
                                     <TableRow>
                                         <TableCell colSpan={6} className="text-center py-12">
-                                            <Loader2 className="h-8 w-8 animate-spin text-amber-400 mx-auto" />
+                                            <Loader2 className="h-8 w-8 animate-spin text-warning mx-auto" />
                                         </TableCell>
                                     </TableRow>
                                 ) : filteredCertificates.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={6} className="text-center py-12">
-                                            <Award className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                                            <p className="text-slate-400">
+                                            <Award className="h-12 w-12 text-ink-muted mx-auto mb-4" />
+                                            <p className="text-ink-muted">
                                                 {searchQuery ? 'No certificates found matching your search' : 'No certificates issued yet'}
                                             </p>
                                         </TableCell>
@@ -178,26 +178,26 @@ export default function CertificatesPage() {
                                     filteredCertificates.map((cert) => (
                                     <TableRow
                                         key={cert.id}
-                                        className="border-slate-800 hover:bg-slate-800/50 transition-colors"
+                                        className="border-line hover:bg-muted transition-colors"
                                     >
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="h-10 w-10 ring-2 ring-amber-500/20">
-                                                    <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+                                                    <AvatarFallback className="bg-accent-soft text-ink">
                                                         {(cert.student?.user?.full_name || 'Unknown')
                                                             .split(' ')
                                                             .map((n) => n[0])
                                                             .join('')}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <p className="font-medium text-white">{cert.student?.user?.full_name || 'Unknown'}</p>
+                                                <p className="font-medium text-ink">{cert.student?.user?.full_name || 'Unknown'}</p>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-slate-300">{cert.course?.name || 'Unknown'}</TableCell>
-                                        <TableCell className="text-slate-300 font-mono text-sm">
+                                        <TableCell className="text-ink">{cert.course?.name || 'Unknown'}</TableCell>
+                                        <TableCell className="text-ink font-mono text-sm">
                                             {cert.certificate_number || '-'}
                                         </TableCell>
-                                        <TableCell className="text-slate-300">
+                                        <TableCell className="text-ink">
                                             {cert.issue_date ? (
                                                 <span className="flex items-center gap-1">
                                                     <Calendar className="h-3 w-3" />
@@ -215,8 +215,8 @@ export default function CertificatesPage() {
                                             <Badge
                                                 className={
                                                     cert.certificate_url
-                                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                                        ? 'bg-accent-soft text-success border-success/30'
+                                                        : 'bg-warning/10 text-warning border-line'
                                                 }
                                             >
                                                 {cert.certificate_url ? 'Issued' : 'Pending'}
@@ -228,7 +228,7 @@ export default function CertificatesPage() {
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="text-slate-400 hover:text-white"
+                                                        className="text-ink-muted hover:text-ink"
                                                         onClick={() => {
                                                             if (cert.certificate_url) {
                                                                 window.open(cert.certificate_url, '_blank');
@@ -241,7 +241,7 @@ export default function CertificatesPage() {
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="text-blue-400 hover:text-blue-300"
+                                                        className="text-primary hover:text-primary"
                                                         onClick={() => {
                                                             if (cert.certificate_url) {
                                                                 window.open(cert.certificate_url, '_blank');
@@ -258,7 +258,7 @@ export default function CertificatesPage() {
                                                     size="sm"
                                                     onClick={() => handleGenerate(cert.student_id, cert.course_id)}
                                                     disabled={generatingId === cert.student_id}
-                                                    className="text-emerald-400 hover:text-emerald-300"
+                                                    className="text-success hover:text-success"
                                                 >
                                                     {generatingId === cert.student_id ? (
                                                         <>

@@ -104,39 +104,39 @@ function AddInstitutionDialog({ onSuccess }: { onSuccess: () => void }) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-red-600 to-sky-600 hover:from-red-500 hover:to-sky-500 text-white shadow-lg shadow-red-500/25">
+                <Button className="bg-primary text-primary-foreground shadow-sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Franchise
                 </Button>
             </DialogTrigger>
-            <DialogContent className="bg-slate-900 border-slate-800 sm:max-w-md">
+            <DialogContent className="bg-surface border-line sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-white flex items-center gap-2">
-                        <Building2 className="h-5 w-5 text-red-400" />
+                    <DialogTitle className="text-ink flex items-center gap-2">
+                        <Building2 className="h-5 w-5 text-danger" />
                         Add New Franchise
                     </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name" className="text-slate-300">Institution Name *</Label>
+                        <Label htmlFor="name" className="text-ink">Institution Name *</Label>
                         <Input
                             id="name"
-                            className="bg-slate-800/50 border-slate-700 text-white"
+                            className="bg-muted border-line text-ink"
                             placeholder="e.g., Rajtech Computer Center"
                             {...register('name')}
                         />
                         {errors.name && (
-                            <p className="text-sm text-red-400">{errors.name.message}</p>
+                            <p className="text-sm text-danger">{errors.name.message}</p>
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="district_code" className="text-slate-300">
+                        <Label htmlFor="district_code" className="text-ink">
                             District Code
-                            <span className="text-xs text-slate-500 ml-2">(e.g., NAL, PAT, GAY)</span>
+                            <span className="text-xs text-ink-muted ml-2">(e.g., NAL, PAT, GAY)</span>
                         </Label>
                         <Input
                             id="district_code"
-                            className="bg-slate-800/50 border-slate-700 text-white uppercase"
+                            className="bg-muted border-line text-ink uppercase"
                             placeholder="NAL"
                             maxLength={4}
                             {...register('district_code')}
@@ -145,39 +145,39 @@ function AddInstitutionDialog({ onSuccess }: { onSuccess: () => void }) {
                             }}
                         />
                         {errors.district_code && (
-                            <p className="text-sm text-red-400">{errors.district_code.message}</p>
+                            <p className="text-sm text-danger">{errors.district_code.message}</p>
                         )}
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-ink-muted">
                             Used for generating student IDs: RTS-{'{DISTRICT}'}-{'{INST}'}-MM-YYYY-NNNN
                         </p>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="address" className="text-slate-300">Address</Label>
+                        <Label htmlFor="address" className="text-ink">Address</Label>
                         <Input
                             id="address"
-                            className="bg-slate-800/50 border-slate-700 text-white"
+                            className="bg-muted border-line text-ink"
                             placeholder="Full address"
                             {...register('address')}
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="contact_email" className="text-slate-300">Contact Email</Label>
+                        <Label htmlFor="contact_email" className="text-ink">Contact Email</Label>
                         <Input
                             id="contact_email"
                             type="email"
-                            className="bg-slate-800/50 border-slate-700 text-white"
+                            className="bg-muted border-line text-ink"
                             placeholder="contact@institution.com"
                             {...register('contact_email')}
                         />
                         {errors.contact_email && (
-                            <p className="text-sm text-red-400">{errors.contact_email.message}</p>
+                            <p className="text-sm text-danger">{errors.contact_email.message}</p>
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="contact_phone" className="text-slate-300">Contact Phone</Label>
+                        <Label htmlFor="contact_phone" className="text-ink">Contact Phone</Label>
                         <Input
                             id="contact_phone"
-                            className="bg-slate-800/50 border-slate-700 text-white"
+                            className="bg-muted border-line text-ink"
                             placeholder="+91 XX XXXX XXXX"
                             {...register('contact_phone')}
                         />
@@ -187,14 +187,14 @@ function AddInstitutionDialog({ onSuccess }: { onSuccess: () => void }) {
                             type="button"
                             variant="outline"
                             onClick={() => setOpen(false)}
-                            className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                            className="border-line text-ink hover:bg-muted"
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="bg-gradient-to-r from-red-600 to-sky-600 text-white"
+                            className="bg-primary text-primary-foreground"
                         >
                             {isLoading ? (
                                 <>
@@ -234,35 +234,35 @@ function InstitutionCard({ institution, onDelete }: { institution: Institution; 
 
     return (
         <Link href={`/dashboard/institutions/${institution.id}`}>
-            <Card className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 hover:shadow-lg group cursor-pointer">
+            <Card className="bg-surface border-line hover:border-primary/40 transition-all duration-300 hover:shadow-lg group cursor-pointer">
                 <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 group-hover:from-blue-500/20 group-hover:to-cyan-500/20 transition-colors">
-                                <Building2 className="h-6 w-6 text-blue-400" />
+                            <div className="p-3 rounded-xl bg-accent-soft transition-colors">
+                                <Building2 className="h-6 w-6 text-primary" />
                             </div>
                             <div>
-                                <CardTitle className="text-lg text-white group-hover:text-blue-400 transition-colors">
+                                <CardTitle className="text-lg text-ink group-hover:text-primary transition-colors">
                                     {institution.name}
                                 </CardTitle>
-                                <p className="text-sm text-slate-400">{institution.director_name || 'No director assigned'}</p>
+                                <p className="text-sm text-ink-muted">{institution.director_name || 'No director assigned'}</p>
                             </div>
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
-                                <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white h-8 w-8">
+                                <Button variant="ghost" size="icon" className="text-ink-muted hover:text-ink h-8 w-8">
                                     <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
-                                <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
+                            <DropdownMenuContent align="end" className="bg-surface border-line">
+                                <DropdownMenuItem className="text-ink hover:text-ink hover:bg-muted">
                                     <Eye className="h-4 w-4 mr-2" /> View Details
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
+                                <DropdownMenuItem className="text-ink hover:text-ink hover:bg-muted">
                                     <Edit className="h-4 w-4 mr-2" /> Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
-                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                    className="text-danger hover:text-danger hover:bg-danger/10"
                                     onClick={handleDelete}
                                     disabled={isDeleting}
                                 >
@@ -282,38 +282,38 @@ function InstitutionCard({ institution, onDelete }: { institution: Institution; 
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-slate-400">
+                        <div className="flex items-center gap-2 text-ink-muted">
                             <MapPin className="h-4 w-4 flex-shrink-0" />
                             <span className="line-clamp-1">{institution.address || 'No address provided'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-slate-400">
+                        <div className="flex items-center gap-2 text-ink-muted">
                             <Mail className="h-4 w-4 flex-shrink-0" />
                             <span>{institution.contact_email || 'No email provided'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-slate-400">
+                        <div className="flex items-center gap-2 text-ink-muted">
                             <Phone className="h-4 w-4 flex-shrink-0" />
                             <span>{institution.contact_phone || 'No phone provided'}</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                    <div className="flex items-center justify-between pt-2 border-t border-line">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-1 text-sm">
-                                <Users className="h-4 w-4 text-purple-400" />
-                                <span className="text-white font-medium">{institution.staff_count}</span>
-                                <span className="text-slate-500">staff</span>
+                                <Users className="h-4 w-4 text-primary" />
+                                <span className="text-ink font-medium">{institution.staff_count}</span>
+                                <span className="text-ink-muted">staff</span>
                             </div>
                             <div className="flex items-center gap-1 text-sm">
-                                <GraduationCap className="h-4 w-4 text-blue-400" />
-                                <span className="text-white font-medium">{institution.student_count}</span>
-                                <span className="text-slate-500">students</span>
+                                <GraduationCap className="h-4 w-4 text-primary" />
+                                <span className="text-ink font-medium">{institution.student_count}</span>
+                                <span className="text-ink-muted">students</span>
                             </div>
                         </div>
                         <Badge
                             className={
                                 institution.status === 'active'
-                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                    : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                    ? 'bg-accent-soft text-success border-success/30'
+                                    : 'bg-warning/10 text-warning border-line'
                             }
                         >
                             {institution.status}
@@ -329,17 +329,17 @@ function LoadingSkeleton() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <Skeleton className="h-8 w-48 bg-slate-800" />
-                <Skeleton className="h-10 w-40 bg-slate-800" />
+                <Skeleton className="h-8 w-48 bg-muted" />
+                <Skeleton className="h-10 w-40 bg-muted" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-24 bg-slate-800 rounded-xl" />
+                    <Skeleton key={i} className="h-24 bg-muted rounded-xl" />
                 ))}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {[1, 2, 3, 4].map((i) => (
-                    <Skeleton key={i} className="h-64 bg-slate-800 rounded-xl" />
+                    <Skeleton key={i} className="h-64 bg-muted rounded-xl" />
                 ))}
             </div>
         </div>
@@ -388,62 +388,62 @@ export default function InstitutionsPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <Building2 className="h-7 w-7 text-red-400" />
+                    <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+                        <Building2 className="h-7 w-7 text-danger" />
                         Franchises
                     </h1>
-                    <p className="text-slate-400 mt-1">Manage all franchise locations</p>
+                    <p className="text-ink-muted mt-1">Manage all franchise locations</p>
                 </div>
                 <AddInstitutionDialog onSuccess={fetchInstitutions} />
             </div>
 
             {/* Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-red-500/10">
-                            <Building2 className="h-6 w-6 text-red-400" />
+                        <div className="p-3 rounded-xl bg-danger/10">
+                            <Building2 className="h-6 w-6 text-danger" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{totalFranchises}</p>
-                            <p className="text-sm text-slate-400">Franchises</p>
+                            <p className="text-2xl font-bold text-ink">{totalFranchises}</p>
+                            <p className="text-sm text-ink-muted">Franchises</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-sky-500/10">
-                            <Users className="h-6 w-6 text-sky-400" />
+                        <div className="p-3 rounded-xl bg-accent-soft">
+                            <Users className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{totalStaff}</p>
-                            <p className="text-sm text-slate-400">Total Staff</p>
+                            <p className="text-2xl font-bold text-ink">{totalStaff}</p>
+                            <p className="text-sm text-ink-muted">Total Staff</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-sky-500/10">
-                            <GraduationCap className="h-6 w-6 text-sky-400" />
+                        <div className="p-3 rounded-xl bg-accent-soft">
+                            <GraduationCap className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{totalStudents}</p>
-                            <p className="text-sm text-slate-400">Total Students</p>
+                            <p className="text-2xl font-bold text-ink">{totalStudents}</p>
+                            <p className="text-sm text-ink-muted">Total Students</p>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
             {/* Search */}
-            <Card className="bg-slate-900/50 border-slate-800">
+            <Card className="bg-surface border-line">
                 <CardContent className="p-4">
                     <div className="relative max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
                         <Input
                             placeholder="Search institutions..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                            className="pl-10 bg-muted border-line text-ink placeholder:text-ink-muted"
                         />
                     </div>
                 </CardContent>
@@ -451,10 +451,10 @@ export default function InstitutionsPage() {
 
             {/* Institution Grid */}
             {filteredInstitutions.length === 0 ? (
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-8 text-center">
-                        <Building2 className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                        <p className="text-slate-400">
+                        <Building2 className="h-12 w-12 text-ink-muted mx-auto mb-4" />
+                        <p className="text-ink-muted">
                             {searchQuery ? 'No institutions found matching your search' : 'No institutions yet. Create your first franchise!'}
                         </p>
                     </CardContent>

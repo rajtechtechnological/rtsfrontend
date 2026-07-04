@@ -5,22 +5,14 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   GraduationCap,
   BookOpen,
   Users,
   Award,
-  Building2,
   ChevronRight,
-  ChevronDown,
-  Play,
-  Star,
   Clock,
-  IndianRupee,
   Trophy,
-  Target,
-  Briefcase,
   ArrowRight,
   Mail,
   Phone,
@@ -32,35 +24,27 @@ import {
   Menu,
   X,
   LogIn,
+  BellRing,
 } from 'lucide-react';
 
-// Company Data - Real data from rtseducation.in
+// Institution data (rtseducation.in). F-19: move the stats to a public
+// cached API endpoint once one exists.
 const stats = [
-  { value: '8415+', label: 'Total Students', icon: GraduationCap },
-  { value: '23+', label: 'Running Courses', icon: BookOpen },
-  { value: '25+', label: 'Expert Faculty', icon: Users },
-  { value: '10+', label: 'Years Experience', icon: Trophy },
-];
-
-// Course Categories
-const courseCategories = [
-  { name: 'Diploma Courses', count: '11+ Courses', color: 'from-green-600 to-emerald-600' },
-  { name: 'Certificate Courses', count: '5+ Courses', color: 'from-blue-600 to-blue-700' },
-  { name: 'University Courses', count: 'Recognized', color: 'from-red-600 to-red-700' },
-  { name: 'Kushal Yuva Program', count: 'Govt. Scheme', color: 'from-orange-600 to-orange-700' },
-  { name: 'Competition Zone', count: 'Exam Prep', color: 'from-purple-600 to-purple-700' },
-  { name: 'Internship', count: 'Job Ready', color: 'from-green-700 to-green-800' },
+  { value: '8,415+', label: 'Students taught', icon: GraduationCap },
+  { value: '23+', label: 'Running courses', icon: BookOpen },
+  { value: '25+', label: 'Expert faculty', icon: Users },
+  { value: '10+', label: 'Years of service', icon: Trophy },
 ];
 
 const courses = [
   {
     id: 1,
     name: 'Diploma in Computer Application (DCA)',
-    description: 'Fundamentals of Computer, MS Windows, MS Office (Word, Excel, Access, PowerPoint). Complete office automation training.',
+    description:
+      'Fundamentals of Computer, MS Windows, MS Office (Word, Excel, Access, PowerPoint). Complete office automation training.',
     duration: '6 Months',
     fee: '₹3,600',
     level: 'Beginner',
-    popular: true,
     code: 'RC002',
   },
   {
@@ -70,17 +54,16 @@ const courses = [
     duration: '1 Year',
     fee: '₹10,000',
     level: 'Intermediate',
-    popular: true,
     code: 'RC007',
   },
   {
     id: 3,
     name: 'Tally Prime with GST',
-    description: 'Financial Accounting with Tally latest version including Inventory, VAT, TDS, TCS, GST, and Payroll management.',
+    description:
+      'Financial Accounting with Tally latest version including Inventory, VAT, TDS, TCS, GST, and Payroll management.',
     duration: '3 Months',
     fee: '₹3,000',
     level: 'Beginner',
-    popular: true,
     code: 'RC003',
   },
   {
@@ -90,49 +73,45 @@ const courses = [
     duration: '9 Months',
     fee: '₹5,500',
     level: 'Intermediate',
-    popular: false,
     code: 'RC004',
   },
   {
     id: 5,
     name: 'PGDCA',
-    description: 'Post Graduate Diploma in Computer Application - Fundamentals, MS-Office, DBMS, Visual Basic, C++, SQL with Project.',
+    description:
+      'Post Graduate Diploma in Computer Application — Fundamentals, MS-Office, DBMS, Visual Basic, C++, SQL with Project.',
     duration: '18 Months',
     fee: 'Contact Us',
     level: 'Advanced',
-    popular: false,
     code: 'RC018',
   },
   {
     id: 6,
     name: 'Computer Typing (Hindi & English)',
-    description: 'Professional typing course covering basic typing, lessons, letters, words, and paragraph typing practice.',
+    description:
+      'Professional typing course covering basic typing, lessons, letters, words, and paragraph typing practice.',
     duration: '3 Months',
     fee: '₹2,200',
     level: 'Beginner',
-    popular: false,
     code: 'RC016',
   },
 ];
 
-const directors = [
+const leadership = [
   {
     name: 'RTS Leadership',
     role: 'Founder & Director',
     description: 'Dedicated to providing quality education to all deserving students across Bihar.',
-    image: '👨‍💼',
   },
   {
     name: 'Academic Team',
     role: 'Faculty Head',
     description: 'Expert faculty providing enriched theory and practical lab classes.',
-    image: '👩‍🏫',
   },
   {
     name: 'Training Team',
     role: 'Placement Coordinator',
     description: 'Job guarantee programs and placement assistance for students.',
-    image: '👨‍💻',
   },
 ];
 
@@ -145,171 +124,120 @@ const milestones = [
   { year: '2025', title: 'New Platform', subtitle: 'Modern LMS launch' },
 ];
 
-const events = [
-  { title: 'New Batch - DCA/ADCA', subtitle: 'Morning 8AM & 9AM', color: 'from-green-600 to-emerald-600' },
-  { title: 'Tally Prime Batch', subtitle: '8AM, 9AM, 4PM', color: 'from-blue-600 to-blue-700' },
-  { title: 'KYP Admissions Open', subtitle: 'Govt. Scheme', color: 'from-orange-600 to-orange-700' },
+const notices = [
+  { title: 'New Batch — DCA / ADCA', detail: 'Morning batches at 8 AM and 9 AM. Enrolment open at all centers.' },
+  { title: 'Tally Prime Batch', detail: 'Sessions at 8 AM, 9 AM and 4 PM. Includes GST and Payroll.' },
+  { title: 'KYP Admissions Open', detail: 'Kushal Yuva Program (Government of Bihar scheme) — apply at your nearest center.' },
 ];
 
 const whyJoinUs = [
-  { title: 'Lab Classes', description: 'We provide enriched theory and lab classes for students.' },
-  { title: 'Best Learning', description: 'We provide the better qualitative learning inputs for students.' },
-  { title: 'Globally Certified', description: 'Certificates of global recognition and best results.' },
-  { title: 'Job Guarantee', description: 'Job guarantee in certain programmes for students.' },
+  { title: 'Lab Classes', description: 'Enriched theory and practical lab classes for every course.' },
+  { title: 'Best Learning', description: 'Qualitative learning inputs and structured curriculum.' },
+  { title: 'Recognized Certificates', description: 'Certificates with online verification and best results.' },
+  { title: 'Job Guarantee', description: 'Job guarantee in selected programmes for students.' },
 ];
 
+const navLinks = [
+  { href: '#courses', label: 'Courses' },
+  { href: '#about', label: 'About' },
+  { href: '#notices', label: 'Notices' },
+  { href: '#milestones', label: 'Journey' },
+  { href: '#contact', label: 'Contact' },
+];
 
-
-// Navigation with Login Dropdown
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const loginOptions = [
-    { id: 'student', label: 'Student Portal', icon: GraduationCap, href: '/login?type=student', color: 'text-green-400' },
-    { id: 'staff', label: 'Staff Portal', icon: Users, href: '/login?type=staff', color: 'text-blue-400' },
-    { id: 'director', label: 'Director Portal', icon: Briefcase, href: '/login?type=director', color: 'text-red-400' },
-    { id: 'franchise', label: 'Franchise Admin', icon: Building2, href: '/login?type=franchise', color: 'text-green-500' },
-  ];
-
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => setScrolled(window.scrollY > 24);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => setLoginDropdownOpen(false);
-    if (loginDropdownOpen) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [loginDropdownOpen]);
-
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-slate-900/95 backdrop-blur-xl shadow-lg' : 'bg-transparent'
-      }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center">
-              <div className="absolute inset-0 bg-green-500/20 blur-xl rounded-full group-hover:bg-green-400/30 transition-all duration-500" />
-              <div className="relative bg-slate-900/50 backdrop-blur-sm border border-white/10 p-2 rounded-xl shadow-2xl shadow-green-900/20">
-                <Image
-                  src="/logo-v2.png"
-                  alt="RTS Logo"
-                  width={48}
-                  height={48}
-                  className="h-10 w-auto object-contain"
-                />
-              </div>
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-lg font-bold text-white leading-tight block tracking-wide">
-                RAJTECH
+    <nav
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ${
+        scrolled ? 'border-line bg-paper/95 shadow-sm backdrop-blur' : 'border-transparent bg-paper'
+      }`}
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between lg:h-20">
+          {/* Crest + wordmark */}
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/logo-v2.png"
+              alt="RTS crest"
+              width={44}
+              height={44}
+              className="h-10 w-auto object-contain"
+            />
+            <span className="hidden sm:block">
+              <span className="block font-serif text-base font-semibold leading-tight text-ink">
+                Rajtech Technological Systems
               </span>
-              <span className="text-[10px] text-green-400 font-medium tracking-widest uppercase">
-                Technological Systems
+              <span className="block text-[10px] uppercase tracking-widest text-ink-muted">
+                Computer Education
               </span>
-            </div>
+            </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-8">
-            <a href="#courses" className="text-slate-300 hover:text-white transition-colors">Courses</a>
-            <a href="#about" className="text-slate-300 hover:text-white transition-colors">About</a>
-            <a href="#directors" className="text-slate-300 hover:text-white transition-colors">Leadership</a>
-            <a href="#milestones" className="text-slate-300 hover:text-white transition-colors">Journey</a>
-            <a href="#contact" className="text-slate-300 hover:text-white transition-colors">Contact</a>
+          {/* Desktop nav */}
+          <div className="hidden items-center gap-6 lg:flex">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-sm text-ink-muted transition-colors hover:text-ink"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
 
-          {/* Login Dropdown - Desktop */}
-          <div className="hidden lg:flex items-center gap-4 relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setLoginDropdownOpen(!loginDropdownOpen);
-              }}
-              className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white px-4 py-2 rounded-lg shadow-lg shadow-green-600/30 transition-all"
-            >
-              <LogIn className="h-4 w-4" />
-              Login
-              <ChevronDown className={`h-4 w-4 transition-transform ${loginDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {/* Dropdown Menu */}
-            {loginDropdownOpen && (
-              <div className="absolute top-full right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50">
-                <div className="p-2">
-                  <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Select Portal
-                  </div>
-                  {loginOptions.map((option) => {
-                    const Icon = option.icon;
-                    return (
-                      <Link
-                        key={option.id}
-                        href={option.href}
-                        className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-800 transition-colors group"
-                      >
-                        <Icon className={`h-5 w-5 ${option.color}`} />
-                        <span className="text-white group-hover:text-green-400 transition-colors">{option.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+          {/* Single sign-in: the role comes from the account, not a portal picker */}
+          <div className="hidden lg:block">
+            <Link href="/login">
+              <Button>
+                <LogIn className="h-4 w-4" />
+                Sign in
+              </Button>
+            </Link>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile menu button */}
           <button
-            className="lg:hidden p-2 text-white"
+            className="p-2 text-ink lg:hidden"
             onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile menu */}
         {isOpen && (
-          <div className="lg:hidden bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 py-4">
-            <div className="flex flex-col gap-4 px-4">
-              <a href="#courses" className="text-slate-300 hover:text-white py-2">Courses</a>
-              <a href="#about" className="text-slate-300 hover:text-white py-2">About</a>
-              <a href="#directors" className="text-slate-300 hover:text-white py-2">Leadership</a>
-              <a href="#milestones" className="text-slate-300 hover:text-white py-2">Journey</a>
-              <a href="#contact" className="text-slate-300 hover:text-white py-2">Contact</a>
-
-              {/* Mobile Login Options */}
-              <div className="border-t border-slate-700 pt-4 mt-2">
-                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                  Login Portals
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {loginOptions.map((option) => {
-                    const Icon = option.icon;
-                    return (
-                      <Link
-                        key={option.id}
-                        href={option.href}
-                        className="flex items-center gap-2 bg-slate-800 p-3 rounded-lg hover:bg-slate-700 transition-colors"
-                      >
-                        <Icon className={`h-4 w-4 ${option.color}`} />
-                        <span className="text-white text-sm">{option.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-                <div className="mt-3 text-center">
-                  <span className="text-sm text-slate-400">
-                    New student? Contact your nearest RTS center to get registered.
-                  </span>
-                </div>
-              </div>
+          <div className="border-t border-line py-4 lg:hidden">
+            <div className="flex flex-col gap-1 px-2">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-md px-2 py-2 text-ink-muted hover:bg-muted hover:text-ink"
+                >
+                  {link.label}
+                </a>
+              ))}
+              <Link href="/login" className="mt-2 px-2">
+                <Button className="w-full">
+                  <LogIn className="h-4 w-4" />
+                  Sign in
+                </Button>
+              </Link>
+              <p className="mt-3 px-2 text-center text-sm text-ink-muted">
+                New student? Contact your nearest RTS center to get registered.
+              </p>
             </div>
           </div>
         )}
@@ -318,189 +246,77 @@ function Navbar() {
   );
 }
 
-// Hero Section
 function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
-      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-green-600/20 rounded-full blur-3xl" />
-      <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-red-600/15 rounded-full blur-3xl" />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <Badge className="bg-green-600/10 text-green-400 border-green-600/30 mb-6 px-4 py-2">
-          🎓 Rajtech Technological Systems - Trusted by 10,000+ Students
-        </Badge>
-
-        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-          Transform Your Career with
-          <span className="block bg-gradient-to-r from-green-400 via-white to-red-400 bg-clip-text text-transparent">
-            Industry-Ready Skills
-          </span>
-        </h1>
-
-        <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10">
-          Join Rajtech Technological Systems - India's leading computer education franchise network.
-          Learn from industry experts, get certified, and launch your dream career in technology.
-        </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <a href="#courses">
-            <Button size="lg" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white shadow-lg shadow-green-600/30 px-8 py-6 text-lg">
-              Explore Courses
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
-          </a>
-          <Button size="lg" variant="outline" className="border-slate-700 text-white hover:bg-slate-800 px-8 py-6 text-lg">
-            <Play className="h-5 w-5 mr-2" />
-            Watch Video
-          </Button>
+    <section className="border-b border-line bg-paper pt-16 lg:pt-20">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+        <div className="mx-auto max-w-3xl text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-primary">
+            Rajtech Technological Systems Pvt. Ltd. — Est. 2015, Bihar
+          </p>
+          <h1 className="font-serif text-4xl font-semibold leading-tight text-ink sm:text-5xl lg:text-6xl">
+            Computer education with the rigor of an institution
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-ink-muted">
+            Recognized diploma and certificate courses in computer applications, accounting, and
+            typing — taught in classrooms and labs across our franchise network, with verifiable
+            certificates.
+          </p>
+          <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+            <a href="#courses">
+              <Button size="lg" className="w-full sm:w-auto">
+                Browse the course catalog
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </a>
+            <Link href="/login">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                <LogIn className="h-4 w-4" />
+                Sign in to your portal
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8 max-w-4xl mx-auto">
+        {/* Stats — ledger row */}
+        <div className="mx-auto mt-16 grid max-w-4xl grid-cols-2 divide-line rounded-md border border-line bg-surface shadow-sm sm:divide-x lg:grid-cols-4 animate-in fade-in slide-in-from-bottom-2 duration-1000">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.label} className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
-                <Icon className="h-8 w-8 text-green-500 mx-auto mb-3" />
-                <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
-                <div className="text-sm text-slate-400">{stat.label}</div>
+              <div key={stat.label} className="p-6 text-center">
+                <Icon className="mx-auto mb-3 h-5 w-5 text-primary" />
+                <div className="font-mono text-2xl font-semibold tabular-nums text-ink">
+                  {stat.value}
+                </div>
+                <div className="mt-1 text-xs uppercase tracking-wide text-ink-muted">
+                  {stat.label}
+                </div>
               </div>
             );
           })}
         </div>
       </div>
-
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer animate-bounce">
-        <span className="text-xs font-medium text-slate-400 tracking-widest uppercase">Scroll Down</span>
-        <ChevronDown className="h-6 w-6 text-green-400" />
-      </div>
     </section>
   );
 }
 
-// Quick Access Login Section
-function QuickAccessSection() {
-  const portals = [
-    {
-      id: 'student',
-      label: 'Student Portal',
-      description: 'Access courses, certificates & learning materials',
-      icon: GraduationCap,
-      color: 'from-green-600 to-emerald-600',
-      bgColor: 'bg-green-600/10',
-      borderColor: 'border-green-600/30',
-      href: '/login?type=student',
-    },
-    {
-      id: 'staff',
-      label: 'Staff Portal',
-      description: 'View attendance, payroll & work schedules',
-      icon: Users,
-      color: 'from-blue-600 to-blue-700',
-      bgColor: 'bg-blue-600/10',
-      borderColor: 'border-blue-600/30',
-      href: '/login?type=staff',
-    },
-    {
-      id: 'director',
-      label: 'Director Portal',
-      description: 'Oversee multiple centers & analytics',
-      icon: Briefcase,
-      color: 'from-red-600 to-red-700',
-      bgColor: 'bg-red-600/10',
-      borderColor: 'border-red-600/30',
-      href: '/login?type=director',
-    },
-    {
-      id: 'franchise',
-      label: 'Franchise Admin',
-      description: 'Manage your franchise center operations',
-      icon: Building2,
-      color: 'from-green-700 to-green-800',
-      bgColor: 'bg-green-700/10',
-      borderColor: 'border-green-700/30',
-      href: '/login?type=franchise',
-    },
-  ];
-
+function NoticesSection() {
   return (
-    <section className="py-16 bg-slate-900/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <LogIn className="h-6 w-6 text-green-400" />
-            <span className="text-green-400 font-semibold text-lg">Quick Access</span>
-          </div>
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-            Login to Your Portal
-          </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
-            Select your role to access your dedicated portal with all the tools you need
-          </p>
+    <section id="notices" className="border-b border-line bg-surface py-16">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex items-center gap-2">
+          <BellRing className="h-5 w-5 text-primary" />
+          <h2 className="font-serif text-2xl font-semibold text-ink">Notice board</h2>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {portals.map((portal) => {
-            const Icon = portal.icon;
-            return (
-              <Link
-                key={portal.id}
-                href={portal.href}
-                className={`group relative p-6 rounded-2xl bg-slate-900/50 border ${portal.borderColor} hover:border-opacity-60 transition-all duration-300 hover:shadow-xl text-center overflow-hidden`}
-              >
-                {/* Gradient hover effect */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${portal.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-
-                <div className="relative z-10">
-                  <div className={`w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br ${portal.color} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    {portal.label}
-                  </h3>
-                  <p className="text-sm text-slate-400 leading-relaxed mb-4">
-                    {portal.description}
-                  </p>
-                  <div className="text-green-400 text-sm font-medium flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Login Now <ChevronRight className="h-4 w-4" />
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        <div className="text-center mt-10">
-          <p className="text-slate-500">
-            New student? Contact your nearest RTS center to get registered.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// Events Section
-function EventsSection() {
-  return (
-    <section className="py-20 bg-slate-900/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">Recent Events & Highlights</h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">Experience the vibrant learning culture at RTS</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {events.map((event, idx) => (
-            <div key={idx} className="group relative overflow-hidden rounded-2xl aspect-video cursor-pointer">
-              <div className={`absolute inset-0 bg-gradient-to-br ${event.color} opacity-80 group-hover:opacity-90 transition-opacity`} />
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6">
-                <Play className="h-16 w-16 mb-4 opacity-80 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-bold text-center">{event.title}</h3>
-                <p className="text-white/80">{event.subtitle}</p>
+        <div className="divide-y divide-line rounded-md border border-line">
+          {notices.map((notice, idx) => (
+            <div key={idx} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-4">
+              <span className="shrink-0 text-[11px] font-medium uppercase tracking-widest text-primary">
+                Admission
+              </span>
+              <div>
+                <p className="font-medium text-ink">{notice.title}</p>
+                <p className="text-sm text-ink-muted">{notice.detail}</p>
               </div>
             </div>
           ))}
@@ -510,148 +326,129 @@ function EventsSection() {
   );
 }
 
-// Courses Section
 function CoursesSection() {
   return (
-    <section id="courses" className="py-20 bg-slate-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <Badge className="bg-green-600/10 text-green-400 border-green-600/30 mb-4">
-            Our Programs
-          </Badge>
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">Industry-Relevant Courses</h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
-            Choose from our comprehensive curriculum designed by industry experts
+    <section id="courses" className="border-b border-line bg-paper py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-12 text-center">
+          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-primary">
+            Course catalog
+          </p>
+          <h2 className="font-serif text-3xl font-semibold text-ink">Programs of study</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-ink-muted">
+            Structured curriculum with theory, lab practice, and examinations. Fees are payable in
+            installments at your center.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
-            <Card key={course.id} className="bg-slate-900/50 border-slate-800 hover:border-green-600/50 transition-all duration-300 hover:shadow-xl hover:shadow-green-600/10 group overflow-hidden">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-green-600/10 to-green-700/10 border border-green-600/20">
-                    <BookOpen className="h-6 w-6 text-green-500" />
-                  </div>
-                  {course.popular && (
-                    <Badge className="bg-red-600/10 text-red-400 border-red-600/30">
-                      <Star className="h-3 w-3 mr-1" /> Popular
-                    </Badge>
-                  )}
+            <Card
+              key={course.id}
+              className="group rounded-md border-line bg-surface shadow-sm transition-colors hover:border-primary/40"
+            >
+              <CardContent className="flex h-full flex-col p-6">
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <h3 className="font-serif text-lg font-semibold leading-snug text-ink">
+                    {course.name}
+                  </h3>
+                  <span className="shrink-0 font-mono text-[11px] uppercase tracking-wider text-ink-muted">
+                    {course.code}
+                  </span>
                 </div>
+                <p className="mb-4 text-sm leading-relaxed text-ink-muted">{course.description}</p>
 
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-green-400 transition-colors">
-                  {course.name}
-                </h3>
-                <p className="text-slate-400 text-sm mb-4 line-clamp-2">{course.description}</p>
-
-                <div className="flex flex-wrap gap-3 mb-4">
-                  <div className="flex items-center gap-1 text-sm text-slate-300">
-                    <Clock className="h-4 w-4 text-green-500" />
-                    {course.duration}
+                <div className="mt-auto">
+                  <div className="mb-4 flex flex-wrap gap-4 text-sm text-ink-muted">
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4 text-primary" />
+                      {course.duration}
+                    </span>
+                    <span className="text-[11px] font-medium uppercase tracking-widest">
+                      {course.level}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1 text-sm text-slate-300">
-                    <Target className="h-4 w-4 text-red-400" />
-                    {course.level}
+                  <div className="flex items-center justify-between border-t border-line pt-4">
+                    <span className="font-mono text-lg font-semibold tabular-nums text-ink">
+                      {course.fee}
+                    </span>
+                    <Link
+                      href="/login"
+                      className="flex items-center gap-1 text-sm font-medium text-primary hover:underline underline-offset-4"
+                    >
+                      Enquire <ChevronRight className="h-4 w-4" />
+                    </Link>
                   </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-                  <div className="flex items-center text-green-400 font-bold text-lg">
-                    <IndianRupee className="h-5 w-5" />
-                    {course.fee.replace('₹', '')}
-                  </div>
-                  <Button variant="ghost" size="sm" className="text-green-400 hover:text-green-300">
-                    Learn More <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <Link href="/login">
-            <Button size="lg" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white shadow-lg shadow-green-600/30">
-              Enroll Now - Get Started
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
-          </Link>
-        </div>
+        <p className="mt-10 text-center text-sm text-ink-muted">
+          Admissions are handled at your nearest RTS center. Existing students can{' '}
+          <Link href="/login" className="text-primary hover:underline underline-offset-4">
+            sign in
+          </Link>{' '}
+          to track progress, payments, and certificates.
+        </p>
       </div>
     </section>
   );
 }
 
-// About Section
 function AboutSection() {
   return (
-    <section id="about" className="py-20 bg-slate-900/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+    <section id="about" className="border-b border-line bg-surface py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <Badge className="bg-green-600/10 text-green-400 border-green-600/30 mb-4">
+            <p className="mb-2 text-xs font-medium uppercase tracking-widest text-primary">
               About RTS
-            </Badge>
-            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-              Empowering Students Through Education
+            </p>
+            <h2 className="mb-6 font-serif text-3xl font-semibold text-ink">
+              A mission to provide quality education to all who deserve it
             </h2>
-            <p className="text-slate-400 mb-6 leading-relaxed">
-              Welcome to RAJTECH TECHNOLOGICAL SYSTEM PRIVATE LIMITED (RTS). It is not just a company but a mission
-              to provide quality education to all who deserve it. We live in an extremely competitive era today,
-              and the potentiality for growth in numerous industries is unbelievable.
+            <p className="mb-4 leading-relaxed text-ink-muted">
+              Rajtech Technological System Private Limited (RTS) is fully devoted to providing
+              world-class computer education. We work with passion and believe in delivering the
+              very best, using contemporary technologies to offer programs with quality and
+              punctuality.
             </p>
-            <p className="text-slate-400 mb-6 leading-relaxed">
-              RTS Education is fully devoted to providing world-class education. Here we work with passion and
-              believe to deliver the very best. We have embraced the most contemporary technologies enabling us
-              to offer world-class education programs with quality and punctuality.
-            </p>
-            <p className="text-slate-400 mb-8 leading-relaxed italic border-l-4 border-green-500 pl-4">
-              "We have no competition, We become competition"
-            </p>
+            <blockquote className="mb-8 border-l-2 border-primary pl-4 font-serif text-lg italic text-ink">
+              “We have no competition, we become competition.”
+            </blockquote>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {whyJoinUs.map((item, idx) => (
                 <div key={idx} className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-green-600/10 mt-1">
-                    <Award className="h-5 w-5 text-green-500" />
+                  <div className="mt-0.5 rounded-md bg-accent-soft p-2">
+                    <Award className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <span className="text-white font-medium block">{item.title}</span>
-                    <span className="text-slate-500 text-sm">{item.description}</span>
+                    <span className="block font-medium text-ink">{item.title}</span>
+                    <span className="text-sm text-ink-muted">{item.description}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-600/30 via-red-600/10 to-green-600/30 blur-3xl rounded-full group-hover:blur-[60px] transition-all duration-700" />
-            <div className="relative aspect-square rounded-3xl bg-slate-950/80 backdrop-blur-xl border border-white/10 flex items-center justify-center overflow-hidden shadow-2xl shadow-green-900/20 ring-1 ring-white/10 group-hover:ring-green-500/50 transition-all duration-500">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-red-500/5 opacity-50" />
+          <div className="flex justify-center">
+            <div className="rounded-md border border-line bg-paper p-10 shadow-sm">
               <Image
                 src="/logo-v2.png"
-                alt="RTS Logo"
-                width={300}
-                height={300}
-                className="w-3/4 h-3/4 object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
+                alt="RTS crest"
+                width={280}
+                height={280}
+                className="h-64 w-auto object-contain"
               />
-            </div>
-
-            {/* Floating badges */}
-            <div className="absolute -top-6 -right-6 animate-bounce duration-[3000ms]">
-              <div className="bg-slate-900/90 backdrop-blur-md border border-green-500/30 p-4 rounded-2xl shadow-xl shadow-green-900/20">
-                <Award className="h-8 w-8 text-green-400 mb-1" />
-                <div className="text-xs text-slate-400 font-medium">Globally</div>
-                <div className="text-sm font-bold text-white">Certified</div>
-              </div>
-            </div>
-
-            <div className="absolute -bottom-6 -left-6 animate-bounce duration-[4000ms]">
-              <div className="bg-gradient-to-br from-green-600 to-green-700 p-4 rounded-2xl shadow-xl shadow-green-600/20">
-                <div className="text-3xl font-bold text-white">8415+</div>
-                <div className="text-xs text-green-100 font-medium">Students</div>
-              </div>
+              <p className="mt-6 text-center font-serif text-sm text-ink">
+                Rajtech Technological Systems
+              </p>
+              <p className="text-center text-[10px] uppercase tracking-widest text-ink-muted">
+                Hilsa · Nalanda · Bihar
+              </p>
             </div>
           </div>
         </div>
@@ -660,31 +457,29 @@ function AboutSection() {
   );
 }
 
-// Directors Section
-function DirectorsSection() {
+function LeadershipSection() {
   return (
-    <section id="directors" className="py-20 bg-slate-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <Badge className="bg-green-600/10 text-green-400 border-green-600/30 mb-4">
-            Our Leaders
-          </Badge>
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">Meet Our Leadership</h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
-            Visionary leaders driving innovation in education
+    <section id="directors" className="border-b border-line bg-paper py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-12 text-center">
+          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-primary">
+            Leadership
           </p>
+          <h2 className="font-serif text-3xl font-semibold text-ink">The people behind RTS</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {directors.map((director, idx) => (
-            <Card key={idx} className="bg-slate-900/50 border-slate-800 hover:border-green-600/50 transition-all text-center group">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {leadership.map((person, idx) => (
+            <Card key={idx} className="rounded-md border-line bg-surface text-center shadow-sm">
               <CardContent className="p-8">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center mx-auto mb-6 text-5xl group-hover:scale-110 transition-transform shadow-lg shadow-green-600/30">
-                  {director.image}
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-line bg-accent-soft font-serif text-xl font-semibold text-primary">
+                  {person.name.charAt(0)}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-1">{director.name}</h3>
-                <p className="text-green-400 mb-4">{director.role}</p>
-                <p className="text-slate-400 text-sm">{director.description}</p>
+                <h3 className="font-serif text-lg font-semibold text-ink">{person.name}</h3>
+                <p className="mb-3 text-[11px] font-medium uppercase tracking-widest text-primary">
+                  {person.role}
+                </p>
+                <p className="text-sm text-ink-muted">{person.description}</p>
               </CardContent>
             </Card>
           ))}
@@ -694,183 +489,175 @@ function DirectorsSection() {
   );
 }
 
-// Milestones Section
 function MilestonesSection() {
   return (
-    <section id="milestones" className="py-20 bg-slate-900/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <Badge className="bg-red-600/10 text-red-400 border-red-600/30 mb-4">
-            Our Journey
-          </Badge>
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">Milestones & Achievements</h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
-            15 years of transforming education across India
+    <section id="milestones" className="border-b border-line bg-surface py-20">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-12 text-center">
+          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-primary">
+            Our journey
           </p>
+          <h2 className="font-serif text-3xl font-semibold text-ink">A decade of steady growth</h2>
         </div>
 
-        <div className="relative">
-          {/* Timeline line */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-green-600 via-white to-red-600 hidden lg:block" />
-
-          <div className="space-y-8 lg:space-y-0">
-            {milestones.map((milestone, idx) => (
-              <div key={idx} className={`lg:flex items-center gap-8 ${idx % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}>
-                <div className={`lg:w-1/2 ${idx % 2 === 0 ? 'lg:text-right lg:pr-12' : 'lg:text-left lg:pl-12'}`}>
-                  <Card className="bg-slate-900/50 border-slate-800 inline-block hover:border-green-600/50 transition-all">
-                    <CardContent className="p-6">
-                      <div className="text-3xl font-bold text-green-400 mb-2">{milestone.year}</div>
-                      <h3 className="text-xl font-bold text-white mb-1">{milestone.title}</h3>
-                      <p className="text-slate-400">{milestone.subtitle}</p>
-                    </CardContent>
-                  </Card>
-                </div>
-                <div className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-gradient-to-br from-green-600 to-green-700 border-4 border-slate-900" style={{ top: `${idx * 16.67}%` }} />
-                <div className="lg:w-1/2" />
-              </div>
-            ))}
-          </div>
-        </div>
+        <ol className="relative border-l border-line pl-8">
+          {milestones.map((milestone, idx) => (
+            <li key={idx} className="relative pb-10 last:pb-0">
+              <span className="absolute -left-[37px] top-1 h-2.5 w-2.5 rounded-full border border-primary bg-surface" />
+              <span className="font-mono text-sm tabular-nums text-primary">{milestone.year}</span>
+              <h3 className="mt-1 font-serif text-lg font-semibold text-ink">{milestone.title}</h3>
+              <p className="text-sm text-ink-muted">{milestone.subtitle}</p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );
 }
 
-// CTA Section
 function CTASection() {
   return (
-    <section className="py-20 bg-gradient-to-r from-green-700 via-green-600 to-green-700">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-          Ready to Start Your Journey?
+    <section className="border-b border-line bg-accent-soft py-16">
+      <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+        <h2 className="font-serif text-3xl font-semibold text-ink">
+          Ready to begin your course of study?
         </h2>
-        <p className="text-green-100 text-lg mb-8">
-          Join thousands of students who have transformed their careers with RTS
+        <p className="mt-3 text-ink-muted">
+          Visit your nearest RTS center for admission, or sign in if you already have an account.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Link href="/login">
-            <Button size="lg" className="bg-white text-green-700 hover:bg-green-50 px-8 py-6 text-lg font-semibold">
-              Student Login
-              <GraduationCap className="h-5 w-5 ml-2" />
+            <Button size="lg" className="w-full sm:w-auto">
+              <LogIn className="h-4 w-4" />
+              Sign in
             </Button>
           </Link>
-          <Link href="/login?type=franchise">
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg">
-              Franchise Login
-              <Building2 className="h-5 w-5 ml-2" />
+          <a href="#contact">
+            <Button size="lg" variant="outline" className="w-full sm:w-auto">
+              Contact a center
             </Button>
-          </Link>
+          </a>
         </div>
       </div>
     </section>
   );
 }
 
-// Footer
 function Footer() {
   return (
-    <footer id="contact" className="bg-slate-950 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+    <footer id="contact" className="bg-paper">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Link href="/" className="flex items-center gap-3 mb-6 group">
-              <div className="relative p-2 bg-slate-900 rounded-xl border border-white/10 shadow-lg shadow-green-900/10 group-hover:border-green-500/30 transition-colors">
-                <Image
-                  src="/logo-v2.png"
-                  alt="RTS Logo"
-                  width={40}
-                  height={40}
-                  className="h-10 w-auto object-contain"
-                />
-              </div>
-              <div>
-                <span className="text-lg font-bold text-white block tracking-wide">RAJTECH</span>
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest group-hover:text-green-400 transition-colors">Technological Systems</span>
-              </div>
+            <Link href="/" className="mb-5 flex items-center gap-3">
+              <Image
+                src="/logo-v2.png"
+                alt="RTS crest"
+                width={40}
+                height={40}
+                className="h-10 w-auto object-contain"
+              />
+              <span>
+                <span className="block font-serif text-base font-semibold leading-tight text-ink">
+                  Rajtech Technological Systems
+                </span>
+                <span className="block text-[10px] uppercase tracking-widest text-ink-muted">
+                  Computer Education
+                </span>
+              </span>
             </Link>
-            <p className="text-slate-400 mb-6">
-              Quality computer education for all. Providing world-class training in DCA, ADCA, Tally, and more.
+            <p className="mb-6 text-sm leading-relaxed text-ink-muted">
+              Quality computer education for all — world-class training in DCA, ADCA, Tally, and
+              more, across our franchise network.
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-green-600/20">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-green-600/20">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-green-600/20">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-green-600/20">
-                <Linkedin className="h-5 w-5" />
-              </a>
+            <div className="flex gap-2">
+              {[Facebook, Twitter, Instagram, Linkedin].map((Icon, idx) => (
+                <a
+                  key={idx}
+                  href="#"
+                  className="rounded-md border border-line p-2 text-ink-muted transition-colors hover:border-primary/40 hover:text-primary"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-3">
-              <li><a href="#courses" className="text-slate-400 hover:text-green-400 transition-colors">Courses</a></li>
-              <li><a href="#about" className="text-slate-400 hover:text-green-400 transition-colors">About Us</a></li>
-              <li><a href="#directors" className="text-slate-400 hover:text-green-400 transition-colors">Leadership</a></li>
-              <li><a href="#milestones" className="text-slate-400 hover:text-green-400 transition-colors">Our Journey</a></li>
-              <li><Link href="/login" className="text-slate-400 hover:text-green-400 transition-colors">Login</Link></li>
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-ink">
+              Quick links
+            </h3>
+            <ul className="space-y-3 text-sm">
+              {navLinks.map((link) => (
+                <li key={link.href}>
+                  <a href={link.href} className="text-ink-muted transition-colors hover:text-primary">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Login Options */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Portal Login</h3>
-            <ul className="space-y-3">
-              <li><Link href="/login?type=franchise" className="text-slate-400 hover:text-green-400 transition-colors">Franchise Admin</Link></li>
-              <li><Link href="/login?type=director" className="text-slate-400 hover:text-green-400 transition-colors">Director Login</Link></li>
-              <li><Link href="/login?type=student" className="text-slate-400 hover:text-green-400 transition-colors">Student Login</Link></li>
-              <li><Link href="/login?type=staff" className="text-slate-400 hover:text-green-400 transition-colors">Staff Login</Link></li>
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-ink">
+              Portal
+            </h3>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link href="/login" className="text-ink-muted transition-colors hover:text-primary">
+                  Sign in
+                </Link>
+              </li>
+              <li className="text-ink-muted">
+                Students, staff, directors, and franchise admins all sign in with the account issued
+                by their institution.
+              </li>
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Contact Us</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-2 text-slate-400">
-                <MapPin className="h-5 w-5 text-green-500" />
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-ink">
+              Contact
+            </h3>
+            <ul className="space-y-3 text-sm text-ink-muted">
+              <li className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 shrink-0 text-primary" />
                 Hilsa, Nalanda, Bihar, India
               </li>
-              <li className="flex items-center gap-2 text-slate-400">
-                <Phone className="h-5 w-5 text-green-500" />
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 shrink-0 text-primary" />
                 +91 9931005560
               </li>
-              <li className="flex items-center gap-2 text-slate-400">
-                <Mail className="h-5 w-5 text-green-500" />
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4 shrink-0 text-primary" />
                 info@rtseducation.in
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-12 pt-8 text-center text-slate-500">
-          <p>&copy; {new Date().getFullYear()} RAJTECH TECHNOLOGICAL SYSTEM PRIVATE LIMITED (RTS). All rights reserved.</p>
+        <div className="mt-12 border-t border-line pt-8 text-center text-sm text-ink-muted">
+          <p>
+            &copy; {new Date().getFullYear()} Rajtech Technological System Private Limited (RTS).
+            All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
   );
 }
 
-// Main Page Component
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-paper">
       <Navbar />
       <HeroSection />
-      <EventsSection />
+      <NoticesSection />
       <CoursesSection />
       <AboutSection />
-      <DirectorsSection />
+      <LeadershipSection />
       <MilestonesSection />
       <CTASection />
-      <QuickAccessSection />
       <Footer />
     </div>
   );

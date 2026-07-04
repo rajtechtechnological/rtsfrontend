@@ -81,65 +81,65 @@ function AddCourseDialog({ onCourseAdded }: { onCourseAdded: () => void }) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-500/25">
+                <Button className="bg-primary text-primary-foreground shadow-sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Course
                 </Button>
             </DialogTrigger>
-            <DialogContent className="bg-slate-900 border-slate-800 sm:max-w-md">
+            <DialogContent className="bg-surface border-line sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-white flex items-center gap-2">
-                        <BookOpen className="h-5 w-5 text-emerald-400" />
+                    <DialogTitle className="text-ink flex items-center gap-2">
+                        <BookOpen className="h-5 w-5 text-success" />
                         Create New Course
                     </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name" className="text-slate-300">Course Name *</Label>
+                        <Label htmlFor="name" className="text-ink">Course Name *</Label>
                         <Input
                             id="name"
-                            className="bg-slate-800/50 border-slate-700 text-white"
+                            className="bg-muted border-line text-ink"
                             placeholder="e.g., Web Development Bootcamp"
                             {...register('name')}
                         />
                         {errors.name && (
-                            <p className="text-sm text-red-400">{errors.name.message}</p>
+                            <p className="text-sm text-danger">{errors.name.message}</p>
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="description" className="text-slate-300">Description</Label>
+                        <Label htmlFor="description" className="text-ink">Description</Label>
                         <Input
                             id="description"
-                            className="bg-slate-800/50 border-slate-700 text-white"
+                            className="bg-muted border-line text-ink"
                             placeholder="Brief course description"
                             {...register('description')}
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="duration_months" className="text-slate-300">Duration (months) *</Label>
+                            <Label htmlFor="duration_months" className="text-ink">Duration (months) *</Label>
                             <Input
                                 id="duration_months"
                                 type="number"
-                                className="bg-slate-800/50 border-slate-700 text-white"
+                                className="bg-muted border-line text-ink"
                                 placeholder="6"
                                 {...register('duration_months', { valueAsNumber: true })}
                             />
                             {errors.duration_months && (
-                                <p className="text-sm text-red-400">{errors.duration_months.message}</p>
+                                <p className="text-sm text-danger">{errors.duration_months.message}</p>
                             )}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="fee_amount" className="text-slate-300">Fee (₹) *</Label>
+                            <Label htmlFor="fee_amount" className="text-ink">Fee (₹) *</Label>
                             <Input
                                 id="fee_amount"
                                 type="number"
-                                className="bg-slate-800/50 border-slate-700 text-white"
+                                className="bg-muted border-line text-ink"
                                 placeholder="45000"
                                 {...register('fee_amount', { valueAsNumber: true })}
                             />
                             {errors.fee_amount && (
-                                <p className="text-sm text-red-400">{errors.fee_amount.message}</p>
+                                <p className="text-sm text-danger">{errors.fee_amount.message}</p>
                             )}
                         </div>
                     </div>
@@ -148,14 +148,14 @@ function AddCourseDialog({ onCourseAdded }: { onCourseAdded: () => void }) {
                             type="button"
                             variant="outline"
                             onClick={() => setOpen(false)}
-                            className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                            className="border-line text-ink hover:bg-muted"
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white"
+                            className="bg-primary text-primary-foreground"
                         >
                             {isLoading ? (
                                 <>
@@ -175,26 +175,26 @@ function AddCourseDialog({ onCourseAdded }: { onCourseAdded: () => void }) {
 
 function CourseCard({ course }: { course: Course }) {
     return (
-        <Card className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 hover:shadow-lg group">
+        <Card className="bg-surface border-line hover:border-primary/40 transition-all duration-300 hover:shadow-lg group">
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
-                        <CardTitle className="text-lg text-white group-hover:text-emerald-400 transition-colors">
+                        <CardTitle className="text-lg text-ink group-hover:text-success transition-colors">
                             {course.name}
                         </CardTitle>
-                        <p className="text-sm text-slate-400 mt-1 line-clamp-2">{course.description}</p>
+                        <p className="text-sm text-ink-muted mt-1 line-clamp-2">{course.description}</p>
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white h-8 w-8">
+                            <Button variant="ghost" size="icon" className="text-ink-muted hover:text-ink h-8 w-8">
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
-                            <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
+                        <DropdownMenuContent align="end" className="bg-surface border-line">
+                            <DropdownMenuItem className="text-ink hover:text-ink hover:bg-muted">
                                 <Edit className="h-4 w-4 mr-2" /> Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                            <DropdownMenuItem className="text-danger hover:text-danger hover:bg-danger/10">
                                 <Trash2 className="h-4 w-4 mr-2" /> Delete
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -204,38 +204,38 @@ function CourseCard({ course }: { course: Course }) {
             <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                     <div className="flex items-center gap-2">
-                        <div className="p-1.5 sm:p-2 rounded-lg bg-blue-500/10">
-                            <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-400" />
+                        <div className="p-1.5 sm:p-2 rounded-lg bg-accent-soft">
+                            <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                         </div>
                         <div>
-                            <p className="text-xs text-slate-500">Duration</p>
-                            <p className="text-xs sm:text-sm font-medium text-white">{course.duration_months} mo</p>
+                            <p className="text-xs text-ink-muted">Duration</p>
+                            <p className="text-xs sm:text-sm font-medium text-ink">{course.duration_months} mo</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/10">
-                            <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-400" />
+                        <div className="p-1.5 sm:p-2 rounded-lg bg-accent-soft">
+                            <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success" />
                         </div>
                         <div>
-                            <p className="text-xs text-slate-500">Fee</p>
-                            <p className="text-xs sm:text-sm font-medium text-white">₹{course.fee_amount?.toLocaleString() ?? 'N/A'}</p>
+                            <p className="text-xs text-ink-muted">Fee</p>
+                            <p className="text-xs sm:text-sm font-medium text-ink">₹{course.fee_amount?.toLocaleString() ?? 'N/A'}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 col-span-2 sm:col-span-1">
-                        <div className="p-1.5 sm:p-2 rounded-lg bg-purple-500/10">
-                            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-400" />
+                        <div className="p-1.5 sm:p-2 rounded-lg bg-accent-soft">
+                            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                         </div>
                         <div>
-                            <p className="text-xs text-slate-500">Students</p>
-                            <p className="text-xs sm:text-sm font-medium text-white">0</p>
+                            <p className="text-xs text-ink-muted">Students</p>
+                            <p className="text-xs sm:text-sm font-medium text-ink">0</p>
                         </div>
                     </div>
                 </div>
                 <div className="mt-4 flex items-center justify-between">
-                    <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                    <Badge className="bg-accent-soft text-success border-success/30">
                         active
                     </Badge>
-                    <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
+                    <Button variant="ghost" size="sm" className="text-ink-muted hover:text-ink">
                         View Details →
                     </Button>
                 </div>
@@ -274,25 +274,25 @@ export default function CoursesPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <BookOpen className="h-7 w-7 text-emerald-400" />
+                    <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+                        <BookOpen className="h-7 w-7 text-success" />
                         Course Management
                     </h1>
-                    <p className="text-slate-400 mt-1">Create and manage course offerings</p>
+                    <p className="text-ink-muted mt-1">Create and manage course offerings</p>
                 </div>
                 <AddCourseDialog onCourseAdded={fetchCourses} />
             </div>
 
             {/* Search */}
-            <Card className="bg-slate-900/50 border-slate-800">
+            <Card className="bg-surface border-line">
                 <CardContent className="p-4">
                     <div className="relative max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
                         <Input
                             placeholder="Search courses..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                            className="pl-10 bg-muted border-line text-ink placeholder:text-ink-muted"
                         />
                     </div>
                 </CardContent>
@@ -301,13 +301,13 @@ export default function CoursesPage() {
             {/* Course Grid */}
             {isLoading ? (
                 <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
+                    <Loader2 className="h-8 w-8 animate-spin text-success" />
                 </div>
             ) : filteredCourses.length === 0 ? (
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="flex flex-col items-center justify-center py-12">
-                        <BookOpen className="h-12 w-12 text-slate-600 mb-4" />
-                        <p className="text-slate-400 text-center">
+                        <BookOpen className="h-12 w-12 text-ink-muted mb-4" />
+                        <p className="text-ink-muted text-center">
                             {searchQuery ? 'No courses found matching your search' : 'No courses available. Create your first course!'}
                         </p>
                     </CardContent>

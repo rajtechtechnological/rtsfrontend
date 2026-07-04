@@ -75,30 +75,30 @@ export default function InstitutionDetailPage() {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Link href="/dashboard/institutions">
-                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+                        <Button variant="ghost" size="icon" className="text-ink-muted hover:text-ink">
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+                        <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
                             {institution.name}
                             <Badge
                                 className={
                                     institution.status === 'active'
-                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                        ? 'bg-accent-soft text-success border-success/30'
+                                        : 'bg-warning/10 text-warning border-line'
                                 }
                             >
                                 {institution.status}
                             </Badge>
                         </h1>
-                        <p className="text-slate-400 mt-1">Created on {institution.created_at}</p>
+                        <p className="text-ink-muted mt-1">Created on {institution.created_at}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <Button
                         variant="outline"
-                        className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                        className="border-line text-ink hover:bg-muted"
                     >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Details
@@ -106,7 +106,7 @@ export default function InstitutionDetailPage() {
                     <Button
                         variant="outline"
                         onClick={handleDeleteInstitution}
-                        className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
+                        className="border-line text-danger hover:bg-danger/10 hover:border-line"
                     >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
@@ -116,47 +116,47 @@ export default function InstitutionDetailPage() {
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-blue-500/10">
-                            <GraduationCap className="h-6 w-6 text-blue-400" />
+                        <div className="p-3 rounded-xl bg-accent-soft">
+                            <GraduationCap className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{institution.student_count}</p>
-                            <p className="text-sm text-slate-400">Students</p>
+                            <p className="text-2xl font-bold text-ink">{institution.student_count}</p>
+                            <p className="text-sm text-ink-muted">Students</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-purple-500/10">
-                            <Users className="h-6 w-6 text-purple-400" />
+                        <div className="p-3 rounded-xl bg-accent-soft">
+                            <Users className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{institution.staff_count}</p>
-                            <p className="text-sm text-slate-400">Staff</p>
+                            <p className="text-2xl font-bold text-ink">{institution.staff_count}</p>
+                            <p className="text-sm text-ink-muted">Staff</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-emerald-500/10">
-                            <Calendar className="h-6 w-6 text-emerald-400" />
+                        <div className="p-3 rounded-xl bg-accent-soft">
+                            <Calendar className="h-6 w-6 text-success" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{institution.active_courses}</p>
-                            <p className="text-sm text-slate-400">Courses</p>
+                            <p className="text-2xl font-bold text-ink">{institution.active_courses}</p>
+                            <p className="text-sm text-ink-muted">Courses</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-amber-500/10">
-                            <IndianRupee className="h-6 w-6 text-amber-400" />
+                        <div className="p-3 rounded-xl bg-warning/10">
+                            <IndianRupee className="h-6 w-6 text-warning" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{institution.monthly_revenue}</p>
-                            <p className="text-sm text-slate-400">Revenue</p>
+                            <p className="text-2xl font-bold text-ink">{institution.monthly_revenue}</p>
+                            <p className="text-sm text-ink-muted">Revenue</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -165,34 +165,34 @@ export default function InstitutionDetailPage() {
             {/* Institution Details & Admin */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Contact Details */}
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardHeader>
-                        <CardTitle className="text-white flex items-center gap-2">
-                            <Building2 className="h-5 w-5 text-blue-400" />
+                        <CardTitle className="text-ink flex items-center gap-2">
+                            <Building2 className="h-5 w-5 text-primary" />
                             Institution Details
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-3">
-                            <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-800/30">
-                                <MapPin className="h-5 w-5 text-slate-400 flex-shrink-0 mt-0.5" />
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted">
+                                <MapPin className="h-5 w-5 text-ink-muted flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-xs text-slate-500 mb-1">Address</p>
-                                    <p className="text-sm text-slate-200">{institution.address}</p>
+                                    <p className="text-xs text-ink-muted mb-1">Address</p>
+                                    <p className="text-sm text-ink">{institution.address}</p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-800/30">
-                                <Mail className="h-5 w-5 text-slate-400 flex-shrink-0 mt-0.5" />
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted">
+                                <Mail className="h-5 w-5 text-ink-muted flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-xs text-slate-500 mb-1">Email</p>
-                                    <p className="text-sm text-slate-200">{institution.contact_email}</p>
+                                    <p className="text-xs text-ink-muted mb-1">Email</p>
+                                    <p className="text-sm text-ink">{institution.contact_email}</p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-800/30">
-                                <Phone className="h-5 w-5 text-slate-400 flex-shrink-0 mt-0.5" />
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted">
+                                <Phone className="h-5 w-5 text-ink-muted flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-xs text-slate-500 mb-1">Phone</p>
-                                    <p className="text-sm text-slate-200">{institution.contact_phone}</p>
+                                    <p className="text-xs text-ink-muted mb-1">Phone</p>
+                                    <p className="text-sm text-ink">{institution.contact_phone}</p>
                                 </div>
                             </div>
                         </div>
@@ -200,11 +200,11 @@ export default function InstitutionDetailPage() {
                 </Card>
 
                 {/* Franchise Admin */}
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardHeader>
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-white flex items-center gap-2">
-                                <UserPlus className="h-5 w-5 text-purple-400" />
+                            <CardTitle className="text-ink flex items-center gap-2">
+                                <UserPlus className="h-5 w-5 text-primary" />
                                 Franchise Admin
                             </CardTitle>
                             {!hasAdmin && (
@@ -213,7 +213,7 @@ export default function InstitutionDetailPage() {
                                         // Will open create admin dialog
                                         toast.info('Create admin dialog will open here');
                                     }}
-                                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500"
+                                    className="bg-primary"
                                 >
                                     <UserPlus className="h-4 w-4 mr-2" />
                                     Create Admin
@@ -224,37 +224,37 @@ export default function InstitutionDetailPage() {
                     <CardContent>
                         {hasAdmin ? (
                             <div className="space-y-4">
-                                <div className="flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-purple-600/10 to-blue-600/10 border border-purple-500/20">
-                                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-accent-soft border border-line">
+                                    <div className="h-12 w-12 rounded-full bg-accent-soft flex items-center justify-center text-ink font-semibold text-lg">
                                         {institution.director_name.charAt(0)}
                                     </div>
                                     <div className="flex-1">
-                                        <p className="font-semibold text-white">{institution.director_name}</p>
-                                        <p className="text-sm text-slate-400">Franchise Administrator</p>
+                                        <p className="font-semibold text-ink">{institution.director_name}</p>
+                                        <p className="text-sm text-ink-muted">Franchise Administrator</p>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2 text-sm">
-                                        <Mail className="h-4 w-4 text-slate-500" />
-                                        <span className="text-slate-300">{institution.director_email}</span>
+                                        <Mail className="h-4 w-4 text-ink-muted" />
+                                        <span className="text-ink">{institution.director_email}</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-sm">
-                                        <Phone className="h-4 w-4 text-slate-500" />
-                                        <span className="text-slate-300">{institution.director_phone}</span>
+                                        <Phone className="h-4 w-4 text-ink-muted" />
+                                        <span className="text-ink">{institution.director_phone}</span>
                                     </div>
                                 </div>
                                 <div className="pt-2 flex gap-2">
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                                        className="border-line text-ink hover:bg-muted"
                                     >
                                         Edit Admin
                                     </Button>
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                                        className="border-line text-danger hover:bg-danger/10"
                                     >
                                         Remove Admin
                                     </Button>
@@ -262,13 +262,13 @@ export default function InstitutionDetailPage() {
                             </div>
                         ) : (
                             <div className="py-8 text-center">
-                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-800/50 mb-4">
-                                    <UserPlus className="h-8 w-8 text-slate-500" />
+                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                                    <UserPlus className="h-8 w-8 text-ink-muted" />
                                 </div>
-                                <p className="text-slate-400 mb-4">
+                                <p className="text-ink-muted mb-4">
                                     No franchise admin assigned yet
                                 </p>
-                                <p className="text-sm text-slate-500">
+                                <p className="text-sm text-ink-muted">
                                     Create an admin account to manage this institution
                                 </p>
                             </div>
@@ -280,15 +280,15 @@ export default function InstitutionDetailPage() {
             {/* Staff & Students Lists */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Staff List */}
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardHeader>
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-white flex items-center gap-2">
-                                <Users className="h-5 w-5 text-purple-400" />
+                            <CardTitle className="text-ink flex items-center gap-2">
+                                <Users className="h-5 w-5 text-primary" />
                                 Staff Members ({mockStaff.length})
                             </CardTitle>
                             <Link href={`/dashboard/staff?institution=${institutionId}`}>
-                                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
+                                <Button variant="ghost" size="sm" className="text-ink-muted hover:text-ink">
                                     View All
                                 </Button>
                             </Link>
@@ -299,15 +299,15 @@ export default function InstitutionDetailPage() {
                             {mockStaff.map((staff) => (
                                 <div
                                     key={staff.id}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 hover:bg-slate-800/50 transition-colors"
+                                    className="flex items-center justify-between p-3 rounded-lg bg-muted hover:bg-muted transition-colors"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-medium">
+                                        <div className="h-10 w-10 rounded-full bg-accent-soft flex items-center justify-center text-ink font-medium">
                                             {staff.name.charAt(0)}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium text-white">{staff.name}</p>
-                                            <p className="text-xs text-slate-400">{staff.role}</p>
+                                            <p className="text-sm font-medium text-ink">{staff.name}</p>
+                                            <p className="text-xs text-ink-muted">{staff.role}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -317,15 +317,15 @@ export default function InstitutionDetailPage() {
                 </Card>
 
                 {/* Recent Students */}
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardHeader>
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-white flex items-center gap-2">
-                                <GraduationCap className="h-5 w-5 text-blue-400" />
+                            <CardTitle className="text-ink flex items-center gap-2">
+                                <GraduationCap className="h-5 w-5 text-primary" />
                                 Recent Students ({mockStudents.length})
                             </CardTitle>
                             <Link href={`/dashboard/students?institution=${institutionId}`}>
-                                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
+                                <Button variant="ghost" size="sm" className="text-ink-muted hover:text-ink">
                                     View All
                                 </Button>
                             </Link>
@@ -336,18 +336,18 @@ export default function InstitutionDetailPage() {
                             {mockStudents.map((student) => (
                                 <div
                                     key={student.id}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 hover:bg-slate-800/50 transition-colors"
+                                    className="flex items-center justify-between p-3 rounded-lg bg-muted hover:bg-muted transition-colors"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white font-medium">
+                                        <div className="h-10 w-10 rounded-full bg-accent-soft flex items-center justify-center text-ink font-medium">
                                             {student.name.charAt(0)}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium text-white">{student.name}</p>
-                                            <p className="text-xs text-slate-400">{student.course}</p>
+                                            <p className="text-sm font-medium text-ink">{student.name}</p>
+                                            <p className="text-xs text-ink-muted">{student.course}</p>
                                         </div>
                                     </div>
-                                    <span className="text-xs text-slate-500">{student.enrollment_date}</span>
+                                    <span className="text-xs text-ink-muted">{student.enrollment_date}</span>
                                 </div>
                             ))}
                         </div>

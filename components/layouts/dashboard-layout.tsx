@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth/auth-context';
 import {
+    Home,
     LayoutDashboard,
     Building2,
     GraduationCap,
@@ -230,8 +231,15 @@ function Header() {
                 <h1 className="font-serif text-lg font-semibold text-ink">{pageTitle}</h1>
             </div>
 
-            {/* User menu */}
-            <div className="flex items-center gap-4">
+            {/* Home + user menu */}
+            <div className="flex items-center gap-2">
+                <Link
+                    href="/"
+                    className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-ink-muted transition-colors hover:bg-muted hover:text-ink"
+                >
+                    <Home className="h-4 w-4" />
+                    <span className="hidden sm:inline">Home</span>
+                </Link>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="flex items-center gap-2 text-ink">

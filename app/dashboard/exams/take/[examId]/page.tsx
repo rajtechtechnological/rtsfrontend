@@ -212,8 +212,8 @@ export default function TakeExamPage() {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
-                <Loader2 className="h-12 w-12 animate-spin text-blue-400 mb-4" />
-                <p className="text-slate-400">Loading exam...</p>
+                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                <p className="text-ink-muted">Loading exam...</p>
             </div>
         );
     }
@@ -221,8 +221,8 @@ export default function TakeExamPage() {
     if (!examData) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
-                <AlertTriangle className="h-12 w-12 text-red-400 mb-4" />
-                <p className="text-slate-400">Failed to load exam</p>
+                <AlertTriangle className="h-12 w-12 text-danger mb-4" />
+                <p className="text-ink-muted">Failed to load exam</p>
                 <Button onClick={() => router.push('/dashboard/exams')} className="mt-4">
                     Go Back
                 </Button>
@@ -235,19 +235,19 @@ export default function TakeExamPage() {
     const progress = (answeredCount / examData.total_questions) * 100;
 
     return (
-        <div className="min-h-screen bg-slate-950 pb-24">
+        <div className="min-h-screen bg-paper pb-24">
             {/* Header */}
-            <div className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 px-4 py-3">
+            <div className="sticky top-0 z-50 bg-surface border-b border-line px-4 py-3">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">
                     <div>
-                        <h1 className="text-lg font-semibold text-white">{examData.exam_title}</h1>
-                        <p className="text-sm text-slate-400">
+                        <h1 className="text-lg font-semibold text-ink">{examData.exam_title}</h1>
+                        <p className="text-sm text-ink-muted">
                             Question {currentIndex + 1} of {examData.total_questions}
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
                         {isSaving && (
-                            <span className="text-xs text-slate-400 flex items-center gap-1">
+                            <span className="text-xs text-ink-muted flex items-center gap-1">
                                 <Loader2 className="h-3 w-3 animate-spin" />
                                 Saving...
                             </span>
@@ -255,8 +255,8 @@ export default function TakeExamPage() {
                         <Badge
                             className={`flex items-center gap-1 px-3 py-1.5 ${
                                 timeRemaining <= 300
-                                    ? 'bg-red-500/20 text-red-400 border-red-500/30'
-                                    : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                                    ? 'bg-danger/10 text-danger border-line'
+                                    : 'bg-accent-soft text-primary border-line'
                             }`}
                         >
                             <Clock className="h-4 w-4" />
@@ -270,23 +270,23 @@ export default function TakeExamPage() {
                 {/* Progress */}
                 <div className="mb-6">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-slate-400">
+                        <span className="text-sm text-ink-muted">
                             {answeredCount} of {examData.total_questions} answered
                         </span>
-                        <span className="text-sm text-slate-400">{progress.toFixed(0)}%</span>
+                        <span className="text-sm text-ink-muted">{progress.toFixed(0)}%</span>
                     </div>
                     <Progress value={progress} className="h-2" />
                 </div>
 
                 {/* Question Card */}
-                <Card className="bg-slate-900 border-slate-800 mb-6">
+                <Card className="bg-surface border-line mb-6">
                     <CardHeader>
                         <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
-                                <Badge variant="outline" className="text-slate-400 border-slate-600">
+                                <Badge variant="outline" className="text-ink-muted border-line">
                                     Q{currentIndex + 1}
                                 </Badge>
-                                <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/30">
+                                <Badge className="bg-accent-soft text-primary border-line">
                                     {currentQuestion.marks} {currentQuestion.marks === 1 ? 'mark' : 'marks'}
                                 </Badge>
                             </div>
@@ -297,7 +297,7 @@ export default function TakeExamPage() {
                                 className={`${
                                     markedForReview.has(currentQuestion.id)
                                         ? 'text-yellow-400 hover:text-yellow-300'
-                                        : 'text-slate-400 hover:text-white'
+                                        : 'text-ink-muted hover:text-ink'
                                 }`}
                             >
                                 <Flag className="h-4 w-4 mr-1" />
@@ -306,7 +306,7 @@ export default function TakeExamPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-lg text-white mb-6 whitespace-pre-wrap">
+                        <p className="text-lg text-ink mb-6 whitespace-pre-wrap">
                             {currentQuestion.question_text}
                         </p>
 
@@ -322,16 +322,16 @@ export default function TakeExamPage() {
                                         onClick={() => handleOptionSelect(option)}
                                         className={`w-full text-left p-4 rounded-lg border transition-all ${
                                             isSelected
-                                                ? 'bg-blue-500/20 border-blue-500 text-white'
-                                                : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-600 hover:bg-slate-800'
+                                                ? 'bg-accent-soft border-primary text-ink'
+                                                : 'bg-muted border-line text-ink hover:border-primary/40 hover:bg-muted'
                                         }`}
                                     >
                                         <div className="flex items-start gap-3">
                                             <span
                                                 className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                                                     isSelected
-                                                        ? 'bg-blue-500 text-white'
-                                                        : 'bg-slate-700 text-slate-300'
+                                                        ? 'bg-primary text-primary-foreground'
+                                                        : 'bg-muted text-ink'
                                                 }`}
                                             >
                                                 {option}
@@ -346,9 +346,9 @@ export default function TakeExamPage() {
                 </Card>
 
                 {/* Question Palette */}
-                <Card className="bg-slate-900 border-slate-800 mb-6">
+                <Card className="bg-surface border-line mb-6">
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-sm text-slate-400">Question Palette</CardTitle>
+                        <CardTitle className="text-sm text-ink-muted">Question Palette</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-wrap gap-2 mb-4">
@@ -360,14 +360,14 @@ export default function TakeExamPage() {
                                         onClick={() => goToQuestion(idx)}
                                         className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
                                             idx === currentIndex
-                                                ? 'ring-2 ring-blue-500'
+                                                ? 'ring-2 ring-primary'
                                                 : ''
                                         } ${
                                             status === 'answered'
-                                                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                                ? 'bg-accent-soft text-primary border border-line'
                                                 : status === 'review'
                                                 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                                                : 'bg-slate-800 text-slate-400 border border-slate-700'
+                                                : 'bg-muted text-ink-muted border border-line'
                                         }`}
                                     >
                                         {idx + 1}
@@ -375,9 +375,9 @@ export default function TakeExamPage() {
                                 );
                             })}
                         </div>
-                        <div className="flex flex-wrap gap-4 text-xs text-slate-400">
+                        <div className="flex flex-wrap gap-4 text-xs text-ink-muted">
                             <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 rounded bg-green-500/20 border border-green-500/30" />
+                                <div className="w-4 h-4 rounded bg-accent-soft border border-line" />
                                 <span>Answered</span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -385,7 +385,7 @@ export default function TakeExamPage() {
                                 <span>Marked for Review</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 rounded bg-slate-800 border border-slate-700" />
+                                <div className="w-4 h-4 rounded bg-muted border border-line" />
                                 <span>Not Answered</span>
                             </div>
                         </div>
@@ -394,13 +394,13 @@ export default function TakeExamPage() {
             </div>
 
             {/* Footer Navigation */}
-            <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 px-4 py-4">
+            <div className="fixed bottom-0 left-0 right-0 bg-surface border-t border-line px-4 py-4">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">
                     <Button
                         variant="outline"
                         onClick={() => goToQuestion(currentIndex - 1)}
                         disabled={currentIndex === 0}
-                        className="border-slate-700 text-slate-300"
+                        className="border-line text-ink"
                     >
                         <ChevronLeft className="h-4 w-4 mr-1" />
                         Previous
@@ -408,7 +408,7 @@ export default function TakeExamPage() {
 
                     <Button
                         onClick={() => setShowSubmitDialog(true)}
-                        className="bg-gradient-to-r from-green-600 to-emerald-600 text-white"
+                        className="bg-primary text-primary-foreground"
                     >
                         <Send className="h-4 w-4 mr-2" />
                         Submit Exam
@@ -418,7 +418,7 @@ export default function TakeExamPage() {
                         variant="outline"
                         onClick={() => goToQuestion(currentIndex + 1)}
                         disabled={currentIndex === examData.total_questions - 1}
-                        className="border-slate-700 text-slate-300"
+                        className="border-line text-ink"
                     >
                         Next
                         <ChevronRight className="h-4 w-4 ml-1" />
@@ -428,10 +428,10 @@ export default function TakeExamPage() {
 
             {/* Submit Confirmation Dialog */}
             <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
-                <AlertDialogContent className="bg-slate-900 border-slate-800">
+                <AlertDialogContent className="bg-surface border-line">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-white">Submit Exam?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-400">
+                        <AlertDialogTitle className="text-ink">Submit Exam?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-ink-muted">
                             <div className="space-y-2 mt-2">
                                 <p>You have answered {answeredCount} of {examData.total_questions} questions.</p>
                                 {examData.total_questions - answeredCount > 0 && (
@@ -451,13 +451,13 @@ export default function TakeExamPage() {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel className="border-slate-700 text-slate-300 hover:bg-slate-800">
+                        <AlertDialogCancel className="border-line text-ink hover:bg-muted">
                             Continue Exam
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={submitExam}
                             disabled={isSubmitting}
-                            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white"
+                            className="bg-primary text-primary-foreground"
                         >
                             {isSubmitting ? (
                                 <>

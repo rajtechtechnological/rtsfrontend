@@ -240,7 +240,7 @@ export default function MarksEntryPage() {
     const getStatusBadge = (progress: ModuleProgress) => {
         if (progress.marks_obtained === null) {
             return (
-                <Badge className="bg-slate-500/10 text-slate-400 border-slate-500/30 border">
+                <Badge className="bg-muted text-ink-muted border-line border">
                     Not Attempted
                 </Badge>
             );
@@ -248,7 +248,7 @@ export default function MarksEntryPage() {
 
         if (progress.passed) {
             return (
-                <Badge className="bg-green-500/10 text-green-400 border-green-500/30 border flex items-center gap-1">
+                <Badge className="bg-accent-soft text-primary border-line border flex items-center gap-1">
                     <CheckCircle className="h-3 w-3" />
                     Passed
                 </Badge>
@@ -256,7 +256,7 @@ export default function MarksEntryPage() {
         }
 
         return (
-            <Badge className="bg-red-500/10 text-red-400 border-red-500/30 border flex items-center gap-1">
+            <Badge className="bg-danger/10 text-danger border-line border flex items-center gap-1">
                 <XCircle className="h-3 w-3" />
                 Failed
             </Badge>
@@ -267,34 +267,34 @@ export default function MarksEntryPage() {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+                <h1 className="text-3xl font-bold text-ink flex items-center gap-2">
                     <Award className="h-8 w-8 text-yellow-500" />
                     Marks Entry
                 </h1>
-                <p className="text-slate-400 mt-1">Enter exam marks for students by module</p>
+                <p className="text-ink-muted mt-1">Enter exam marks for students by module</p>
             </div>
 
             {/* Course and Module Selection */}
-            <Card className="bg-slate-900 border-slate-800">
+            <Card className="bg-surface border-line">
                 <CardHeader>
-                    <CardTitle className="text-white">Select Course & Module</CardTitle>
+                    <CardTitle className="text-ink">Select Course & Module</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Course Selection */}
                         <div className="space-y-2">
-                            <Label className="text-slate-300">Course</Label>
+                            <Label className="text-ink">Course</Label>
                             <Select
                                 value={selectedCourse}
                                 onValueChange={setSelectedCourse}
                                 disabled={isLoadingCourses}
                             >
-                                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                                <SelectTrigger className="bg-muted border-line text-ink">
                                     <SelectValue placeholder="Select a course" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-slate-900 border-slate-800">
+                                <SelectContent className="bg-surface border-line">
                                     {courses.map((course) => (
-                                        <SelectItem key={course.id} value={course.id} className="text-white hover:bg-slate-800">
+                                        <SelectItem key={course.id} value={course.id} className="text-ink hover:bg-muted">
                                             {course.name}
                                         </SelectItem>
                                     ))}
@@ -304,18 +304,18 @@ export default function MarksEntryPage() {
 
                         {/* Module Selection */}
                         <div className="space-y-2">
-                            <Label className="text-slate-300">Module</Label>
+                            <Label className="text-ink">Module</Label>
                             <Select
                                 value={selectedModule}
                                 onValueChange={setSelectedModule}
                                 disabled={!selectedCourse || isLoadingModules}
                             >
-                                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                                <SelectTrigger className="bg-muted border-line text-ink">
                                     <SelectValue placeholder="Select a module" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-slate-900 border-slate-800">
+                                <SelectContent className="bg-surface border-line">
                                     {modules.map((module) => (
-                                        <SelectItem key={module.id} value={module.id} className="text-white hover:bg-slate-800">
+                                        <SelectItem key={module.id} value={module.id} className="text-ink hover:bg-muted">
                                             Module {module.module_number}: {module.module_name}
                                         </SelectItem>
                                     ))}
@@ -325,15 +325,15 @@ export default function MarksEntryPage() {
                     </div>
 
                     {selectedModuleData && (
-                        <div className="bg-slate-800/50 rounded-lg p-4 flex items-center justify-between">
+                        <div className="bg-muted rounded-lg p-4 flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-slate-400">Selected Module</p>
-                                <p className="text-white font-semibold">{selectedModuleData.module_name}</p>
-                                <p className="text-sm text-slate-400">
+                                <p className="text-sm text-ink-muted">Selected Module</p>
+                                <p className="text-ink font-semibold">{selectedModuleData.module_name}</p>
+                                <p className="text-sm text-ink-muted">
                                     {selectedModuleData.lesson_count} lessons • Total Marks: {selectedModuleData.total_marks} • Passing: {selectedModuleData.passing_marks}
                                 </p>
                             </div>
-                            <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/30 border">
+                            <Badge className="bg-accent-soft text-primary border-line border">
                                 {studentProgress.length} students enrolled
                             </Badge>
                         </div>
@@ -343,17 +343,17 @@ export default function MarksEntryPage() {
 
             {/* Student List & Marks Entry */}
             {selectedModule && (
-                <Card className="bg-slate-900 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardHeader>
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-white">Student Marks</CardTitle>
+                            <CardTitle className="text-ink">Student Marks</CardTitle>
                             <div className="relative w-64">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
                                 <Input
                                     placeholder="Search students..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10 bg-slate-800 border-slate-700 text-white"
+                                    className="pl-10 bg-muted border-line text-ink"
                                 />
                             </div>
                         </div>
@@ -361,38 +361,38 @@ export default function MarksEntryPage() {
                     <CardContent>
                         {isLoadingProgress ? (
                             <div className="flex items-center justify-center py-12">
-                                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
                             </div>
                         ) : filteredProgress.length === 0 ? (
                             <div className="text-center py-12">
-                                <BookOpen className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                                <p className="text-slate-400">No students enrolled in this module</p>
+                                <BookOpen className="h-12 w-12 text-ink-muted mx-auto mb-4" />
+                                <p className="text-ink-muted">No students enrolled in this module</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="border-slate-800">
-                                            <TableHead className="text-slate-400">Student ID</TableHead>
-                                            <TableHead className="text-slate-400">Name</TableHead>
-                                            <TableHead className="text-slate-400">Current Status</TableHead>
-                                            <TableHead className="text-slate-400">Marks ({selectedModuleData?.total_marks})</TableHead>
-                                            <TableHead className="text-slate-400">Notes</TableHead>
-                                            <TableHead className="text-slate-400 text-right">Action</TableHead>
+                                        <TableRow className="border-line">
+                                            <TableHead className="text-ink-muted">Student ID</TableHead>
+                                            <TableHead className="text-ink-muted">Name</TableHead>
+                                            <TableHead className="text-ink-muted">Current Status</TableHead>
+                                            <TableHead className="text-ink-muted">Marks ({selectedModuleData?.total_marks})</TableHead>
+                                            <TableHead className="text-ink-muted">Notes</TableHead>
+                                            <TableHead className="text-ink-muted text-right">Action</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {filteredProgress.map((progress) => (
-                                            <TableRow key={progress.id} className="border-slate-800">
-                                                <TableCell className="text-slate-300 font-mono">
+                                            <TableRow key={progress.id} className="border-line">
+                                                <TableCell className="text-ink font-mono">
                                                     {progress.student.student_id}
                                                 </TableCell>
                                                 <TableCell>
                                                     <div>
-                                                        <p className="text-white font-medium">
+                                                        <p className="text-ink font-medium">
                                                             {progress.student.user.full_name}
                                                         </p>
-                                                        <p className="text-sm text-slate-400">
+                                                        <p className="text-sm text-ink-muted">
                                                             {progress.student.user.email}
                                                         </p>
                                                     </div>
@@ -401,7 +401,7 @@ export default function MarksEntryPage() {
                                                     <div className="space-y-1">
                                                         {getStatusBadge(progress)}
                                                         {progress.marks_obtained !== null && (
-                                                            <p className="text-sm text-slate-400">
+                                                            <p className="text-sm text-ink-muted">
                                                                 Score: {progress.marks_obtained}/{selectedModuleData?.total_marks}
                                                             </p>
                                                         )}
@@ -416,7 +416,7 @@ export default function MarksEntryPage() {
                                                         placeholder="Enter marks"
                                                         value={marksData[progress.student_id]?.marks ?? progress.marks_obtained ?? ''}
                                                         onChange={(e) => handleMarksChange(progress.student_id, e.target.value)}
-                                                        className="w-24 bg-slate-800 border-slate-700 text-white"
+                                                        className="w-24 bg-muted border-line text-ink"
                                                     />
                                                 </TableCell>
                                                 <TableCell>
@@ -424,7 +424,7 @@ export default function MarksEntryPage() {
                                                         placeholder="Optional notes"
                                                         value={marksData[progress.student_id]?.notes ?? progress.notes ?? ''}
                                                         onChange={(e) => handleNotesChange(progress.student_id, e.target.value)}
-                                                        className="w-48 bg-slate-800 border-slate-700 text-white"
+                                                        className="w-48 bg-muted border-line text-ink"
                                                     />
                                                 </TableCell>
                                                 <TableCell className="text-right">
@@ -432,7 +432,7 @@ export default function MarksEntryPage() {
                                                         size="sm"
                                                         onClick={() => handleSaveMarks(progress.student_id, selectedModule)}
                                                         disabled={savingMarks === progress.student_id || !marksData[progress.student_id]?.marks}
-                                                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
+                                                        className="bg-primary"
                                                     >
                                                         {savingMarks === progress.student_id ? (
                                                             <>

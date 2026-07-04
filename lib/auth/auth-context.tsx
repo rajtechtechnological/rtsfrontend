@@ -9,7 +9,7 @@ interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
-    login: (data: LoginRequest) => Promise<void>;
+    login: (data: LoginRequest) => Promise<User>;
     logout: () => void;
     hasRole: (roles: UserRole | UserRole[]) => boolean;
     refreshUser: () => Promise<void>;
@@ -30,18 +30,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                 if (token && storedUser) {
                     setUser(JSON.parse(storedUser));
-                    // TODO: Re-enable when backend is connected
-                    // Verify token is still valid by fetching user
-                    // try {
-                    //     const response = await authApi.me();
-                    //     setUser(response.data);
-                    //     localStorage.setItem('user', JSON.stringify(response.data));
-                    // } catch {
-                    //     // Token invalid, clear storage
-                    //     localStorage.removeItem('access_token');
-                    //     localStorage.removeItem('user');
-                    //     setUser(null);
-                    // }
+                    // Verify the session is still valid server-side. An expired
+                    // access token is refreshed transparently by the apiClient
+                    // interceptor; only a definitive rejection ends the session
+                    // (a network hiccup should not log the user out).
+                    try {
+                        const response = await authApi.me();
+                        setUser(response.data);
+                        localStorage.setItem('user', JSON.stringify(response.data));
+                    } catch (error) {
+                        const status = (error as AxiosError).response?.status;
+                        if (status === 401 || status === 403) {
+                            localStorage.removeItem('access_token');
+                            localStorage.removeItem('user');
+                            setUser(null);
+                        }
+                    }
                 }
             } catch (error) {
                 console.error('Auth initialization error:', error);
@@ -61,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('access_token', access_token);
             localStorage.setItem('user', JSON.stringify(userData));
             setUser(userData);
+            return userData;
         } catch (error) {
             const axiosError = error as AxiosError<{ detail: string }>;
             throw new Error(axiosError.response?.data?.detail || 'Login failed');

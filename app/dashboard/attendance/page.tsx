@@ -49,26 +49,26 @@ const statusConfig: Record<AttendanceStatus, { label: string; icon: React.Elemen
     present: {
         label: 'Present',
         icon: Check,
-        className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-        color: 'text-emerald-400',
+        className: 'bg-accent-soft text-success border-success/30',
+        color: 'text-success',
     },
     absent: {
         label: 'Absent',
         icon: X,
-        className: 'bg-red-500/10 text-red-400 border-red-500/30',
-        color: 'text-red-400',
+        className: 'bg-danger/10 text-danger border-line',
+        color: 'text-danger',
     },
     half_day: {
         label: 'Half Day',
         icon: Clock,
-        className: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-        color: 'text-amber-400',
+        className: 'bg-warning/10 text-warning border-line',
+        color: 'text-warning',
     },
     leave: {
         label: 'Leave',
         icon: Palmtree,
-        className: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
-        color: 'text-sky-400',
+        className: 'bg-accent-soft text-primary border-line',
+        color: 'text-primary',
     },
 };
 
@@ -115,21 +115,21 @@ function MarkAttendanceDialog({
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="bg-slate-900 border-slate-800 sm:max-w-md">
+            <DialogContent className="bg-surface border-line sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-white flex items-center gap-2">
-                        <UserCheck className="h-5 w-5 text-emerald-400" />
+                    <DialogTitle className="text-ink flex items-center gap-2">
+                        <UserCheck className="h-5 w-5 text-success" />
                         Mark Your Attendance
                     </DialogTitle>
-                    <DialogDescription className="text-slate-400">
+                    <DialogDescription className="text-ink-muted">
                         Hello {staffName}, please mark your attendance for today
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
                     <div className="text-center mb-4">
-                        <p className="text-sm text-slate-400">Today's Date</p>
-                        <p className="text-lg font-semibold text-white">
+                        <p className="text-sm text-ink-muted">Today's Date</p>
+                        <p className="text-lg font-semibold text-ink">
                             {new Date().toLocaleDateString('en-IN', {
                                 weekday: 'long',
                                 day: 'numeric',
@@ -151,8 +151,8 @@ function MarkAttendanceDialog({
                                     onClick={() => setSelectedStatus(status)}
                                     className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
                                         isSelected
-                                            ? config.className + ' ring-2 ring-offset-2 ring-offset-slate-900'
-                                            : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:border-slate-600'
+                                            ? config.className + ' ring-2 ring-offset-2 ring-offset-surface'
+                                            : 'bg-muted border-line text-ink-muted hover:border-primary/40'
                                     }`}
                                 >
                                     <Icon className="h-6 w-6" />
@@ -165,7 +165,7 @@ function MarkAttendanceDialog({
                     <Button
                         onClick={handleSubmit}
                         disabled={!selectedStatus || isSubmitting}
-                        className="w-full bg-gradient-to-r from-red-600 to-sky-600 hover:from-red-500 hover:to-sky-500 text-white font-semibold shadow-lg mt-4"
+                        className="w-full bg-primary text-primary-foreground font-semibold shadow-lg mt-4"
                     >
                         {isSubmitting ? 'Submitting...' : 'Submit Attendance'}
                     </Button>
@@ -216,13 +216,13 @@ function EditAttendanceDialog({
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="bg-slate-900 border-slate-800 sm:max-w-md">
+            <DialogContent className="bg-surface border-line sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-white flex items-center gap-2">
-                        <Edit className="h-5 w-5 text-amber-400" />
+                    <DialogTitle className="text-ink flex items-center gap-2">
+                        <Edit className="h-5 w-5 text-warning" />
                         Edit Attendance
                     </DialogTitle>
-                    <DialogDescription className="text-slate-400">
+                    <DialogDescription className="text-ink-muted">
                         Updating attendance for {staff.full_name}
                     </DialogDescription>
                 </DialogHeader>
@@ -240,8 +240,8 @@ function EditAttendanceDialog({
                                     onClick={() => setSelectedStatus(status)}
                                     className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
                                         isSelected
-                                            ? config.className + ' ring-2 ring-offset-2 ring-offset-slate-900'
-                                            : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:border-slate-600'
+                                            ? config.className + ' ring-2 ring-offset-2 ring-offset-surface'
+                                            : 'bg-muted border-line text-ink-muted hover:border-primary/40'
                                     }`}
                                 >
                                     <Icon className="h-6 w-6" />
@@ -254,7 +254,7 @@ function EditAttendanceDialog({
                     <Button
                         onClick={handleSubmit}
                         disabled={!selectedStatus || isSubmitting}
-                        className="w-full bg-gradient-to-r from-red-600 to-sky-600 hover:from-red-500 hover:to-sky-500 text-white font-semibold shadow-lg mt-4"
+                        className="w-full bg-primary text-primary-foreground font-semibold shadow-lg mt-4"
                     >
                         {isSubmitting ? 'Updating...' : 'Update Attendance'}
                     </Button>
@@ -362,7 +362,7 @@ export default function AttendancePage() {
         if (isLoading) {
             return (
                 <div className="flex items-center justify-center h-64">
-                    <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
+                    <Loader2 className="h-8 w-8 animate-spin text-success" />
                 </div>
             );
         }
@@ -378,19 +378,19 @@ export default function AttendancePage() {
 
                 <div className="space-y-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                            <CalendarCheck className="h-7 w-7 text-emerald-400" />
+                        <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+                            <CalendarCheck className="h-7 w-7 text-success" />
                             My Attendance
                         </h1>
-                        <p className="text-slate-400 mt-1">Your attendance for today</p>
+                        <p className="text-ink-muted mt-1">Your attendance for today</p>
                     </div>
 
-                    <Card className="bg-slate-900/50 border-slate-800">
+                    <Card className="bg-surface border-line">
                         <CardContent className="p-6">
                             <div className="text-center space-y-4">
-                                <div className="p-4 rounded-lg bg-slate-800/50">
-                                    <p className="text-sm text-slate-400">Today's Date</p>
-                                    <p className="text-lg font-semibold text-white mt-1">{todayStr}</p>
+                                <div className="p-4 rounded-lg bg-muted">
+                                    <p className="text-sm text-ink-muted">Today's Date</p>
+                                    <p className="text-lg font-semibold text-ink mt-1">{todayStr}</p>
                                 </div>
 
                                 {myAttendance?.attendance_status ? (
@@ -404,14 +404,14 @@ export default function AttendancePage() {
                                                 {statusConfig[myAttendance.attendance_status].label}
                                             </span>
                                         </div>
-                                        <div className="flex items-center justify-center gap-2 text-emerald-400">
+                                        <div className="flex items-center justify-center gap-2 text-success">
                                             <CheckCircle2 className="h-5 w-5" />
                                             <span className="text-sm">Marked at {myAttendance.marked_at}</span>
                                         </div>
                                         <Button
                                             onClick={() => setShowMarkDialog(true)}
                                             variant="outline"
-                                            className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                                            className="border-line text-ink hover:bg-muted"
                                         >
                                             <Edit className="h-4 w-4 mr-2" />
                                             Update Attendance
@@ -419,13 +419,13 @@ export default function AttendancePage() {
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-center gap-2 text-amber-400">
+                                        <div className="flex items-center justify-center gap-2 text-warning">
                                             <AlertCircle className="h-5 w-5" />
                                             <span>Not marked yet</span>
                                         </div>
                                         <Button
                                             onClick={() => setShowMarkDialog(true)}
-                                            className="bg-gradient-to-r from-red-600 to-sky-600 hover:from-red-500 hover:to-sky-500 text-white"
+                                            className="bg-primary text-primary-foreground"
                                         >
                                             Mark Attendance Now
                                         </Button>
@@ -453,17 +453,17 @@ export default function AttendancePage() {
 
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <CalendarCheck className="h-7 w-7 text-emerald-400" />
+                    <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+                        <CalendarCheck className="h-7 w-7 text-success" />
                         Staff Attendance
                     </h1>
-                    <p className="text-slate-400 mt-1">View and manage staff attendance</p>
+                    <p className="text-ink-muted mt-1">View and manage staff attendance</p>
                 </div>
 
                 {/* Date Display */}
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardContent className="p-4">
-                        <p className="text-center text-lg font-semibold text-white">{todayStr}</p>
+                        <p className="text-center text-lg font-semibold text-ink">{todayStr}</p>
                     </CardContent>
                 </Card>
 
@@ -473,71 +473,71 @@ export default function AttendancePage() {
                         const config = statusConfig[status];
                         const Icon = config.icon;
                         return (
-                            <Card key={status} className="bg-slate-900/50 border-slate-800">
+                            <Card key={status} className="bg-surface border-line">
                                 <CardContent className="p-4 flex items-center gap-3">
                                     <div className={`p-3 rounded-xl ${config.className.split(' ')[0]}`}>
                                         <Icon className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <p className="text-2xl font-bold text-white">{summary[status]}</p>
-                                        <p className="text-xs text-slate-400">{config.label}</p>
+                                        <p className="text-2xl font-bold text-ink">{summary[status]}</p>
+                                        <p className="text-xs text-ink-muted">{config.label}</p>
                                     </div>
                                 </CardContent>
                             </Card>
                         );
                     })}
-                    <Card className="bg-slate-900/50 border-slate-800">
+                    <Card className="bg-surface border-line">
                         <CardContent className="p-4 flex items-center gap-3">
-                            <div className="p-3 rounded-xl bg-slate-500/10">
-                                <AlertCircle className="h-5 w-5 text-slate-400" />
+                            <div className="p-3 rounded-xl bg-muted">
+                                <AlertCircle className="h-5 w-5 text-ink-muted" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-white">{summary.not_marked}</p>
-                                <p className="text-xs text-slate-400">Not Marked</p>
+                                <p className="text-2xl font-bold text-ink">{summary.not_marked}</p>
+                                <p className="text-xs text-ink-muted">Not Marked</p>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Staff Attendance Table */}
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card className="bg-surface border-line">
                     <CardHeader>
-                        <CardTitle className="text-white">Staff Attendance Records</CardTitle>
+                        <CardTitle className="text-ink">Staff Attendance Records</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="border-slate-800 hover:bg-transparent">
-                                        <TableHead className="text-slate-400">Staff Member</TableHead>
-                                        <TableHead className="text-slate-400">Status</TableHead>
-                                        <TableHead className="text-slate-400">Marked At</TableHead>
-                                        <TableHead className="text-slate-400">Actions</TableHead>
+                                    <TableRow className="border-line hover:bg-transparent">
+                                        <TableHead className="text-ink-muted">Staff Member</TableHead>
+                                        <TableHead className="text-ink-muted">Status</TableHead>
+                                        <TableHead className="text-ink-muted">Marked At</TableHead>
+                                        <TableHead className="text-ink-muted">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {isLoading ? (
                                         <TableRow>
                                             <TableCell colSpan={4} className="text-center py-12">
-                                                <Loader2 className="h-8 w-8 animate-spin text-emerald-400 mx-auto" />
+                                                <Loader2 className="h-8 w-8 animate-spin text-success mx-auto" />
                                             </TableCell>
                                         </TableRow>
                                     ) : staffList.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={4} className="text-center py-12">
-                                                <p className="text-slate-400">No staff members found</p>
+                                                <p className="text-ink-muted">No staff members found</p>
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         staffList.map((staff) => (
                                             <TableRow
                                                 key={staff.id}
-                                                className="border-slate-800 hover:bg-slate-800/50 transition-colors"
+                                                className="border-line hover:bg-muted transition-colors"
                                             >
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
                                                         <Avatar className="h-10 w-10 ring-2 ring-red-500/20">
-                                                            <AvatarFallback className="bg-gradient-to-br from-red-500 to-sky-600 text-white">
+                                                            <AvatarFallback className="bg-accent-soft text-ink">
                                                                 {staff.full_name
                                                                     .split(' ')
                                                                     .map((n) => n[0])
@@ -545,8 +545,8 @@ export default function AttendancePage() {
                                                             </AvatarFallback>
                                                         </Avatar>
                                                         <div>
-                                                            <p className="font-medium text-white">{staff.full_name}</p>
-                                                            <p className="text-sm text-slate-400 capitalize">
+                                                            <p className="font-medium text-ink">{staff.full_name}</p>
+                                                            <p className="text-sm text-ink-muted capitalize">
                                                                 {staff.role.replace('_', ' ')}
                                                             </p>
                                                         </div>
@@ -566,14 +566,14 @@ export default function AttendancePage() {
                                                             })()}
                                                         </Badge>
                                                     ) : (
-                                                        <Badge className="bg-slate-500/10 text-slate-400 border-slate-500/30">
+                                                        <Badge className="bg-muted text-ink-muted border-line">
                                                             <AlertCircle className="h-3 w-3 mr-1" />
                                                             Not Marked
                                                         </Badge>
                                                     )}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="text-slate-400 text-sm">
+                                                    <span className="text-ink-muted text-sm">
                                                         {staff.marked_at || '-'}
                                                     </span>
                                                 </TableCell>
@@ -582,7 +582,7 @@ export default function AttendancePage() {
                                                         size="sm"
                                                         variant="outline"
                                                         onClick={() => setEditingStaff({ id: staff.id, full_name: staff.full_name, status: staff.attendance_status })}
-                                                        className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                                                        className="border-line text-ink hover:bg-muted"
                                                     >
                                                         <Edit className="h-3 w-3 mr-1" />
                                                         Edit
