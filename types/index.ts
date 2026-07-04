@@ -37,24 +37,38 @@ export interface Course extends BaseEntity {
     institution_id: string | null;
 }
 
+// Batch entity (batches table — replaces the old batch_* string fields)
+export interface Batch extends BaseEntity {
+    institution_id: string;
+    name: string;
+    start_time: string;  // "HH:MM:SS"
+    end_time: string;    // "HH:MM:SS"
+    month: number;       // 1-12
+    year: number;
+    identifier: string;  // "A" | "B" | ...
+    is_active: boolean;
+}
+
+export type StudentStatus = 'active' | 'completed' | 'dropped';
+
 // Student entity
 export interface Student extends BaseEntity {
-    user_id: string;
+    user_id: string | null;
     institution_id: string;
+    batch_id: string;
     student_id: string;  // Format: RTS-INST-MM-YYYY-NNNN
+    status: StudentStatus;
     enrollment_date: string;
     address: string | null;
     date_of_birth: string | null;
+    father_name: string | null;
+    guardian_name: string | null;
+    guardian_phone: string | null;
     photo_url: string | null;
-    aadhar_number: string | null;
+    aadhar_number?: string | null;  // detail shape only (excluded from lists)
     apaar_id: string | null;
     last_qualification: string | null;
-    // Batch information
-    batch_time: string | null;  // e.g., "9AM-10AM"
-    batch_month: string | null;  // MM format
-    batch_year: string | null;  // YYYY format
-    batch_identifier: string | null;  // "A" or "B"
-    user?: User;
+    user?: User | null;
     course_enrollments?: StudentCourse[];
 }
 
@@ -70,16 +84,16 @@ export interface StudentCourse extends BaseEntity {
 
 // Fee Payment
 export interface FeePayment extends BaseEntity {
+    institution_id: string;
     student_id: string;
     course_id: string;
     amount: number;
-    payment_date: string;
+    paid_at: string;
     payment_method: string; // online, offline, cash, upi, card, bank_transfer
     transaction_id: string | null;
     receipt_number: string;
-    receipt_url: string | null;
     notes: string | null;
-    created_by: string;
+    recorded_by: string | null;
 }
 
 // Staff entity
@@ -165,13 +179,6 @@ export interface LoginRequest {
     password: string;
 }
 
-export interface SignupRequest {
-    email: string;
-    password: string;
-    full_name: string;
-    phone?: string;
-}
-
 export interface AuthResponse {
     access_token: string;
     token_type: string;
@@ -179,22 +186,59 @@ export interface AuthResponse {
 }
 
 // Form types for creating/updating entities
-export interface CreateStudentRequest {
-    email: string;
-    password: string;
+
+// Staff-driven student registration (creates user + student; server derives
+// institution_id from the caller's tenant context).
+export interface RegisterStudentRequest {
     full_name: string;
+    email: string;
     phone?: string;
-    address?: string;
+    batch_id: string;
     date_of_birth?: string;
+    father_name?: string;
+    guardian_name?: string;
+    guardian_phone?: string;
+    address?: string;
+    aadhar_number?: string;
+    apaar_id?: string;
+    last_qualification?: string;
+    course_id?: string;
 }
 
+export interface UpdateStudentRequest {
+    student_id?: string;
+    batch_id?: string;
+    status?: StudentStatus;
+    date_of_birth?: string;
+    father_name?: string;
+    guardian_name?: string;
+    guardian_phone?: string;
+    address?: string;
+    aadhar_number?: string;
+    apaar_id?: string;
+    last_qualification?: string;
+}
+
+export interface CreateBatchRequest {
+    name: string;
+    start_time: string;  // "HH:MM"
+    end_time: string;    // "HH:MM"
+    month: number;       // 1-12
+    year: number;
+    identifier?: string;
+}
+
+export interface UpdateBatchRequest extends Partial<CreateBatchRequest> {
+    is_active?: boolean;
+}
+
+// No institution_id — the server always derives it from the caller's tenant.
 export interface CreateStaffRequest {
     full_name: string;
     email: string;
     phone: string; // Required - used as default password
     role: 'staff' | 'staff_manager' | 'receptionist';
     daily_rate: number;
-    institution_id: string;
 }
 
 export interface CreateCourseRequest {
@@ -227,7 +271,6 @@ export interface GeneratePayrollRequest {
 }
 
 export interface EnrollStudentRequest {
-    student_id: string;
     course_id: string;
 }
 
@@ -235,7 +278,7 @@ export interface RecordPaymentRequest {
     student_id: string;
     course_id: string;
     amount: number;
-    payment_date?: string;
+    paid_at?: string;
     payment_method: string; // online, offline, cash, upi, card, bank_transfer
     transaction_id?: string; // Required for online/upi/card
     notes?: string;
@@ -273,10 +316,6 @@ export interface Exam {
     shuffle_questions: boolean;
     shuffle_options: boolean;
     show_result_immediately: boolean;
-    batch_time: string | null;
-    batch_month: string | null;
-    batch_year: string | null;
-    batch_identifier: string | null;
     created_by: string;
     created_at: string;
     updated_at: string | null;
@@ -291,6 +330,7 @@ export interface ExamDetail extends Exam {
 export interface Question {
     id: string;
     exam_id: string;
+    image_url?: string | null;
     question_text: string;
     option_a: string;
     option_b: string;
@@ -308,19 +348,17 @@ export interface ExamSchedule {
     id: string;
     exam_id: string;
     institution_id: string;
-    batch_time: string;
-    batch_identifier: string | null;
-    batch_month: string | null;
-    batch_year: string | null;
+    batch_id: string;  // a schedule targets exactly one batch
     scheduled_date: string;
     start_time: string;
     end_time: string;
     is_active: boolean;
     created_by: string;
     created_at: string;
-    exam_title?: string;
-    course_name?: string;
-    module_name?: string;
+    exam_title?: string | null;
+    course_name?: string | null;
+    module_name?: string | null;
+    batch_name?: string | null;
 }
 
 export interface ExamAttempt {
@@ -330,6 +368,7 @@ export interface ExamAttempt {
     attempt_number: number;
     status: 'in_progress' | 'completed' | 'submitted' | 'timed_out';
     start_time: string;
+    deadline_at: string;  // server-authoritative deadline (F-13)
     end_time: string | null;
     total_marks: number | null;
     obtained_marks: number | null;
@@ -373,14 +412,16 @@ export interface ExamAttemptStart {
     duration_minutes: number;
     total_questions: number;
     start_time: string;
-    end_time: string;
+    end_time: string;  // = deadline (kept for backward compat)
+    deadline: string;  // server-authoritative deadline_at (F-13)
     questions: ExamQuestion[];
 }
 
 export interface ExamQuestion {
     id: string;
-    index: number;
+    index: number | null;
     question_text: string;
+    image_url?: string | null;
     option_a: string;
     option_b: string;
     option_c: string;
@@ -395,7 +436,8 @@ export interface ExamAttemptState {
     status: string;
     current_question_index: number;
     total_questions: number;
-    time_remaining_seconds: number;
+    time_remaining_seconds: number;  // display hint only — deadline is authoritative
+    deadline: string;  // server-authoritative deadline_at (F-13)
     answers: Record<string, string | null>;
     marked_for_review: string[];
 }
@@ -422,6 +464,7 @@ export interface ExamResult {
     verified_at: string | null;
 }
 
+// Batch targeting lives on exam SCHEDULES, not on the exam itself.
 export interface CreateExamRequest {
     course_id: string;
     module_id: string;
@@ -434,10 +477,6 @@ export interface CreateExamRequest {
     shuffle_questions?: boolean;
     shuffle_options?: boolean;
     show_result_immediately?: boolean;
-    batch_time: string;
-    batch_month: string;
-    batch_year: string;
-    batch_identifier?: string;
 }
 
 export interface CreateQuestionRequest {
@@ -454,10 +493,7 @@ export interface CreateQuestionRequest {
 
 export interface CreateScheduleRequest {
     exam_id: string;
-    batch_time: string;
-    batch_identifier?: string;
-    batch_month?: string;
-    batch_year?: string;
+    batch_id: string;  // a schedule targets exactly one batch
     scheduled_date: string;
     start_time: string;
     end_time: string;

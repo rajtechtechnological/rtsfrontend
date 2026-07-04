@@ -59,7 +59,7 @@ export default function PaymentsPage() {
 
             // For students, first find their student record, then load their payments
             if (isStudent && user?.id) {
-                const studentsRes = await studentsApi.list({});
+                const studentsRes = await studentsApi.list();
                 const allStudents = studentsRes.data || [];
                 const studentRecord = allStudents.find((s: Student) => s.user_id === user.id);
 
@@ -78,7 +78,7 @@ export default function PaymentsPage() {
                 // Staff/Admin view - load all data
                 const [paymentsRes, studentsRes, coursesRes] = await Promise.all([
                     paymentsApi.list({ student_id: filterStudentId || undefined }),
-                    studentsApi.list({}),
+                    studentsApi.list(),
                     coursesApi.list(),
                 ]);
                 setPayments(paymentsRes.data);
@@ -210,7 +210,7 @@ export default function PaymentsPage() {
             key: 'date',
             header: 'Date',
             cell: (payment) =>
-                new Date(payment.payment_date).toLocaleDateString('en-IN', {
+                new Date(payment.paid_at).toLocaleDateString('en-IN', {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric',
@@ -488,8 +488,8 @@ export default function PaymentsPage() {
                                             <Label className={fieldLabelClass}>Payment Date</Label>
                                             <Input
                                                 type="date"
-                                                value={formData.payment_date || ''}
-                                                onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })}
+                                                value={formData.paid_at || ''}
+                                                onChange={(e) => setFormData({ ...formData, paid_at: e.target.value })}
                                             />
                                         </div>
                                     </div>

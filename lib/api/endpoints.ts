@@ -3,6 +3,7 @@ import type {
     User,
     Institution,
     Student,
+    Batch,
     Course,
     Staff,
     Attendance,
@@ -10,8 +11,10 @@ import type {
     Certificate,
     AuthResponse,
     LoginRequest,
-    SignupRequest,
-    CreateStudentRequest,
+    RegisterStudentRequest,
+    UpdateStudentRequest,
+    CreateBatchRequest,
+    UpdateBatchRequest,
     CreateStaffRequest,
     CreateCourseRequest,
     CreateInstitutionRequest,
@@ -43,14 +46,37 @@ export const authApi = {
     login: (data: LoginRequest) =>
         apiClient.post<AuthResponse>('/api/auth/login', data),
 
-    signup: (data: SignupRequest) =>
-        apiClient.post<AuthResponse>('/api/auth/signup', data),
+    // Exchanges the httpOnly refresh cookie for a new access token (rotates it).
+    refresh: () =>
+        apiClient.post<AuthResponse>('/api/auth/refresh'),
+
+    // Revokes the refresh token server-side and clears the cookie.
+    logout: () =>
+        apiClient.post<{ message: string }>('/api/auth/logout'),
 
     me: () =>
         apiClient.get<User>('/api/auth/me'),
 
     updateProfile: (data: Partial<User>) =>
         apiClient.patch<User>('/api/auth/profile', data),
+};
+
+// ============ Batch Endpoints ============
+export const batchesApi = {
+    list: (params?: { is_active?: boolean; month?: number; year?: number }) =>
+        apiClient.get<Batch[]>('/api/batches', { params }),
+
+    get: (id: string) =>
+        apiClient.get<Batch>(`/api/batches/${id}`),
+
+    create: (data: CreateBatchRequest) =>
+        apiClient.post<Batch>('/api/batches', data),
+
+    update: (id: string, data: UpdateBatchRequest) =>
+        apiClient.patch<Batch>(`/api/batches/${id}`, data),
+
+    delete: (id: string) =>
+        apiClient.delete(`/api/batches/${id}`),
 };
 
 // ============ Institution Endpoints ============
@@ -98,8 +124,8 @@ export const institutionsApi = {
 
 // ============ Student Endpoints ============
 export const studentsApi = {
-    list: (params?: { page?: number; page_size?: number; search?: string; institution_id?: string }) =>
-        apiClient.get<Student[]>('/api/students', { params }),
+    list: () =>
+        apiClient.get<Student[]>('/api/students'),
 
     get: (id: string) =>
         apiClient.get<Student>(`/api/students/${id}`),
@@ -107,33 +133,11 @@ export const studentsApi = {
     search: (studentId: string) =>
         apiClient.get<Student>('/api/students/search', { params: { student_id: studentId } }),
 
-    create: (data: CreateStudentRequest) =>
-        apiClient.post<Student>('/api/students', data),
+    register: (data: RegisterStudentRequest) =>
+        apiClient.post<Student>('/api/students/register', data),
 
-    register: (data: {
-        full_name: string;
-        email: string;
-        phone?: string;
-        date_of_birth?: string;
-        father_name?: string;
-        guardian_name?: string;
-        guardian_phone?: string;
-        address?: string;
-        aadhar_number?: string;
-        apaar_id?: string;
-        last_qualification?: string;
-        batch_time?: string;
-        batch_month?: string;
-        batch_year?: string;
-        batch_identifier?: string;
-        course_id?: string;
-    }) => apiClient.post<Student>('/api/students/register', data),
-
-    update: (id: string, data: Partial<CreateStudentRequest>) =>
+    update: (id: string, data: UpdateStudentRequest) =>
         apiClient.patch<Student>(`/api/students/${id}`, data),
-
-    delete: (id: string) =>
-        apiClient.delete(`/api/students/${id}`),
 
     uploadPhoto: (id: string, file: File) => {
         const formData = new FormData();
@@ -146,14 +150,8 @@ export const studentsApi = {
     getCourses: (id: string) =>
         apiClient.get<StudentCourse[]>(`/api/students/${id}/courses`),
 
-    enroll: (data: EnrollStudentRequest) =>
-        apiClient.post<StudentCourse>('/api/students/enroll', data),
-
-    getPayments: (id: string) =>
-        apiClient.get<FeePayment[]>(`/api/students/${id}/payments`),
-
-    recordPayment: (data: RecordPaymentRequest) =>
-        apiClient.post<FeePayment>('/api/students/payments', data),
+    enroll: (studentId: string, data: EnrollStudentRequest) =>
+        apiClient.post<{ message: string }>(`/api/students/${studentId}/enroll`, data),
 
     getById: (id: string) =>
         apiClient.get<Student>(`/api/students/${id}`),
@@ -311,7 +309,7 @@ export const examsApi = {
         apiClient.delete(`/api/exams/questions/${questionId}`),
 
     // Schedules
-    listSchedules: (params?: { exam_id?: string; batch_time?: string; scheduled_date?: string }) =>
+    listSchedules: (params?: { exam_id?: string; batch_id?: string; scheduled_date?: string }) =>
         apiClient.get<ExamSchedule[]>('/api/exams/schedules', { params }),
 
     createSchedule: (data: CreateScheduleRequest) =>

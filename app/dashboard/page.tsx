@@ -181,11 +181,6 @@ function StudentDashboard({ user }: { user: any }) {
                 {studentData && (
                     <p className="text-sm text-slate-500 mt-1">
                         Student ID: <span className="text-blue-400 font-mono">{studentData.student_id}</span>
-                        {studentData.batch_time && (
-                            <span className="ml-4">
-                                Batch: <span className="text-purple-400">{studentData.batch_time}</span>
-                            </span>
-                        )}
                     </p>
                 )}
             </div>

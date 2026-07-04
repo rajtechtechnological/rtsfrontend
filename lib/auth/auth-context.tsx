@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { User, UserRole, LoginRequest, SignupRequest } from '@/types';
+import type { User, UserRole, LoginRequest } from '@/types';
 import { authApi } from '@/lib/api/endpoints';
 import { AxiosError } from 'axios';
 
@@ -10,7 +10,6 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (data: LoginRequest) => Promise<void>;
-    signup: (data: SignupRequest) => Promise<void>;
     logout: () => void;
     hasRole: (roles: UserRole | UserRole[]) => boolean;
     refreshUser: () => Promise<void>;
@@ -68,25 +67,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
-    const signup = useCallback(async (data: SignupRequest) => {
+    const logout = useCallback(async () => {
         try {
-            const response = await authApi.signup(data);
-            const { access_token, user: userData } = response.data;
-
-            localStorage.setItem('access_token', access_token);
-            localStorage.setItem('user', JSON.stringify(userData));
-            setUser(userData);
+            // Revoke the rotating refresh token server-side (clears the cookie).
+            await authApi.logout();
         } catch (error) {
-            const axiosError = error as AxiosError<{ detail: string }>;
-            throw new Error(axiosError.response?.data?.detail || 'Signup failed');
+            // Even if revocation fails (network, already expired), finish the
+            // local logout — the token expires server-side regardless.
+            console.error('Logout request failed:', error);
+        } finally {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user');
+            setUser(null);
+            window.location.href = '/login';
         }
-    }, []);
-
-    const logout = useCallback(() => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user');
-        setUser(null);
-        window.location.href = '/login';
     }, []);
 
     const hasRole = useCallback((roles: UserRole | UserRole[]) => {
@@ -110,7 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         login,
-        signup,
         logout,
         hasRole,
         refreshUser,

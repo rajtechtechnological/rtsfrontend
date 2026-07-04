@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { useAuth } from '@/lib/auth/auth-context';
 import { coursesApi } from '@/lib/api/endpoints';
 import type { Course } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,7 +51,6 @@ type CourseFormData = z.infer<typeof courseSchema>;
 function AddCourseDialog({ onCourseAdded }: { onCourseAdded: () => void }) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const { user } = useAuth();
 
     const {
         register,
@@ -66,17 +64,9 @@ function AddCourseDialog({ onCourseAdded }: { onCourseAdded: () => void }) {
     const onSubmit = async (data: CourseFormData) => {
         setIsLoading(true);
         try {
-            // For super_admin, institution_id is optional (creates global courses)
-            // For other roles, use their institution_id
-            const courseData: any = {
-                ...data,
-            };
-            
-            if (user?.role !== 'super_admin' && user?.institution_id) {
-                courseData.institution_id = user.institution_id;
-            }
-
-            await coursesApi.create(courseData);
+            // institution_id is never sent — the server derives it from the
+            // caller's tenant (super_admin without one creates global courses).
+            await coursesApi.create(data);
             toast.success('Course created successfully!');
             reset();
             setOpen(false);

@@ -70,14 +70,12 @@ interface Student {
         full_name: string;
         email: string;
         phone: string | null;
-    };
+    } | null;
     date_of_birth?: string | null;
     father_name?: string | null;
     address?: string | null;
     enrollment_date: string;
-    batch_time?: string | null;
-    batch_month?: string | null;
-    batch_year?: string | null;
+    batch_id: string;
     photo_url?: string | null;
 }
 
@@ -135,6 +133,7 @@ export default function StaffStudentDetailPage() {
     const studentId = params.id as string;
 
     const [student, setStudent] = useState<Student | null>(null);
+    const [batchName, setBatchName] = useState<string | null>(null);
     const [courses, setCourses] = useState<StudentCourse[]>([]);
     const [courseProgress, setCourseProgress] = useState<Record<string, CourseProgress>>({});
     const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
@@ -154,6 +153,16 @@ export default function StaffStudentDetailPage() {
             // Fetch student details
             const studentResponse = await studentsApi.getById(studentId);
             setStudent(studentResponse.data);
+
+            // Resolve the batch name for display
+            if (studentResponse.data?.batch_id) {
+                try {
+                    const batchResponse = await apiClient.get(`/api/batches/${studentResponse.data.batch_id}`);
+                    setBatchName(batchResponse.data?.name || null);
+                } catch {
+                    setBatchName(null);
+                }
+            }
 
             // Fetch enrolled courses
             const coursesResponse = await studentsApi.getCourses(studentId);
@@ -381,9 +390,9 @@ export default function StaffStudentDetailPage() {
                                     </div>
                                 </div>
 
-                                {student.batch_time && (
+                                {batchName && (
                                     <Badge className="bg-blue-600/10 text-blue-400 border-blue-600/30">
-                                        Batch: {student.batch_time} ({student.batch_month}/{student.batch_year})
+                                        Batch: {batchName}
                                     </Badge>
                                 )}
                             </div>

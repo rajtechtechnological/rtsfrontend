@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { staffApi } from '@/lib/api/endpoints';
 import type { Staff } from '@/types';
-import { useAuth } from '@/lib/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -54,7 +53,6 @@ const fieldLabelClass = 'text-xs uppercase tracking-wide text-ink-muted';
 function AddStaffDialog({ onStaffAdded }: { onStaffAdded: () => void }) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const { user } = useAuth();
 
     const {
         register,
@@ -73,15 +71,9 @@ function AddStaffDialog({ onStaffAdded }: { onStaffAdded: () => void }) {
     const onSubmit = async (data: StaffFormData) => {
         setIsLoading(true);
         try {
-            if (!user?.institution_id) {
-                toast.error('Institution not found');
-                return;
-            }
-            // Create staff via API
-            await staffApi.create({
-                ...data,
-                institution_id: user.institution_id,
-            });
+            // Create staff via API — institution_id is derived server-side
+            // from the caller's tenant context.
+            await staffApi.create(data);
             toast.success('Staff member added successfully!');
             reset();
             setOpen(false);

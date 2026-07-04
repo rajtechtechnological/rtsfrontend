@@ -41,39 +41,8 @@ const MANAGER_ROLES = ['super_admin', 'institution_director', 'staff_manager'];
 
 // ============ Manager View Components ============
 
-const BATCH_TIME_SLOTS = [
-    '9AM-10AM',
-    '10AM-11AM',
-    '11AM-12PM',
-    '12PM-1PM',
-    '2PM-3PM',
-    '3PM-4PM',
-    '4PM-5PM',
-    '5PM-6PM',
-];
-
-const MONTHS = [
-    { value: '01', label: 'January' },
-    { value: '02', label: 'February' },
-    { value: '03', label: 'March' },
-    { value: '04', label: 'April' },
-    { value: '05', label: 'May' },
-    { value: '06', label: 'June' },
-    { value: '07', label: 'July' },
-    { value: '08', label: 'August' },
-    { value: '09', label: 'September' },
-    { value: '10', label: 'October' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'December' },
-];
-
-const currentYear = new Date().getFullYear();
-const YEARS = [
-    String(currentYear - 1),
-    String(currentYear),
-    String(currentYear + 1),
-];
-
+// Batch targeting is set when SCHEDULING an exam (one schedule per batch),
+// not when creating it.
 const examSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters'),
     description: z.string().optional(),
@@ -85,10 +54,6 @@ const examSchema = z.object({
     max_retakes: z.number().min(0),
     shuffle_questions: z.boolean(),
     shuffle_options: z.boolean(),
-    batch_time: z.string().min(1, 'Please select batch time'),
-    batch_month: z.string().min(1, 'Please select batch month'),
-    batch_year: z.string().min(1, 'Please select batch year'),
-    batch_identifier: z.string().optional(),
 });
 
 type ExamFormData = z.infer<typeof examSchema>;
@@ -117,7 +82,6 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
             max_retakes: 0,
             shuffle_questions: true,
             shuffle_options: true,
-            batch_year: String(currentYear),
         },
     });
 
@@ -213,67 +177,6 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
                         {errors.module_id && <p className="text-sm text-danger">{errors.module_id.message}</p>}
                     </div>
 
-                    {/* Batch Information Section */}
-                    <div className="rounded-md border border-line p-4 space-y-4">
-                        <h3 className={fieldLabelClass}>Target Batch</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-2">
-                                <Label className={fieldLabelClass}>Batch Time (required)</Label>
-                                <Select onValueChange={(value) => setValue('batch_time', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select time" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {BATCH_TIME_SLOTS.map((slot) => (
-                                            <SelectItem key={slot} value={slot}>{slot}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.batch_time && <p className="text-xs text-danger">{errors.batch_time.message}</p>}
-                            </div>
-                            <div className="space-y-2">
-                                <Label className={fieldLabelClass}>Batch (A/B)</Label>
-                                <Select onValueChange={(value) => setValue('batch_identifier', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="All" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="A">Batch A</SelectItem>
-                                        <SelectItem value="B">Batch B</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className={fieldLabelClass}>Month (required)</Label>
-                                <Select onValueChange={(value) => setValue('batch_month', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Month" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {MONTHS.map((month) => (
-                                            <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.batch_month && <p className="text-xs text-danger">{errors.batch_month.message}</p>}
-                            </div>
-                            <div className="space-y-2">
-                                <Label className={fieldLabelClass}>Year (required)</Label>
-                                <Select defaultValue={String(currentYear)} onValueChange={(value) => setValue('batch_year', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {YEARS.map((year) => (
-                                            <SelectItem key={year} value={year}>{year}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.batch_year && <p className="text-xs text-danger">{errors.batch_year.message}</p>}
-                            </div>
-                        </div>
-                    </div>
-
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label className={fieldLabelClass}>Duration in Minutes (required)</Label>
@@ -353,12 +256,6 @@ function CreateExamDialog({ onExamCreated, courses }: { onExamCreated: () => voi
     );
 }
 
-function batchLabel(exam: Exam): string | null {
-    if (!exam.batch_time) return null;
-    const month = MONTHS.find(m => m.value === exam.batch_month)?.label || exam.batch_month;
-    return `${exam.batch_time}${exam.batch_identifier ? ` (${exam.batch_identifier})` : ''} · ${month} ${exam.batch_year}`;
-}
-
 function ManagerExamsView() {
     const [exams, setExams] = useState<Exam[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
@@ -412,11 +309,6 @@ function ManagerExamsView() {
                     {exam.title}
                 </Link>
             ),
-        },
-        {
-            key: 'batch',
-            header: 'Batch',
-            cell: (exam) => batchLabel(exam) ?? <span className="text-ink-muted">—</span>,
         },
         {
             key: 'questions',

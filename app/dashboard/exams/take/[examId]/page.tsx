@@ -90,10 +90,10 @@ export default function TakeExamPage() {
             setExamData(data);
             attemptIdRef.current = data.attempt_id;
 
-            // Calculate time remaining
-            const endTime = new Date(data.end_time).getTime();
+            // Calculate time remaining from the server-authoritative deadline
+            const deadline = new Date(data.deadline ?? data.end_time).getTime();
             const now = Date.now();
-            const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+            const remaining = Math.max(0, Math.floor((deadline - now) / 1000));
             setTimeRemaining(remaining);
 
             // Initialize answers

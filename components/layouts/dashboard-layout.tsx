@@ -71,6 +71,12 @@ const navItems: NavItem[] = [
         roles: ['super_admin'],
     },
     {
+        title: 'Batches',
+        href: '/dashboard/batches',
+        icon: CalendarCheck,
+        roles: ['super_admin', 'institution_director', 'staff_manager'], // Manage batches: staff_manager+
+    },
+    {
         title: 'Students',
         href: '/dashboard/students',
         icon: GraduationCap,

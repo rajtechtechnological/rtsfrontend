@@ -5,8 +5,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { studentsApi, coursesApi } from '@/lib/api/endpoints';
-import type { Student } from '@/types';
+import { studentsApi, coursesApi, batchesApi } from '@/lib/api/endpoints';
+import { batchLabel } from '@/lib/batches';
+import type { Student, Batch } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -51,53 +52,19 @@ const studentSchema = z.object({
     apaar_id: z.string().optional(),
     last_qualification: z.string().optional(),
     course_id: z.string().optional(),
-    batch_time: z.string().optional(),
-    batch_month: z.string().optional(),
-    batch_year: z.string().optional(),
-    batch_identifier: z.string().optional(),
+    batch_id: z.string().min(1, 'Please select a batch'),
 });
-
-// Predefined batch time slots
-const BATCH_TIME_SLOTS = [
-    '9AM-10AM',
-    '10AM-11AM',
-    '11AM-12PM',
-    '12PM-1PM',
-    '2PM-3PM',
-    '3PM-4PM',
-    '4PM-5PM',
-    '5PM-6PM',
-    '6PM-7PM',
-];
-
-// Generate months for dropdown
-const MONTHS = [
-    { value: '01', label: 'January' },
-    { value: '02', label: 'February' },
-    { value: '03', label: 'March' },
-    { value: '04', label: 'April' },
-    { value: '05', label: 'May' },
-    { value: '06', label: 'June' },
-    { value: '07', label: 'July' },
-    { value: '08', label: 'August' },
-    { value: '09', label: 'September' },
-    { value: '10', label: 'October' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'December' },
-];
-
-// Generate years (current year and next 2 years)
-const currentYear = new Date().getFullYear();
-const YEARS = [currentYear - 1, currentYear, currentYear + 1, currentYear + 2].map(y => y.toString());
 
 type StudentFormData = z.infer<typeof studentSchema>;
 
 const fieldLabelClass = 'text-xs uppercase tracking-wide text-ink-muted';
 
-function AddStudentDialog() {
+function AddStudentDialog({ batches }: { batches: Batch[] }) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [courses, setCourses] = useState<any[]>([]);
+
+    const activeBatches = batches.filter((b) => b.is_active);
 
     const {
         register,
@@ -107,9 +74,6 @@ function AddStudentDialog() {
         formState: { errors },
     } = useForm<StudentFormData>({
         resolver: zodResolver(studentSchema),
-        defaultValues: {
-            batch_year: String(currentYear),
-        },
     });
 
     useEffect(() => {
@@ -142,10 +106,7 @@ function AddStudentDialog() {
                 aadhar_number: data.aadhar_number,
                 apaar_id: data.apaar_id,
                 last_qualification: data.last_qualification,
-                batch_time: data.batch_time,
-                batch_month: data.batch_month,
-                batch_year: data.batch_year,
-                batch_identifier: data.batch_identifier,
+                batch_id: data.batch_id,
                 course_id: data.course_id,
             });
             toast.success('Student added successfully!');
@@ -306,58 +267,28 @@ function AddStudentDialog() {
                     {/* Target Batch Section */}
                     <div className="rounded-md border border-line p-4 space-y-4">
                         <h3 className={fieldLabelClass}>Target Batch</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-2">
-                                <Label className={fieldLabelClass}>Batch Time (required)</Label>
-                                <Select onValueChange={(value) => setValue('batch_time', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select time" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {BATCH_TIME_SLOTS.map((slot) => (
-                                            <SelectItem key={slot} value={slot}>{slot}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className={fieldLabelClass}>Batch (A/B)</Label>
-                                <Select onValueChange={(value) => setValue('batch_identifier', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="All" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="A">Batch A</SelectItem>
-                                        <SelectItem value="B">Batch B</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className={fieldLabelClass}>Month (required)</Label>
-                                <Select onValueChange={(value) => setValue('batch_month', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Month" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {MONTHS.map((month) => (
-                                            <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className={fieldLabelClass}>Year (required)</Label>
-                                <Select defaultValue={String(currentYear)} onValueChange={(value) => setValue('batch_year', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {YEARS.map((year) => (
-                                            <SelectItem key={year} value={year}>{year}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                        <div className="space-y-2">
+                            <Label className={fieldLabelClass}>Batch (required)</Label>
+                            <Select onValueChange={(value) => setValue('batch_id', value, { shouldValidate: true })}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select a batch" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {activeBatches.map((batch) => (
+                                        <SelectItem key={batch.id} value={batch.id}>
+                                            {batchLabel(batch)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.batch_id && (
+                                <p className="text-sm text-danger">{errors.batch_id.message}</p>
+                            )}
+                            {activeBatches.length === 0 && (
+                                <p className="text-xs text-warning">
+                                    No active batches. Create one under Batches first.
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -393,23 +324,24 @@ export default function StudentsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [students, setStudents] = useState<Student[]>([]);
     const [courses, setCourses] = useState<any[]>([]);
+    const [batches, setBatches] = useState<Batch[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     // Filter states
     const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
-    const [selectedBatchMonth, setSelectedBatchMonth] = useState<string>('');
-    const [selectedBatchYear, setSelectedBatchYear] = useState<string>('');
-    const [selectedBatchIdentifier, setSelectedBatchIdentifier] = useState<string>('');
+    const [selectedBatch, setSelectedBatch] = useState<string>('');
 
     const fetchData = async () => {
         try {
             setIsLoading(true);
-            const [studentsResponse, coursesResponse] = await Promise.all([
+            const [studentsResponse, coursesResponse, batchesResponse] = await Promise.all([
                 studentsApi.list(),
-                coursesApi.list()
+                coursesApi.list(),
+                batchesApi.list(),
             ]);
             setStudents(studentsResponse.data || []);
             setCourses(coursesResponse.data || []);
+            setBatches(batchesResponse.data || []);
         } catch (error: any) {
             console.error('Failed to fetch data:', error);
             toast.error('Failed to load data');
@@ -434,24 +366,20 @@ export default function StudentsPage() {
         const matchesCourse = !selectedCourse ||
             student.course_enrollments?.some((e: any) => e.course_id === selectedCourse);
 
-        // Batch filters
-        const matchesBatchMonth = !selectedBatchMonth || student.batch_month === selectedBatchMonth;
-        const matchesBatchYear = !selectedBatchYear || student.batch_year === selectedBatchYear;
-        const matchesBatchIdentifier = !selectedBatchIdentifier || student.batch_identifier === selectedBatchIdentifier;
+        // Batch filter
+        const matchesBatch = !selectedBatch || student.batch_id === selectedBatch;
 
-        return matchesSearch && matchesCourse && matchesBatchMonth && matchesBatchYear && matchesBatchIdentifier;
+        return matchesSearch && matchesCourse && matchesBatch;
     });
 
     const selectedCourseName = courses.find(c => c.id === selectedCourse)?.name;
 
     const clearFilters = () => {
         setSelectedCourse(null);
-        setSelectedBatchMonth('');
-        setSelectedBatchYear('');
-        setSelectedBatchIdentifier('');
+        setSelectedBatch('');
     };
 
-    const hasFilters = !!(selectedCourse || selectedBatchMonth || selectedBatchYear || selectedBatchIdentifier);
+    const hasFilters = !!(selectedCourse || selectedBatch);
 
     const courseNameFor = (student: Student) => {
         const enrollment: any = student.course_enrollments?.[0];
@@ -460,12 +388,8 @@ export default function StudentsPage() {
     };
 
     const batchLabelFor = (student: Student) => {
-        if (!student.batch_time) return null;
-        const monthLabel = MONTHS.find(m => m.value === student.batch_month)?.label;
-        const period = student.batch_month && student.batch_year
-            ? ` · ${monthLabel} ${student.batch_year}${student.batch_identifier ? ` (${student.batch_identifier})` : ''}`
-            : '';
-        return `${student.batch_time}${period}`;
+        const batch = batches.find((b) => b.id === student.batch_id);
+        return batch?.name ?? null;
     };
 
     const columns: LedgerColumn<Student>[] = [
@@ -518,9 +442,11 @@ export default function StudentsPage() {
                 courseNameFor(student) ?? <span className="text-ink-muted">—</span>,
         },
         {
+            // The list API does not return a fee status; show the student's
+            // enrollment status (active/completed/dropped), which it does return.
             key: 'status',
-            header: 'Fee Status',
-            cell: () => <Stamp status="Active" />,
+            header: 'Status',
+            cell: (student) => <Stamp status={student.status || 'active'} />,
         },
         {
             key: 'actions',
@@ -554,7 +480,7 @@ export default function StudentsPage() {
                     <h1 className="font-serif text-2xl font-semibold text-ink">Students</h1>
                     <p className="text-sm text-ink-muted mt-1">Student records and enrollments</p>
                 </div>
-                <AddStudentDialog />
+                <AddStudentDialog batches={batches} />
             </div>
 
             {/* Toolbar: search + plain select filters */}
@@ -569,9 +495,7 @@ export default function StudentsPage() {
                     value={selectedCourse ?? ''}
                     onChange={(e) => {
                         setSelectedCourse(e.target.value || null);
-                        setSelectedBatchMonth('');
-                        setSelectedBatchYear('');
-                        setSelectedBatchIdentifier('');
+                        setSelectedBatch('');
                     }}
                     className={toolbarSelectClass}
                 >
@@ -583,37 +507,16 @@ export default function StudentsPage() {
                     ))}
                 </select>
                 <select
-                    value={selectedBatchMonth}
-                    onChange={(e) => setSelectedBatchMonth(e.target.value)}
+                    value={selectedBatch}
+                    onChange={(e) => setSelectedBatch(e.target.value)}
                     className={toolbarSelectClass}
                 >
-                    <option value="">All months</option>
-                    {MONTHS.map((month) => (
-                        <option key={month.value} value={month.value}>
-                            {month.label}
+                    <option value="">All batches</option>
+                    {batches.map((batch) => (
+                        <option key={batch.id} value={batch.id}>
+                            {batch.name}
                         </option>
                     ))}
-                </select>
-                <select
-                    value={selectedBatchYear}
-                    onChange={(e) => setSelectedBatchYear(e.target.value)}
-                    className={toolbarSelectClass}
-                >
-                    <option value="">All years</option>
-                    {YEARS.map((year) => (
-                        <option key={year} value={year}>
-                            {year}
-                        </option>
-                    ))}
-                </select>
-                <select
-                    value={selectedBatchIdentifier}
-                    onChange={(e) => setSelectedBatchIdentifier(e.target.value)}
-                    className={toolbarSelectClass}
-                >
-                    <option value="">All batches (A/B)</option>
-                    <option value="A">Batch A</option>
-                    <option value="B">Batch B</option>
                 </select>
                 {hasFilters && (
                     <Button variant="ghost" size="sm" onClick={clearFilters} className="text-ink-muted">

@@ -29,9 +29,12 @@ interface Student {
         phone: string | null;
     };
     enrollment_date: string;
-    batch_time: string | null;
-    batch_month: string | null;
-    batch_year: string | null;
+    batch_id: string;
+}
+
+interface BatchInfo {
+    id: string;
+    name: string;
 }
 
 function StaffNav() {
@@ -73,6 +76,7 @@ function StaffNav() {
 
 export default function StaffStudentsPage() {
     const [students, setStudents] = useState<Student[]>([]);
+    const [batches, setBatches] = useState<BatchInfo[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -83,8 +87,12 @@ export default function StaffStudentsPage() {
     const fetchStudents = async () => {
         try {
             setIsLoading(true);
-            const response = await apiClient.get('/api/students');
-            setStudents(response.data.items || response.data || []);
+            const [studentsRes, batchesRes] = await Promise.all([
+                apiClient.get('/api/students'),
+                apiClient.get('/api/batches'),
+            ]);
+            setStudents(studentsRes.data.items || studentsRes.data || []);
+            setBatches(batchesRes.data || []);
         } catch (error) {
             console.error('Failed to fetch students:', error);
             toast.error('Failed to load students');
@@ -92,6 +100,9 @@ export default function StaffStudentsPage() {
             setIsLoading(false);
         }
     };
+
+    const batchNameFor = (student: Student) =>
+        batches.find((b) => b.id === student.batch_id)?.name || null;
 
     const filteredStudents = students.filter(
         (student) =>
@@ -220,10 +231,10 @@ export default function StaffStudentsPage() {
                                                     </div>
                                                     <ChevronRight className="h-5 w-5 text-slate-600 group-hover:text-green-500 transition-colors" />
                                                 </div>
-                                                {student.batch_time && (
+                                                {batchNameFor(student) && (
                                                     <div className="mt-3 pt-3 border-t border-slate-700">
                                                         <Badge className="bg-slate-700 text-slate-300 text-xs">
-                                                            Batch: {student.batch_time} ({student.batch_month}/{student.batch_year})
+                                                            Batch: {batchNameFor(student)}
                                                         </Badge>
                                                     </div>
                                                 )}

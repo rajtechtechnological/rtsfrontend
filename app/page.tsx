@@ -260,11 +260,6 @@ function Navbar() {
                       </Link>
                     );
                   })}
-                  <div className="border-t border-slate-700 mt-2 pt-2 px-3 pb-2">
-                    <Link href="/signup" className="text-sm text-slate-400 hover:text-green-400">
-                      New student? <span className="font-medium">Register here</span>
-                    </Link>
-                  </div>
                 </div>
               </div>
             )}
@@ -310,9 +305,9 @@ function Navbar() {
                   })}
                 </div>
                 <div className="mt-3 text-center">
-                  <Link href="/signup" className="text-sm text-slate-400 hover:text-green-400">
-                    New student? <span className="font-medium">Register here</span>
-                  </Link>
+                  <span className="text-sm text-slate-400">
+                    New student? Contact your nearest RTS center to get registered.
+                  </span>
                 </div>
               </div>
             </div>
@@ -480,10 +475,7 @@ function QuickAccessSection() {
 
         <div className="text-center mt-10">
           <p className="text-slate-500">
-            New student?{' '}
-            <Link href="/signup" className="text-green-400 hover:text-green-300 font-medium">
-              Register here
-            </Link>
+            New student? Contact your nearest RTS center to get registered.
           </p>
         </div>
       </div>

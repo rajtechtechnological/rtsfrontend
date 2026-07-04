@@ -6,8 +6,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { examsApi } from '@/lib/api/endpoints';
-import type { ExamDetail, ExamSchedule } from '@/types';
+import { examsApi, batchesApi } from '@/lib/api/endpoints';
+import { batchLabel } from '@/lib/batches';
+import type { Batch, ExamDetail, ExamSchedule } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,20 +40,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-const BATCH_TIME_SLOTS = [
-    '9AM-10AM',
-    '10AM-11AM',
-    '11AM-12PM',
-    '12PM-1PM',
-    '2PM-3PM',
-    '3PM-4PM',
-    '4PM-5PM',
-    '5PM-6PM',
-];
-
 const scheduleSchema = z.object({
-    batch_time: z.string().min(1, 'Batch time is required'),
-    batch_identifier: z.string().optional(),
+    batch_id: z.string().min(1, 'Please select a batch'),
     scheduled_date: z.string().min(1, 'Date is required'),
     start_time: z.string().min(1, 'Start time is required'),
     end_time: z.string().min(1, 'End time is required'),
@@ -60,9 +49,19 @@ const scheduleSchema = z.object({
 
 type ScheduleFormData = z.infer<typeof scheduleSchema>;
 
-function AddScheduleDialog({ examId, onScheduleAdded }: { examId: string; onScheduleAdded: () => void }) {
+function AddScheduleDialog({
+    examId,
+    batches,
+    onScheduleAdded,
+}: {
+    examId: string;
+    batches: Batch[];
+    onScheduleAdded: () => void;
+}) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    const activeBatches = batches.filter((b) => b.is_active);
 
     const {
         register,
@@ -83,8 +82,7 @@ function AddScheduleDialog({ examId, onScheduleAdded }: { examId: string; onSche
         try {
             await examsApi.createSchedule({
                 exam_id: examId,
-                batch_time: data.batch_time,
-                batch_identifier: data.batch_identifier || undefined,
+                batch_id: data.batch_id,
                 scheduled_date: data.scheduled_date,
                 start_time: data.start_time,
                 end_time: data.end_time,
@@ -117,33 +115,25 @@ function AddScheduleDialog({ examId, onScheduleAdded }: { examId: string; onSche
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label className="text-slate-300">Batch Time *</Label>
-                        <Select onValueChange={(value) => setValue('batch_time', value)}>
+                        <Label className="text-slate-300">Batch *</Label>
+                        <Select onValueChange={(value) => setValue('batch_id', value, { shouldValidate: true })}>
                             <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
-                                <SelectValue placeholder="Select batch time" />
+                                <SelectValue placeholder="Select batch" />
                             </SelectTrigger>
                             <SelectContent className="bg-slate-900 border-slate-700">
-                                {BATCH_TIME_SLOTS.map((slot) => (
-                                    <SelectItem key={slot} value={slot}>
-                                        {slot}
+                                {activeBatches.map((batch) => (
+                                    <SelectItem key={batch.id} value={batch.id}>
+                                        {batchLabel(batch)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.batch_time && <p className="text-sm text-red-400">{errors.batch_time.message}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label className="text-slate-300">Batch Identifier (Optional)</Label>
-                        <Select onValueChange={(value) => setValue('batch_identifier', value)}>
-                            <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
-                                <SelectValue placeholder="All batches" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-900 border-slate-700">
-                                <SelectItem value="A">Batch A</SelectItem>
-                                <SelectItem value="B">Batch B</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        {errors.batch_id && <p className="text-sm text-red-400">{errors.batch_id.message}</p>}
+                        {activeBatches.length === 0 && (
+                            <p className="text-sm text-amber-400">
+                                No active batches — create one under Batches first.
+                            </p>
+                        )}
                     </div>
 
                     <div className="space-y-2">
@@ -215,6 +205,7 @@ export default function ExamSchedulePage() {
 
     const [exam, setExam] = useState<ExamDetail | null>(null);
     const [schedules, setSchedules] = useState<ExamSchedule[]>([]);
+    const [batches, setBatches] = useState<Batch[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -224,12 +215,14 @@ export default function ExamSchedulePage() {
     const fetchData = async () => {
         try {
             setIsLoading(true);
-            const [examRes, schedulesRes] = await Promise.all([
+            const [examRes, schedulesRes, batchesRes] = await Promise.all([
                 examsApi.get(examId),
-                examsApi.listSchedules({ exam_id: examId })
+                examsApi.listSchedules({ exam_id: examId }),
+                batchesApi.list(),
             ]);
             setExam(examRes.data);
             setSchedules(schedulesRes.data || []);
+            setBatches(batchesRes.data || []);
         } catch (error) {
             toast.error('Failed to fetch data');
             router.push('/dashboard/exams');
@@ -237,6 +230,11 @@ export default function ExamSchedulePage() {
             setIsLoading(false);
         }
     };
+
+    const batchNameFor = (schedule: ExamSchedule) =>
+        schedule.batch_name ||
+        batches.find((b) => b.id === schedule.batch_id)?.name ||
+        'Batch';
 
     const handleCancelSchedule = async (scheduleId: string) => {
         if (!confirm('Are you sure you want to cancel this schedule?')) return;
@@ -300,7 +298,7 @@ export default function ExamSchedulePage() {
                         {exam.course_name} - {exam.module_name}
                     </p>
                 </div>
-                <AddScheduleDialog examId={examId} onScheduleAdded={fetchData} />
+                <AddScheduleDialog examId={examId} batches={batches} onScheduleAdded={fetchData} />
             </div>
 
             {/* Exam Info */}
@@ -347,7 +345,7 @@ export default function ExamSchedulePage() {
                                             <CardContent className="p-4">
                                                 <div className="flex items-start justify-between mb-3">
                                                     <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/30">
-                                                        {schedule.batch_time}
+                                                        {batchNameFor(schedule)}
                                                     </Badge>
                                                     <Button
                                                         variant="ghost"
@@ -359,14 +357,6 @@ export default function ExamSchedulePage() {
                                                     </Button>
                                                 </div>
                                                 <div className="space-y-2 text-sm">
-                                                    {schedule.batch_identifier && (
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-slate-400">Batch</span>
-                                                            <span className="text-white font-medium">
-                                                                {schedule.batch_identifier}
-                                                            </span>
-                                                        </div>
-                                                    )}
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-slate-400">Time Window</span>
                                                         <span className="text-white">

@@ -71,7 +71,7 @@ interface Student {
         full_name: string;
         email: string;
         phone: string | null;
-    };
+    } | null;
     date_of_birth: string | null;
     address: string | null;
     enrollment_date: string;
