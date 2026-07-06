@@ -182,4 +182,162 @@
   h3 {
     @apply font-serif;
   }
+  /* Colours ease when the theme is toggled so the switch feels deliberate, not a flash. */
+  :root {
+    --theme-transition: background-color 240ms ease, border-color 240ms ease, color 240ms ease;
+  }
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────
+ * Motion & surface treatments (dashboard revamp)
+ * Kept restrained: entrances are short, the glow is a low-opacity
+ * institutional-green wash, and everything is disabled under
+ * prefers-reduced-motion so the "official" feel never turns busy.
+ * ─────────────────────────────────────────────────────────────
+ */
+
+@keyframes rts-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes rts-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rts-pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(0.85); }
+}
+
+/* Horizontal notice ticker. The track holds two copies of the content, so
+   sliding it to -50% and looping reads as one seamless, endless scroll. */
+.rts-marquee-track {
+  display: flex;
+  flex-wrap: nowrap;
+  width: max-content;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+  animation: rts-marquee 40s linear infinite;
+}
+.rts-marquee-viewport:hover .rts-marquee-track {
+  animation-play-state: paused;
+}
+
+.rts-pulse-dot {
+  animation: rts-pulse-dot 1.8s ease-in-out infinite;
+}
+
+/* Staggered entrance for dashboard cards. */
+.rts-rise {
+  animation: rts-rise 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rts-rise-1 { animation-delay: 40ms; }
+.rts-rise-2 { animation-delay: 100ms; }
+.rts-rise-3 { animation-delay: 160ms; }
+.rts-rise-4 { animation-delay: 220ms; }
+.rts-rise-5 { animation-delay: 280ms; }
+
+/* Card glow: a soft green halo + lift on hover. The ::before holds a radial
+   wash so the base card border stays crisp and institutional at rest. */
+.rts-glow-card {
+  position: relative;
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+.rts-glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    120% 120% at 0% 0%,
+    color-mix(in oklab, var(--primary) 10%, transparent),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+.rts-glow-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in oklab, var(--primary) 45%, var(--line));
+  box-shadow:
+    0 1px 2px color-mix(in oklab, var(--ink) 8%, transparent),
+    0 12px 28px -12px color-mix(in oklab, var(--primary) 40%, transparent);
+}
+.rts-glow-card:hover::before {
+  opacity: 1;
+}
+
+/* Mascot's waving hand: two waves, then a long pause, on repeat — enough to
+   catch the eye without turning into a distraction. */
+@keyframes rts-wave {
+  0%, 5%, 100%  { transform: rotate(0deg); }
+  1.25%, 3.75%  { transform: rotate(-18deg); }
+  2.5%          { transform: rotate(14deg); }
+}
+.rts-wave {
+  transform-origin: 78% 82%;
+  animation: rts-wave 6s ease-in-out infinite;
+}
+
+/* Periodic greeting: the robot springs up out of the launcher, hangs there
+   waving, then drops back in. Timings below share one 2.8s duration (POP_MS
+   in ChatMascot.tsx) so the pop, the big wave, and the ring stay in sync. */
+@keyframes rts-pop {
+  0%        { transform: translateY(0) scale(1); }
+  14%       { transform: translateY(-30px) scale(1.22); }
+  22%, 78%  { transform: translateY(-26px) scale(1.18); }
+  92%       { transform: translateY(2px) scale(0.98); }
+  100%      { transform: translateY(0) scale(1); }
+}
+.rts-pop {
+  animation: rts-pop 2.8s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+/* Big enthusiastic wave used while the robot is popped out. */
+@keyframes rts-wave-big {
+  0%, 12%, 88%, 100% { transform: rotate(0deg); }
+  24%, 48%, 72%      { transform: rotate(-46deg); }
+  36%, 60%           { transform: rotate(22deg); }
+}
+.rts-wave-big {
+  animation: rts-wave-big 2.8s ease-in-out both;
+}
+
+/* Soft ring that ripples out from the launcher during the greeting. */
+@keyframes rts-pop-ring {
+  0%, 15% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 45%, transparent); }
+  60%     { box-shadow: 0 0 0 18px transparent; }
+  100%    { box-shadow: 0 0 0 0 transparent; }
+}
+.rts-pop-ring {
+  animation: rts-pop-ring 1.4s ease-out 2;
+}
+
+@keyframes rts-bubble-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rts-bubble-in {
+  animation: rts-bubble-in 300ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rts-marquee-track,
+  .rts-pulse-dot,
+  .rts-rise,
+  .rts-wave,
+  .rts-wave-big,
+  .rts-pop,
+  .rts-pop-ring,
+  .rts-bubble-in {
+    animation: none;
+  }
+  .rts-glow-card:hover {
+    transform: none;
+  }
 }

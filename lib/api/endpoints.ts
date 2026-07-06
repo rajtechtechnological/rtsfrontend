@@ -40,6 +40,8 @@ import type {
     CreateExamRequest,
     CreateQuestionRequest,
     CreateScheduleRequest,
+    DocxImportPreview,
+    AttemptReview,
 } from '@/types';
 
 // ============ Auth Endpoints ============
@@ -307,6 +309,18 @@ export const examsApi = {
     addQuestionsBulk: (examId: string, questions: CreateQuestionRequest[]) =>
         apiClient.post<Question[]>(`/api/exams/${examId}/questions/bulk`, { questions }),
 
+    // Parse a Word question paper into a preview (no questions are created;
+    // confirm by passing the previewed questions to addQuestionsBulk).
+    importDocx: (examId: string, file: File) => {
+        const form = new FormData();
+        form.append('file', file);
+        // Override the client's application/json default; axios fills in the
+        // multipart boundary itself.
+        return apiClient.post<DocxImportPreview>(`/api/exams/${examId}/questions/import-docx`, form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
+
     updateQuestion: (questionId: string, data: Partial<CreateQuestionRequest>) =>
         apiClient.patch<Question>(`/api/exams/questions/${questionId}`, data),
 
@@ -378,4 +392,8 @@ export const studentExamsApi = {
     // Get results
     getResults: () =>
         apiClient.get<ExamResult[]>('/api/student/exams/results'),
+
+    // Question-by-question review — available only once the attempt is verified
+    getAttemptReview: (attemptId: string) =>
+        apiClient.get<AttemptReview>(`/api/student/exams/attempts/${attemptId}/review`),
 };

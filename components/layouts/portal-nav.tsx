@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface PortalNavLink {
     href: string;
@@ -71,6 +72,7 @@ export function PortalNav({ title, links = [] }: { title: string; links?: Portal
                         <Home className="h-4 w-4" />
                         <span className="hidden sm:inline">Home</span>
                     </Link>
+                    <ThemeToggle />
                     <div className="mx-1 hidden items-center gap-2 sm:flex">
                         <Avatar className="h-8 w-8">
                             <AvatarFallback className="bg-muted text-sm text-ink">

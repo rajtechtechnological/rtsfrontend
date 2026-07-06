@@ -12,8 +12,11 @@ import {
     User,
     Loader2,
     Sparkles,
+    Languages,
 } from 'lucide-react';
 import apiClient from '@/lib/api/client';
+
+type Lang = 'hi' | 'en';
 
 interface ChatChip {
     label: string;
@@ -30,13 +33,45 @@ interface Message {
     chips?: ChatChip[];
 }
 
+// ---------------------------------------------------------------------------
+// UI strings for each language
+// ---------------------------------------------------------------------------
+const UI = {
+    hi: {
+        title: 'सहायक',
+        subtitle: 'आपकी संस्था के रिकॉर्ड से तुरंत जवाब',
+        greeting:
+            'नमस्ते! मैं राज हूँ, आपका RTS सहायक। मैं आपकी संस्था के रिकॉर्ड से फ़ीस, परीक्षाएं, परिणाम, कोर्स और अधिक के बारे में जवाब देता हूँ। नीचे कोई विषय चुनें या अपना प्रश्न टाइप करें।',
+        placeholder: 'फ़ीस, परीक्षा, परिणाम, कोर्स के बारे में पूछें...',
+        lookingUp: 'जानकारी खोज रहा हूँ...',
+        canHelpWith: 'मैं इनमें मदद कर सकता हूँ',
+        switchLang: 'English',
+        serverError:
+            'सर्वर से संपर्क नहीं हो सका। कृपया दोबारा कोशिश करें या अपनी संस्था के सहायता से संपर्क करें।',
+    },
+    en: {
+        title: 'Assistant',
+        subtitle: "Instant answers from your institution's records",
+        greeting:
+            "Hello! I'm Raj, your RTS assistant. I answer from your institution's records — fees, exams, results, courses and more. Pick a topic below or type a question.",
+        placeholder: 'Ask about fees, exams, results, courses...',
+        lookingUp: 'Looking that up...',
+        canHelpWith: 'I can help with',
+        switchLang: 'हिंदी',
+        serverError:
+            "I couldn't reach the server. Please try again or contact your institution support.",
+    },
+};
+
 export default function ChatbotPage() {
+    const [lang, setLang] = useState<Lang>('hi');
+    const t = UI[lang];
+
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
             role: 'assistant',
-            content:
-                "Hello! I'm Raj, your RTS assistant. I answer from your institution's records — fees, exams, results, courses and more. Pick a topic below or type a question.",
+            content: UI['hi'].greeting,
             timestamp: new Date(),
         },
     ]);
@@ -53,18 +88,18 @@ export default function ChatbotPage() {
         scrollToBottom();
     }, [messages]);
 
+    // Reload menu chips when language changes
     useEffect(() => {
-        // Role-specific menu chips for the empty state
         const loadMenu = async () => {
             try {
-                const response = await apiClient.get('/api/chatbot/menu');
+                const response = await apiClient.get(`/api/chatbot/menu?lang=${lang}`);
                 setMenuChips(response.data.chips ?? []);
             } catch (error) {
                 console.error('Failed to load chatbot menu:', error);
             }
         };
         loadMenu();
-    }, []);
+    }, [lang]);
 
     const postMessage = async (
         body: { text: string } | { intent: string; entity?: Record<string, unknown> | null },
@@ -83,7 +118,10 @@ export default function ChatbotPage() {
         setIsLoading(true);
 
         try {
-            const response = await apiClient.post('/api/chatbot/message', body);
+            const response = await apiClient.post('/api/chatbot/message', {
+                ...body,
+                lang,
+            });
             const assistantMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
@@ -98,8 +136,7 @@ export default function ChatbotPage() {
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content:
-                    "I couldn't reach the server. Please try again or contact your institution support.",
+                content: t.serverError,
                 timestamp: new Date(),
             };
             setMessages((prev) => [...prev, errorMessage]);
@@ -126,6 +163,21 @@ export default function ChatbotPage() {
         }
     };
 
+    // Switch language: update state and append a new greeting in the new language
+    const toggleLang = () => {
+        const next: Lang = lang === 'hi' ? 'en' : 'hi';
+        setLang(next);
+        setMessages((prev) => [
+            ...prev,
+            {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: UI[next].greeting,
+                timestamp: new Date(),
+            },
+        ]);
+    };
+
     const lastMessage = messages[messages.length - 1];
     const followupChips: ChatChip[] =
         messages.length > 1 && lastMessage.role === 'assistant' && lastMessage.chips
@@ -135,14 +187,25 @@ export default function ChatbotPage() {
     return (
         <div className="h-[calc(100vh-8rem)] flex flex-col">
             {/* Header */}
-            <div className="mb-4">
-                <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
-                    <MessageSquare className="h-7 w-7 text-primary" />
-                    Assistant
-                </h1>
-                <p className="text-ink-muted mt-1">
-                    Instant answers from your institution&apos;s records
-                </p>
+            <div className="mb-4 flex items-start justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+                        <MessageSquare className="h-7 w-7 text-primary" />
+                        {t.title}
+                    </h1>
+                    <p className="text-ink-muted mt-1">{t.subtitle}</p>
+                </div>
+                {/* Language toggle */}
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={toggleLang}
+                    className="flex items-center gap-1.5 border-line text-ink hover:bg-muted mt-1"
+                    title={lang === 'hi' ? 'Switch to English' : 'हिंदी में बदलें'}
+                >
+                    <Languages className="h-4 w-4" />
+                    {t.switchLang}
+                </Button>
             </div>
 
             {/* Chat Container */}
@@ -209,7 +272,7 @@ export default function ChatbotPage() {
                             <div className="bg-muted rounded-2xl px-4 py-3">
                                 <div className="flex items-center gap-2 text-ink-muted">
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    <span className="text-sm">Looking that up...</span>
+                                    <span className="text-sm">{t.lookingUp}</span>
                                 </div>
                             </div>
                         </div>
@@ -239,7 +302,7 @@ export default function ChatbotPage() {
                     <div className="px-4 pb-4">
                         <p className="text-sm text-ink-muted mb-2 flex items-center gap-1">
                             <Sparkles className="h-4 w-4" />
-                            I can help with
+                            {t.canHelpWith}
                         </p>
                         <div className="flex flex-wrap gap-2">
                             {menuChips.map((chip, index) => (
@@ -264,7 +327,7 @@ export default function ChatbotPage() {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={handleKeyPress}
-                            placeholder="Ask about fees, exams, results, courses..."
+                            placeholder={t.placeholder}
                             disabled={isLoading}
                             className="flex-1 bg-muted border-line text-ink placeholder:text-ink-muted focus:border-ring"
                         />

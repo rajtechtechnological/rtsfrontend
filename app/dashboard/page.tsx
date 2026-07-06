@@ -24,6 +24,19 @@ import { dashboardApi, studentsApi } from '@/lib/api/endpoints';
 import type { DashboardStats } from '@/types';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { NoticeTicker, type Notice } from '@/components/dashboard/notice-ticker';
+
+/**
+ * Rolling notices for the ticker. Static for now — the institution edits these
+ * in code until a notices endpoint exists; the ticker reads any Notice[].
+ */
+const DASHBOARD_NOTICES: Notice[] = [
+    { tag: 'Batch', text: 'New DCA / ADCA morning batches at 8 AM & 9 AM — enrolment open at all centers.' },
+    { tag: 'Exam', text: 'Quarterly online examinations begin next Monday. Admit cards available in the portal.' },
+    { tag: 'Event', text: 'Annual prize distribution ceremony this Saturday at the main campus, 11 AM.' },
+    { tag: 'Admission', text: 'KYP (Kushal Yuva Program) admissions open — apply at your nearest center.' },
+    { tag: 'Notice', text: 'Fee payments for the current term are due by the 15th. Pay online to avoid queues.' },
+];
 
 interface StatCardProps {
     title: string;
@@ -31,16 +44,18 @@ interface StatCardProps {
     description: string;
     icon: React.ElementType;
     trend?: { value: number; isPositive: boolean } | null;
+    index?: number;
 }
 
-function StatCard({ title, value, description, icon: Icon, trend }: StatCardProps) {
+function StatCard({ title, value, description, icon: Icon, trend, index = 0 }: StatCardProps) {
+    const riseClass = `rts-rise rts-rise-${Math.min(index + 1, 5)}`;
     return (
-        <Card className="rounded-md border-line bg-surface shadow-sm">
+        <Card className={`rts-glow-card rts-rise ${riseClass} rounded-md border-line bg-surface shadow-sm`}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xs font-medium uppercase tracking-wide text-ink-muted">
                     {title}
                 </CardTitle>
-                <div className="rounded-md bg-accent-soft p-2">
+                <div className="rounded-md bg-accent-soft p-2 transition-transform duration-200 group-hover:scale-105">
                     <Icon className="h-4 w-4 text-primary" />
                 </div>
             </CardHeader>
@@ -52,8 +67,10 @@ function StatCard({ title, value, description, icon: Icon, trend }: StatCardProp
                     <p className="text-xs text-ink-muted">{description}</p>
                     {trend && (
                         <div
-                            className={`flex items-center text-xs font-medium ${
-                                trend.isPositive ? 'text-success' : 'text-danger'
+                            className={`flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium ${
+                                trend.isPositive
+                                    ? 'bg-success/10 text-success'
+                                    : 'bg-danger/10 text-danger'
                             }`}
                         >
                             <ArrowUpRight
@@ -81,9 +98,9 @@ function QuickActionCard({
 }) {
     return (
         <Link href={href} className="group block">
-            <Card className="h-full rounded-md border-line bg-surface shadow-sm transition-colors group-hover:border-primary/40">
+            <Card className="rts-glow-card h-full rounded-md border-line bg-surface shadow-sm">
                 <CardContent className="flex items-center gap-4 p-6">
-                    <div className="rounded-md bg-accent-soft p-3">
+                    <div className="rounded-md bg-accent-soft p-3 transition-transform duration-200 group-hover:scale-105">
                         <Icon className="h-5 w-5 text-primary" />
                     </div>
                     <div>
@@ -92,6 +109,7 @@ function QuickActionCard({
                         </h3>
                         <p className="text-sm text-ink-muted">{description}</p>
                     </div>
+                    <ArrowUpRight className="ml-auto h-4 w-4 text-ink-muted opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100 group-hover:text-primary" />
                 </CardContent>
             </Card>
         </Link>
@@ -171,16 +189,20 @@ function StudentDashboard({ user }: { user: any }) {
 
     return (
         <div className="space-y-8">
-            {/* Welcome Section */}
-            <div>
-                <h1 className="font-serif text-2xl font-semibold text-ink">
+            {/* Always-on notice ticker */}
+            <NoticeTicker notices={DASHBOARD_NOTICES} />
+
+            {/* Welcome Section — subtle institutional gradient band */}
+            <div className="rts-rise relative overflow-hidden rounded-md border border-line bg-gradient-to-br from-accent-soft/60 via-surface to-surface p-6">
+                <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/5 blur-2xl" />
+                <h1 className="relative font-serif text-2xl font-semibold text-ink">
                     Welcome, {user?.full_name?.split(' ')[0] || 'Student'}
                 </h1>
-                <p className="mt-2 text-ink-muted">
+                <p className="relative mt-2 text-ink-muted">
                     Track your courses, progress, and achievements.
                 </p>
                 {studentData && (
-                    <p className="mt-1 text-sm text-ink-muted">
+                    <p className="relative mt-1 text-sm text-ink-muted">
                         Student ID: <span className="font-mono text-primary">{studentData.student_id}</span>
                     </p>
                 )}
@@ -193,24 +215,28 @@ function StudentDashboard({ user }: { user: any }) {
                     value={courses.length}
                     description="Active courses"
                     icon={BookOpen}
+                    index={0}
                 />
                 <StatCard
                     title="Completed Modules"
                     value={Object.values(courseProgress).reduce((acc: number, p: any) => acc + (p?.completed_modules || 0), 0)}
                     description="Across all courses"
                     icon={CheckCircle}
+                    index={1}
                 />
                 <StatCard
                     title="In Progress"
                     value={Object.values(courseProgress).reduce((acc: number, p: any) => acc + (p?.in_progress_modules || 0), 0)}
                     description="Modules in progress"
                     icon={Clock}
+                    index={2}
                 />
                 <StatCard
                     title="Overall Progress"
                     value={`${Math.round(Object.values(courseProgress).reduce((acc: number, p: any) => acc + (p?.overall_percentage || 0), 0) / Math.max(courses.length, 1))}%`}
                     description="Average completion"
                     icon={TrendingUp}
+                    index={3}
                 />
             </div>
 
@@ -484,12 +510,16 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-8">
-            {/* Welcome Section */}
-            <div>
-                <h1 className="font-serif text-2xl font-semibold text-ink">
+            {/* Always-on notice ticker */}
+            <NoticeTicker notices={DASHBOARD_NOTICES} />
+
+            {/* Welcome Section — subtle institutional gradient band */}
+            <div className="rts-rise relative overflow-hidden rounded-md border border-line bg-gradient-to-br from-accent-soft/60 via-surface to-surface p-6">
+                <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/5 blur-2xl" />
+                <h1 className="relative font-serif text-2xl font-semibold text-ink">
                     Welcome back, {user?.full_name?.split(' ')[0] || 'User'}
                 </h1>
-                <p className="mt-2 text-ink-muted">
+                <p className="relative mt-2 text-ink-muted">
                     {isDirector
                         ? "Here's an overview of all your institutions."
                         : isAccountant
@@ -506,7 +536,7 @@ export default function DashboardPage() {
             {/* Stats Grid - Hidden for Receptionists */}
             {!isReceptionist && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {dashboardData.stats.map((stat) => (
+                    {dashboardData.stats.map((stat, i) => (
                         <StatCard
                             key={stat.title}
                             title={stat.title}
@@ -514,6 +544,7 @@ export default function DashboardPage() {
                             description={stat.description}
                             icon={iconMap[stat.title] || BookOpen}
                             trend={stat.trend}
+                            index={i}
                         />
                     ))}
                 </div>

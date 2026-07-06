@@ -33,6 +33,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useEffect, useState } from 'react';
 import type { User, UserRole } from '@/types';
 import { ChatWidget } from '@/components/chat/ChatWidget';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface NavItem {
     title: string;
@@ -240,6 +241,7 @@ function Header() {
                     <Home className="h-4 w-4" />
                     <span className="hidden sm:inline">Home</span>
                 </Link>
+                <ThemeToggle />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="flex items-center gap-2 text-ink">

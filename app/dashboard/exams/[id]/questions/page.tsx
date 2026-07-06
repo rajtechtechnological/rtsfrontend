@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { examsApi } from '@/lib/api/endpoints';
-import type { ExamDetail, Question } from '@/types';
+import type { CreateQuestionRequest, DocxImportPreview, ExamDetail, Question } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -222,6 +222,224 @@ function AddQuestionDialog({ examId, onQuestionAdded }: { examId: string; onQues
     );
 }
 
+const FORMAT_EXAMPLE = `1. What does CPU stand for?
+A) Central Processing Unit
+B) Computer Personal Unit
+C) Central Process Utility
+D) Control Processing Unit
+Answer: A
+Marks: 2
+Explanation: CPU is the main processor.
+
+2. Which of these is an input device?
+A) Monitor
+B) Keyboard
+C) Printer
+D) Speaker
+Answer: B`;
+
+function ImportWordDialog({ examId, onImported }: { examId: string; onImported: () => void }) {
+    const [open, setOpen] = useState(false);
+    const [file, setFile] = useState<File | null>(null);
+    const [preview, setPreview] = useState<DocxImportPreview | null>(null);
+    const [isParsing, setIsParsing] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
+
+    const resetState = () => {
+        setFile(null);
+        setPreview(null);
+        setIsParsing(false);
+        setIsImporting(false);
+    };
+
+    const handleParse = async (selected: File) => {
+        setFile(selected);
+        setIsParsing(true);
+        setPreview(null);
+        try {
+            const response = await examsApi.importDocx(examId, selected);
+            setPreview(response.data);
+            if (response.data.questions.length === 0) {
+                toast.error('No importable questions found in this document');
+            }
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || 'Failed to read the document');
+            setFile(null);
+        } finally {
+            setIsParsing(false);
+        }
+    };
+
+    const handleImport = async () => {
+        if (!preview || preview.questions.length === 0) return;
+        setIsImporting(true);
+        try {
+            await examsApi.addQuestionsBulk(examId, preview.questions as CreateQuestionRequest[]);
+            toast.success(`${preview.questions.length} questions imported`);
+            setOpen(false);
+            resetState();
+            onImported();
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || 'Failed to import questions');
+        } finally {
+            setIsImporting(false);
+        }
+    };
+
+    return (
+        <Dialog
+            open={open}
+            onOpenChange={(next) => {
+                setOpen(next);
+                if (!next) resetState();
+            }}
+        >
+            <DialogTrigger asChild>
+                <Button variant="outline" className="border-line text-ink">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import from Word
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-surface border-line sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle className="text-ink flex items-center gap-2">
+                        <Upload className="h-5 w-5 text-primary" />
+                        Import Questions from Word
+                    </DialogTitle>
+                </DialogHeader>
+
+                {/* Step 1: choose a .docx (with the expected format shown) */}
+                {!preview && (
+                    <div className="space-y-4">
+                        <p className="text-sm text-ink-muted">
+                            Upload a .docx file with numbered questions, options A–D, and an answer
+                            line for each. Nothing is imported until you review the preview.
+                        </p>
+                        <a
+                            href="/templates/exam-questions-template.docx"
+                            download
+                            className="inline-flex items-center gap-2 rounded-md border border-line bg-muted px-3 py-2 text-sm font-medium text-primary hover:border-primary/40"
+                        >
+                            <FileQuestion className="h-4 w-4" />
+                            Download the Word template
+                        </a>
+                        <pre className="rounded-md border border-line bg-muted p-3 text-xs text-ink overflow-x-auto whitespace-pre">
+                            {FORMAT_EXAMPLE}
+                        </pre>
+                        <div className="space-y-2">
+                            <Label className="text-ink">Word document (.docx)</Label>
+                            <Input
+                                type="file"
+                                accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                disabled={isParsing}
+                                className="bg-muted border-line text-ink"
+                                onChange={(e) => {
+                                    const selected = e.target.files?.[0];
+                                    if (selected) handleParse(selected);
+                                }}
+                            />
+                        </div>
+                        {isParsing && (
+                            <p className="flex items-center gap-2 text-sm text-ink-muted">
+                                <Loader2 className="h-4 w-4 animate-spin" /> Reading {file?.name}…
+                            </p>
+                        )}
+                    </div>
+                )}
+
+                {/* Step 2: preview + confirm */}
+                {preview && (
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <p className="text-sm text-ink">
+                                <span className="font-semibold">{preview.questions.length}</span>{' '}
+                                question{preview.questions.length === 1 ? '' : 's'} ready to import
+                                from <span className="font-medium">{file?.name}</span>
+                            </p>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-ink-muted"
+                                onClick={resetState}
+                            >
+                                Choose another file
+                            </Button>
+                        </div>
+
+                        {preview.errors.length > 0 && (
+                            <div className="rounded-md border border-danger/40 bg-danger/5 p-3">
+                                <p className="text-sm font-medium text-danger mb-1">
+                                    Skipped ({preview.errors.length}) — fix these in the document and re-upload to include them:
+                                </p>
+                                <ul className="list-disc pl-5 text-xs text-danger space-y-0.5">
+                                    {preview.errors.map((err, i) => (
+                                        <li key={i}>{err}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        <div className="max-h-[40vh] space-y-2 overflow-y-auto rounded-md border border-line p-3">
+                            {preview.questions.map((q, i) => (
+                                <div key={i} className="rounded border border-line bg-muted p-3">
+                                    <p className="text-sm text-ink font-medium">
+                                        {i + 1}. {q.question_text}
+                                        <span className="ml-2 text-xs font-normal text-ink-muted">
+                                            ({q.marks ?? 1} {(q.marks ?? 1) === 1 ? 'mark' : 'marks'})
+                                        </span>
+                                    </p>
+                                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs">
+                                        {(['A', 'B', 'C', 'D'] as const).map((opt) => (
+                                            <span
+                                                key={opt}
+                                                className={
+                                                    q.correct_option === opt
+                                                        ? 'text-primary font-medium flex items-center gap-1'
+                                                        : 'text-ink-muted'
+                                                }
+                                            >
+                                                {opt}. {q[`option_${opt.toLowerCase()}` as 'option_a']}
+                                                {q.correct_option === opt && <CheckCircle className="h-3 w-3" />}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                            <Button
+                                variant="outline"
+                                className="border-line text-ink"
+                                onClick={() => {
+                                    setOpen(false);
+                                    resetState();
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                disabled={isImporting || preview.questions.length === 0}
+                                className="bg-primary text-primary-foreground"
+                                onClick={handleImport}
+                            >
+                                {isImporting ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Importing…
+                                    </>
+                                ) : (
+                                    `Import ${preview.questions.length} question${preview.questions.length === 1 ? '' : 's'}`
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 function QuestionCard({ question, index, onDelete, onEdit }: {
     question: Question;
     index: number;
@@ -355,7 +573,10 @@ export default function ExamQuestionsPage() {
                         {exam.course_name} - {exam.module_name} • {exam.questions.length} questions
                     </p>
                 </div>
-                <AddQuestionDialog examId={examId} onQuestionAdded={fetchExam} />
+                <div className="flex items-center gap-2">
+                    <ImportWordDialog examId={examId} onImported={fetchExam} />
+                    <AddQuestionDialog examId={examId} onQuestionAdded={fetchExam} />
+                </div>
             </div>
 
             {/* Summary */}

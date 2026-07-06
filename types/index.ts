@@ -523,6 +523,50 @@ export interface CreateScheduleRequest {
     end_time: string;
 }
 
+// Word (.docx) question import — parse-only preview; the author confirms
+// via addQuestionsBulk.
+export interface DocxImportPreview {
+    questions: CreateQuestionRequest[];
+    errors: string[];
+}
+
+// Student's question-by-question review of a VERIFIED attempt (the one
+// student-facing place correct answers appear).
+export interface AttemptReviewQuestion {
+    position: number;
+    question_text: string;
+    image_url: string | null;
+    option_a: string;
+    option_b: string;
+    option_c: string;
+    option_d: string;
+    correct_option: 'A' | 'B' | 'C' | 'D';
+    marks: number;
+    explanation: string | null;
+    selected_option: 'A' | 'B' | 'C' | 'D' | null;
+    is_correct: boolean | null;
+    marks_obtained: number;
+}
+
+export interface AttemptReview {
+    attempt: {
+        id: string;
+        exam_title: string;
+        course_name: string | null;
+        module_name: string | null;
+        attempt_number: number;
+        total_questions: number;
+        total_answered: number;
+        correct_answers: number;
+        total_marks: number;
+        obtained_marks: number;
+        percentage: number;
+        passed: boolean;
+        verified_at: string | null;
+    };
+    questions: AttemptReviewQuestion[];
+}
+
 // Dashboard stats
 export interface DashboardStats {
     stats: Array<{
